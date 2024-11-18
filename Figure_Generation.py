@@ -27,7 +27,7 @@ plt.ion()
 
 # load data
 
-fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_raman.csv'
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CsErSe2_raman.csv'
 rawData = pd.read_csv(fname, index_col=0, skiprows=0, header=1, delimiter=',')
 ramanData = rawData
 
@@ -48,7 +48,7 @@ for f in fields:
     spec = ramanData[f]+i/3
     plt.plot(ramanData.index, spec, label = f, color= colors[i])
     i+=1
-plt.legend(draggable = True)
+# plt.legend(draggable = True)
 plt.xlim(0,100)
 plt.title('Raman Data, 0-100cm')
 plt.xlabel('wavenumber (cm^-1)')
@@ -76,7 +76,7 @@ for f in fields:
     i+=1
 # plt.legend()
 plt.xlim(200,560)
-plt.title('Raman Data, high energy, 200-560 cm, possible 13/2 lines')
+plt.title('Raman Data, high energy, 200-560 cm \n possible 13/2 lines')
 plt.xlabel('wavenumber (cm^-1)')
 plt.ylabel('Intensity (arb)')
 
@@ -457,7 +457,21 @@ plt.title('Calculated CES lines, H||b')
 ########################################################################################
 ########################################################################################
 ########################################################################################
-# now let's plot some magnitic stuff
+# now let's plot some magnetic stuff
+
+temperature = 2 # in K
+
+muB = 5.7883818012e-2  # meV/T
+mu0 = np.pi*4e-7       # T*m/A
+kB  = 8.617e-2         # [meV/K]
+meVToCm =meVTocCmInv= 8.066 
+ion = 'Er3+'
+
+kBT = kB*temperature
+
+Jperp = -0.2#e-3 #meV
+Jz = -2.5#e-3 #meV
+q= 6
 
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
@@ -465,3 +479,43 @@ B43 = -0.01393 # fixed)
 B60 =  3.054e-06 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
+
+g = cef.LandeGFactor(ion)
+myBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+MyErObj = cef.CFLevels.Bdict(ion,myBparams)
+
+
+# neutron fit vals
+B20 = -3.559e-2
+B40 = -3.849e-4
+B43 = -1.393e-2
+B60 = 3.154e-6
+B63 = -4.695e-6
+B66 = 3.3815e-5
+
+g = cef.LandeGFactor(ion)
+AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
+
+
+##########################################
+# first we plot just the magnetization, no MFT correction
+field = [[0,0,b] for b in np.linspace(-10,10,1000)]
+magMe_C = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+
+magAllen_C = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
+field = np.array(field).T
+
+plt.figure()
+plt.plot(field[2], magMe_C[2]*-1, label = 'B params from Raman fit')
+plt.plot(field[2], magAllen_C[2]*-1,label = 'B params from neutron fit')
+plt.title('Magnetization from PCF, no MFT')
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (unitless acc. to Allen...)')
+plt.legend()
+plt.grid()
+plt.box(True)
+
+################################################
+# do MFT correction
+# assume MFT is in helper functions, already loaded
