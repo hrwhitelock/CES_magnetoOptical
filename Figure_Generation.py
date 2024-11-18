@@ -11,12 +11,14 @@ plt.ion()
 
 ################################################################
 # working B params -> from C-axis raman fit 11/13
-B20 = -0.02926696 # init = -0.03559
-B40 = -3.9097e-04 # init = -0.0003849
-B43 = -0.01391860 # init = -0.01393
-B60 =  3.0584e-06 # init = 3.154e-06
-B63 = -4.2840e-06 # init = -4.695e-06
-B66 =  3.3645e-05 # init = 3.3815e-05
+# B20 = -0.02926696 # init = -0.03559
+# B40 = -3.9097e-04 # init = -0.0003849
+# B43 = -0.01391860 # init = -0.01393
+# B60 =  3.0584e-06 # init = 3.154e-06
+# B63 = -4.2840e-06 # init = -4.695e-06
+# B66 =  3.3645e-05 # init = 3.3815e-05
+
+
 
 
 ################################################################
@@ -91,6 +93,13 @@ waveArr= wavenums
 fieldArr = field 
 
 
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+B60 =  3.054e-06 # fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
+
 ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
 arrC = np.array(arrC)
 arrC = arrC*meVToCm
@@ -112,8 +121,48 @@ for i in range(40):
     if i>=16: 
         plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
 
+################################################
+# plot line from Allen's params
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.054e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
 
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+waveArr= wavenums
+fieldArr = field 
+
+
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
+arrC = np.array(arrC)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(ampC)
+ampC = ampC.T
+
+plt.figure()
+plt.contourf(field, wavenums, ramanData,50)
+plt.xlim(0,14)
+plt.ylim(0,120)
+plt.clim(0, 1)
+plt.colorbar()
+plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i<16: 
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7) 
+
+################################################
 # plot simulated data
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+B60 =  3.054e-06 # fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
 
 waveArr= np.linspace(0,120, 480)
 fieldArr = np.linspace(0,14, 100)
@@ -214,14 +263,21 @@ ampC = np.array(ampC)
 ampC = ampC.T
 
 
-# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+plt.figure()
+plt.contourf(field, wavenums, ramanData,50)
+plt.xlim(0,14)
+plt.ylim(0,120)
+plt.clim(0, 1)
+plt.colorbar()
+
+plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i == 1: 
-        plt.plot(fieldArr, arrC[i], 'b--', alpha=0.7, label = 'calculated from Neutron fit')
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'calculated from Neutron fit')
     elif i<16 and i !=1: 
-        plt.plot(fieldArr, arrC[i], 'b--', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
 plt.legend()
-plt.title('')
+# plt.title('Calculated CES lines')
 
 ############################################################
 ############################################################
@@ -336,3 +392,76 @@ for i in range(40):
         plt.plot(field, arrAB[i], 'r', alpha=0.7)
     if i>=16: 
         plt.plot(field, arrAB[i], 'r--', alpha=0.3)
+
+############################################################
+# without the data, just a plot of my lines in red, Allen's in blue
+# me first!
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+B60 =  3.054e-06 # fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
+
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+waveArr= wavenums
+fieldArr = field 
+
+
+ampAB, arrAB = zeemanSplitLinesAB(fieldArr, B20, B40, B43, B60, B63, B66)
+arrAB = np.array(arrAB)
+arrAB = arrAB*meVToCm
+arrAB = arrAB.T
+
+ampAB = np.array(ampAB)
+ampAB = ampAB.T
+
+plt.figure()
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i ==1: 
+        plt.plot(fieldArr, arrAB[i], 'r', alpha=0.7, label = 'calculated from Raman fit')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrAB[i], 'r', alpha=0.7)
+
+# now Allen
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.054e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
+
+ampAB, arrAB = zeemanSplitLinesAB(fieldArr, B20, B40, B43, B60, B63, B66)
+arrAB = np.array(arrAB)
+arrAB = arrAB*meVToCm
+arrAB = arrAB.T
+
+ampAB = np.array(ampAB)
+ampAB = ampAB.T
+
+
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i == 1: 
+        plt.plot(fieldArr, arrAB[i], 'b--', alpha=0.7, label = 'calculated from Neutron fit')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrAB[i], 'b--', alpha=0.7)
+plt.legend()
+plt.title('Calculated CES lines, H||b')
+
+########################################################################################
+########################################################################################
+########################################################################################
+########################################################################################
+# now let's plot some magnitic stuff
+
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+B60 =  3.054e-06 # fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
