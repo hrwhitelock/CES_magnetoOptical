@@ -519,3 +519,20 @@ plt.box(True)
 ################################################
 # do MFT correction
 # assume MFT is in helper functions, already loaded
+
+mme_C = magMe_C[2]
+mAllen_C = magAllen_C[2]
+
+maxi = 10
+f = np.linspace(10,10,1000)
+mft_mZ_me_C = MolecularFieldTheory(f, f, mme_C, lambC)
+mft_mZ_Allen_C = MolecularFieldTheory(f, f, mAllen_C, lambC)
+
+plt.figure()
+plt.plot(f, -1*mft_mZ_me_C, label = 'B params from Raman fit')
+plt.plot(f, -1*mft_mZ_Allen_C, label = 'B params from neutron fit')
+
+plt.legend()
+plt.title('C axis magnetization with mean field correction')
+plt.xlabel('Field (T) ')
+plt.ylabel('Magnetization (unitless acc. to Allen...)')
