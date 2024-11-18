@@ -133,7 +133,7 @@ plt.colorbar()
 
 # let's try adding fake high energy data, say 0 above 285 ev
 
-fakeEnergies = np.linspace(348, 500000, 200000) # should be enough to enforce hard boundary :(
+fakeEnergies = np.linspace(300, 5000000, 100000) # should be enough to enforce hard boundary :(
 fakeField = ramanData.columns.values
 
 fakeSpec = np.zeros((len(fakeEnergies), len(fakeField)))
@@ -156,13 +156,14 @@ fitData = tempDF
 
 # I've defined functions in another file for cleanliness
 
-# # from AB plane fit
-B20= -0.04040883
-B40= -3.8692e-04
-B43= -0.01433959
-B60=  3.2030e-06
-B63= -1.9732e-06
-B66=  3.7301e-05
+#model 1 from Allen's paper
+B20 = -3.559e-2
+B40 = -3.849e-4
+B43 = -1.393e-2
+B60 = 3.154e-6
+B63 = -4.695e-6
+B66 = 3.3815e-5
+
 
 field = [float(b) for b in fitData.columns.values]
 wavenums = [float(i) for i in fitData.index.values]
@@ -188,16 +189,20 @@ params['B43'].set(value= B43, min = -.06, max = 0.06)
 params['B60'].set(value= B60, min = -.06, max = 0.06)
 params['B63'].set(value= B63, min = -.06, max = 0.06)
 params['B66'].set(value= B66, min = -.06, max = 0.06)
-# params['amp1'].set(value = 0.5, vary = False)
-# params['amp2'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp3'].set(value = 1, min = 0.0, max = 1)
-# params['amp4'].set(value = 0.3, min = 0.0, max = 1)
-# params['amp5'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp6'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp7'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp8'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp9'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp10'].set(value = 0.5, min = 0.0, max = 1)
+params['amp1'].set(value = 0.5, vary = False)
+params['amp2'].set(value = 0.3, vary = False)
+params['amp3'].set(value = 0.7, min = 0.2, max = 1)
+params['amp4'].set(value = 0.3, min = 0.15, max = 1)
+params['amp5'].set(value = 0.5, min = 0.2, max = 1)
+params['amp6'].set(value = 0.5, min = 0.2, max = 1)
+params['amp7'].set(value = 0.5, min = 0.2, max = 1)
+params['amp8'].set(value = 0.5, min = 0.2, max = 1)
+params['amp9'].set(value = 0.5, min = 0.05, max = 1)
+params['amp10'].set(value = 0.5, min = 0.05, max = 1)
+params['width'].set(value = 0.5, min = 0.0, max = 2.0)
+params['phononCen'].set(value = 49.2)
+params['phononAmp'].set(value = 0.5)
+params['phononWid'].set(value = 1)
 # params['amp11'].set(value = 0.5, min = 0.0, max = 1)
 # params['amp12'].set(value = 0.5, min = 0.0, max = 1)
 # params['amp13'].set(value = 0.5, min = 0.0, max = 1)
@@ -213,72 +218,102 @@ result = model.fit(z, field=field, wavenum=wavenums, params =params)
 print(result.fit_report())
 
 '''
+result 11/11 -> trying maybe one more thing
 [[Model]]
     Model(zeemanSplitC)
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 29833
-    # data points      = 46434
-    # variables        = 21
-    chi-square         = 689.568990
-    reduced chi-square = 0.01485724
-    Akaike info crit   = -195432.161
-    Bayesian info crit = -195248.499
-    R-squared          = -4.99544513
+    # function evals   = 19613
+    # data points      = 15265
+    # variables        = 15
+    chi-square         = 230.067002
+    reduced chi-square = 0.01508636
+    Akaike info crit   = -64005.8709
+    Bayesian info crit = -63891.3712
+    R-squared          = 0.13034021
+##  Warning: uncertainties could not be estimated:
+    amp2:   at boundary
+    amp4:   at boundary
+    amp9:   at boundary
+    amp10:  at boundary
 [[Variables]]
-    B20:   -0.03553308 +/- 8.5004e-05 (0.24%) (init = -0.04040883)
-    B40:   -3.7973e-04 +/- 4.2073e-07 (0.11%) (init = -0.00038692)
-    B43:   -0.01424079 +/- 2.2208e-06 (0.02%) (init = -0.01433959)
-    B60:    3.0728e-06 +/- 2.9139e-09 (0.09%) (init = 3.203e-06)
-    B63:   -2.7710e-07 +/- 7.4939e-08 (27.04%) (init = -1.9732e-06)
-    B66:    3.8956e-05 +/- 6.0802e-08 (0.16%) (init = 3.7301e-05)
-    amp1:   0.5 (fixed)
-    amp2:   0.52534606 +/- 0.07017554 (13.36%) (init = 0.5)
-    amp3:   0.36320159 +/- 0.01342228 (3.70%) (init = 1)
-    amp4:   0.22092630 +/- 0.00779686 (3.53%) (init = 0.3)
-    amp5:   0.20981666 +/- 0.00776056 (3.70%) (init = 0.5)
-    amp6:   0.26793413 +/- 0.00769700 (2.87%) (init = 0.5)
-    amp7:   0.35832102 +/- 0.00784340 (2.19%) (init = 0.5)
-    amp8:   0.22404343 +/- 0.00784676 (3.50%) (init = 0.5)
-    amp9:   0.18615851 +/- 0.00778119 (4.18%) (init = 0.5)
-    amp10:  0.16854994 +/- 0.00776591 (4.61%) (init = 0.5)
-    amp11:  0.19001187 +/- 0.00768504 (4.04%) (init = 0.5)
-    amp12:  0.18901404 +/- 0.00768771 (4.07%) (init = 0.5)
-    amp13:  0.20604854 +/- 0.00758656 (3.68%) (init = 0.5)
-    amp14:  0.17930535 +/- 0.00865938 (4.83%) (init = 0.5)
-    amp15:  0.12373527 +/- 0.00997736 (8.06%) (init = 0.5)
-    amp16:  0.14891783 +/- 0.00990352 (6.65%) (init = 0.5)
-[[Correlations]] (unreported correlations are < 0.100)
-    C(B20, B63)     = -0.9217
-    C(B20, B40)     = -0.7998
-    C(B40, B66)     = +0.7484
-    C(B60, B66)     = -0.6852
-    C(B40, B60)     = -0.6753
-    C(B40, B63)     = +0.6548
-    C(B20, B66)     = -0.5231
-    C(amp15, amp16) = -0.4936
-    C(B63, B66)     = +0.3857
-    C(B20, B43)     = -0.3101
-    C(B43, B63)     = +0.2889
-    C(B20, B60)     = +0.2720
-    C(B60, B63)     = -0.2537
-    C(B43, B60)     = +0.2498
-    C(amp7, amp8)   = -0.1992
-    C(amp11, amp12) = -0.1678
-    C(amp9, amp10)  = -0.1404
-    C(amp4, amp5)   = -0.1190
-    C(amp14, amp15) = -0.1086
-    C(B20, amp2)    = -0.1069
-    C(B40, amp2)    = +0.1058
-    C(B43, amp16)   = +0.1023
-    C(amp5, amp6)   = -0.1014
+[[Model]]
+    Model(zeemanSplitC)
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 38000
+    # data points      = 15265
+    # variables        = 18
+    chi-square         = 109.449089
+    reduced chi-square = 0.00717840
+    Akaike info crit   = -75340.4086
+    Bayesian info crit = -75203.0089
+    R-squared          = 0.58627934
+##  Warning: uncertainties could not be estimated:
+    amp4:       at boundary
+    amp5:       at boundary
+    amp6:       at boundary
+    amp8:       at boundary
+[[Variables]]
+    B20:       -0.02926696 (init = -0.03559)
+    B40:       -3.9097e-04 (init = -0.0003849)
+    B43:       -0.01391860 (init = -0.01393)
+    B60:        3.0584e-06 (init = 3.154e-06)
+    B63:       -4.2840e-06 (init = -4.695e-06)
+    B66:        3.3645e-05 (init = 3.3815e-05)
+    amp1:       0.5 (fixed)
+    amp2:       0.3 (fixed)
+    amp3:       0.30406726 (init = 0.7)
+    amp4:       0.15000000 (init = 0.3)
+    amp5:       0.20000103 (init = 0.5)
+    amp6:       0.20000000 (init = 0.5)
+    amp7:       0.28652781 (init = 0.5)
+    amp8:       0.20000000 (init = 0.5)
+    width:      1.24715342 (init = 0.5)
+    phononCen:  49.3020750 (init = 49.2)
+    phononAmp:  0.49902960 (init = 0.5)
+    phononWid:  0.95028048 (init = 1)
+    amp9:       0.13605417 (init = 0.5)
+    amp10:      0.09724615 (init = 0.5)
 '''
 
 # lets plot this bitch
 field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
-waveArr= np.linspace(0,500, 1000)
-fieldArr = np.linspace(0,14, 100)
+waveArr= wavenums #np.linspace(0,500, 1000)
+fieldArr = field #np.linspace(0,14, 100)
+
+# Allen's params
+# B20 = -3.559e-2
+# B40 = -3.849e-4
+# B43 = -1.393e-2
+# B60 = 3.154e-6
+# B63 = -4.695e-6
+# B66 = 3.3815e-5
+
+# my params
+# B20 = -0.02926696 # -0.03559)
+# B40 = -3.9097e-04 # -0.0003849)
+# B43 = -0.01391860 # -0.01393)
+# B60 =  3.0584e-06 # 3.154e-06)
+# B63 = -4.2840e-06 # -4.695e-06)
+# B66 =  3.3645e-05 # 3.3815e-05)
+
+# my params averaged
+# B20=-0.02926696
+# B40=(-3.9097e-04-3.849e-4)/2
+# B43=(-0.01391860-1.393e-2)/2
+# B60= 3.0584e-06
+# B63=-4.2840e-06
+# B66= (3.3645e-05+3.3815e-5)/2
+
+# Allens params averaged
+# B20=-3.559e-2
+# B40=(-3.9097e-04-3.849e-4)/2
+# B43=(-0.01391860-1.393e-2)/2
+# B60= (3.0584e-06 +3.154e-6)/2
+# B63=-4.695e-6
+# B66= (3.3645e-05+3.3815e-5)/2
 
 ampC, arrC = zeemanSplitLinesC(fieldArr,result.params['B20'], result.params['B40'], 
                    result.params['B43'], result.params['B60'], 
@@ -302,7 +337,7 @@ plt.contourf(field, wavenums, ramanData,50)
 plt.colorbar()
 plt.title('CsErSe2 H||c with overlayed  calclines')
 for i in range(40):
-    if i<10: 
+    if i<16: 
         plt.plot(fieldArr, arrC[i], 'r', alpha=0.4)
     # if i>=16: 
     #     plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
@@ -311,13 +346,13 @@ waveArr= np.linspace(0,500, 1000)
 fieldArr = np.linspace(0,14, 100)
 
 arrC = zeemanSplitC(fieldArr, waveArr, result.params['B20'], result.params['B40'],result.params['B43']
-                    ,result.params['B60'],result.params['B63'],result.params['B66']) 
-#                     # result.params['amp1'],result.params['amp2'],result.params['amp3'],result.params['amp4'],result.params['amp5'],
-#                     # result.params['amp6'],result.params['amp7'],result.params['amp8'],result.params['amp9'],result.params['amp10'],
-#                     # result.params['amp11'],result.params['amp12'],result.params['amp13'],result.params['amp14'],result.params['amp15'],
-#                     # result.params['amp16'] ) 
+                    ,result.params['B60'],result.params['B63'],result.params['B66'],
+                    result.params['amp1'],result.params['amp2'],result.params['amp3'],result.params['amp4'],result.params['amp5'],
+                    result.params['amp6'],result.params['amp7'],result.params['amp8'], 0.5, 49.2, 1,1,.1,.1)#result.params['amp9'],result.params['amp10'], 
+
+
 # arr = zeemanSplit(fieldArr, waveArr,result.params['B20'], result.params['B40'], result.params['B43'], result.params['B60'], result.params['B63'], result.params['B66']) 
-# arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66)
+# arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66, 1,1,1,1,1,1,1,1,1,1)
 arrC = np.array(arrC)
 
 
@@ -357,4 +392,109 @@ first pass after all inputs 0:
 
 now i refit with AB plane params and see what happens
 
+'''
+
+
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+####################################################################################################################
+# okay, so now I'm redoing the fit, but only letting 3 B params actually do the fit: B20, B63, B60
+
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.054e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
+
+
+field = [float(b) for b in fitData.columns.values]
+wavenums = [float(i) for i in fitData.index.values]
+
+plt.figure()
+plt.contourf(field, wavenums, fitData, 100)
+plt.colorbar()
+
+# B20= 0
+# B40= 0
+# B43= 0
+# B60= 0
+# B63= 0
+# B66= 0
+
+
+model = lmfit.Model(zeemanSplitC, independent_vars=['field', 'wavenum'])
+params = model.make_params()
+
+params['B20'].set(value= B20, min = -.06, max = 0.06)
+params['B40'].set(value= B40, vary = False)
+params['B43'].set(value= B43, vary = False)
+params['B60'].set(value= B60, vary = False)
+params['B63'].set(value= B63, min = -1e5, max = 1e5)
+params['B66'].set(value= B66, vary = False)
+params['amp1'].set(value = 0.5, vary = False)
+params['amp2'].set(value = 0.3, vary = False)
+params['amp3'].set(value = 0.7, vary = False)
+params['amp4'].set(value = 0.4, vary = False)
+params['amp5'].set(value = 0.4, vary = False)
+params['amp6'].set(value = 0.4, vary = False)
+params['amp7'].set(value = 0.4, vary = False)
+params['amp8'].set(value = 0.4, vary = False)
+params['amp9'].set(value = 0.2, vary = False)
+params['amp10'].set(value = 0.05, vary = False)
+params['width'].set(value = 1, vary=False)
+params['phononCen'].set(value = 49.2, vary = False)
+params['phononAmp'].set(value = 0.6, vary = False)
+params['phononWid'].set(value = 1, vary = False)
+# params['amp11'].set(value = 0.5, min = 0.0, max = 1)
+# params['amp12'].set(value = 0.5, min = 0.0, max = 1)
+# params['amp13'].set(value = 0.5, min = 0.0, max = 1)
+# params['amp14'].set(value = 0.5, min = 0.0, max = 1)
+# params['amp15'].set(value = 0.5, min = 0.0, max = 1)
+# params['amp16'].set(value = 0.5, min = 0.0, max = 1)
+
+z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
+z = z.T
+
+result = model.fit(z, field=field, wavenum=wavenums, params =params)
+
+print(result.fit_report())
+
+
+'''
+[[Model]]
+    Model(zeemanSplitC)
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 250
+    # data points      = 15265
+    # variables        = 2
+    chi-square         = 263.383418
+    reduced chi-square = 0.01725633
+    Akaike info crit   = -61967.4285
+    Bayesian info crit = -61952.1618
+    R-squared          = 0.00440321
+##  Warning: uncertainties could not be estimated:
+[[Variables]]
+    B20:       -0.03265325 (init = -0.03559)
+    B40:       -0.0003849 (fixed)
+    B43:       -0.01393 (fixed)
+    B60:        3.054e-06 (fixed)
+    B63:       -8.4011e-07 (init = -4.695e-06)
+    B66:        3.3815e-05 (fixed)
+    amp1:       0.5 (fixed)
+    amp2:       0.3 (fixed)
+    amp3:       0.7 (fixed)
+    amp4:       0.4 (fixed)
+    amp5:       0.4 (fixed)
+    amp6:       0.4 (fixed)
+    amp7:       0.4 (fixed)
+    amp8:       0.4 (fixed)
+    width:      1 (fixed)
+    phononCen:  49.2 (fixed)
+    phononAmp:  0.6 (fixed)
+    phononWid:  1 (fixed)
+    amp9:       0.2 (fixed)
+    amp10:      0.05 (fixed)
 '''

@@ -163,6 +163,65 @@ plt.ylim(0,120)
 plt.colorbar()
 plt.title('CsErSe2 H||c raman data')
 
+############################################################
+# without the data, just a plot of my lines in red, Allen's in blue
+# me first!
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+B60 =  3.054e-06 # fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
+
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+waveArr= wavenums
+fieldArr = field 
+
+
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
+arrC = np.array(arrC)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(ampC)
+ampC = ampC.T
+
+plt.figure()
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i ==1: 
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'calculated from Raman fit')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
+
+# now Allen
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.054e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
+
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
+arrC = np.array(arrC)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(ampC)
+ampC = ampC.T
+
+
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i == 1: 
+        plt.plot(fieldArr, arrC[i], 'b--', alpha=0.7, label = 'calculated from Neutron fit')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrC[i], 'b--', alpha=0.7)
+plt.legend()
+plt.title('')
 
 ############################################################
 ############################################################
@@ -244,6 +303,13 @@ B60 =  3.054e-06 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
+# Allen's B params
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.054e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
 wavenums= [float(i) for i in dataB.index.values]
 field = [float(b) for b in dataB.columns.values]
 
@@ -260,6 +326,8 @@ plt.figure()
 plt.contourf(field, wavenums, dataB,100)
 # plt.xlim(0,14)
 plt.ylim(0,120)
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^-1$)')
 # plt.clim(0, 1)
 plt.colorbar()
 plt.title('CsErSe$_2$ H||b with overlaid calculated CEF lines \n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))

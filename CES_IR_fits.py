@@ -135,7 +135,7 @@ def diagonalize(ionObj, ion, Field):
     ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
     return ionObj.eigenvalues 
 
-def zeemanSplit(field, wavenum, B20, B40, B43, B60, B63, B66):     
+def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66):     
     # assuming only H||B rn
     # assuming that x is an array
     amp = [1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]#[0, .15, .15, .2, 0.15,0.15,0.15,0.15,0.07,0.07, .1,.1,.1,.1,.1]
