@@ -459,7 +459,7 @@ plt.title('Calculated CES lines, H||b')
 ########################################################################################
 # now let's plot some magnetic stuff
 
-temperature = 2 # in K
+temperature = 0.2 # in K
 
 muB = 5.7883818012e-2  # meV/T
 mu0 = np.pi*4e-7       # T*m/A
@@ -471,6 +471,9 @@ kBT = kB*temperature
 
 Jperp = -0.2#e-3 #meV
 Jz = -2.5#e-3 #meV
+
+lambAB = Jperp
+lambC = Jz
 q= 6
 
 B20 = -0.03265325 # init = -0.03559)
@@ -536,3 +539,25 @@ plt.legend()
 plt.title('C axis magnetization with mean field correction')
 plt.xlabel('Field (T) ')
 plt.ylabel('Magnetization (unitless acc. to Allen...)')
+
+################################################
+# do MFT correction
+# assume MFT is in helper functions, already loaded
+# AB plane
+field = [[b,0,0] for b in np.linspace(-10,10,1000)]
+magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magAllen = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
+field = np.array(field).T
+
+mme = magMe[0]
+mAllen = magAllen[0]
+
+mft_mZ_me = MolecularFieldTheory(f, f, mme, lambAB)
+mft_mZ_Allen = MolecularFieldTheory(f, f, mAllen, lambAB)
+plt.figure()
+plt.plot(f, -1*mft_mZ_me, label = 'B params from Raman fit')
+plt.plot(ffine, -1*mft_mZ_Allen, label = 'B params from Neutron fit')
+# plt.xlim(0,10)
+# plt.ylim(0,9)
+plt.legend()
+plt.title('AB magnetization')
