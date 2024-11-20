@@ -23,15 +23,15 @@ kBT = kB*temperature
 gJ = cef.LandeGFactor('Er3+')
 
 
-Jperp = -0.2e-3 #meV
-Jz = -2.4e-3 #meV
+Jperp = -0.2e-3*-2 #meV
+Jz = -2.4e-3*-0.2 #meV
 q= 6
 
 # init objects
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.054e-06 # fixed)
+B60 =  3.035e-6# fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -53,7 +53,7 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
-field = [[0,0,b] for b in np.linspace(-10,10,100000)]
+field = [[0,0,b] for b in np.linspace(0,10,100000)]
 magMe_C = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 
 
@@ -86,8 +86,39 @@ def MolecularFieldTheory(H, Hth, Mth, lamb):
 
 
 mme_C = magMe_C[2]
+mAllen_C = magAllen_C[2]
 f = np.linspace(0,10,1000)
 ffine = np.linspace(0,10,len(mme_C))
 
 mft_mZ_me_C = MolecularFieldTheory(f, ffine, mme_C, Jz) # allens def of J is lamb unfortunately
+mft_mZ_Allen_C = MolecularFieldTheory(f, ffine, mAllen_C, Jz)
 
+# now we load the data
+Na = 6.02214076e23 
+SCF = 1/(1.07828221e24/Na)
+# import susceptibility
+RawMTdata = np.genfromtxt('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CsErSe2_MTall.dat', 
+                       delimiter='\t', unpack=True, skip_header=1)
+## Take some averages because it is TOO many data points
+CESMTdata = []
+for i in range(len(RawMTdata)):
+    CESMTdata.append(np.mean(RawMTdata[i].reshape(-1,5), axis=1))
+
+### Import magnetization
+
+CESMHdata = np.genfromtxt('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CsErSe2_MHall.dat', 
+                       delimiter='\t', unpack=True, skip_header=1)
+
+# now plot data with curves
+plt.figure()
+plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='data ($H \\parallel c$)')
+plt.plot(f, -1*mft_mZ_me_C, '--m', label = 'Raman fit B params')
+plt.plot(f, -1*mft_mZ_Allen_C, '--c',label = 'Neutron fit B params')
+plt.plot(ffine, -1*mme_C, '--g', label = 'Raman fit Bparams, no MFT')
+plt.plot(ffine, -1*mAllen_C, '--p', label = 'Neutron fit Bparams, no MFT')
+plt.xlim(0,6)
+plt.ylim(0,10)
+plt.legend()
+plt.title('C magnetization')
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (uB/Er)')
