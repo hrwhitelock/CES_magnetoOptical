@@ -62,11 +62,6 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,Bparams)
 
 
-# # okay, so now we rebuild with pcf built ins
-
-# In[33]:
-
-
 #first do me
 
 field = [[0,0,b] for b in np.linspace(-10,10,1000)]
@@ -92,13 +87,7 @@ plt.ylabel('mag')
 # # now we do MFT
 # this is following the code allen sent
 
-# In[5]:
 
-
-
-
-
-# In[35]:
 
 
 # f= field[2]

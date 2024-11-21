@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import PyCrystalField as cef
 import scipy
@@ -8,7 +9,7 @@ import pandas as pd
 import lmfit
 
 plt.ion()
-
+plt.rcParams['text.usetex'] = True
 ################################################################
 # working B params -> from C-axis raman fit 11/13
 # B20 = -0.02926696 # init = -0.03559
@@ -40,7 +41,7 @@ ramanData = ramanData/ramanData.max(axis=None)
 fields = ['0.001','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'] # just want to plot every tesla
 
 n = len(fields)
-colors = plt.cm.gnuplot(np.linspace(0,.8,n))
+colors = plt.cm.cool(np.linspace(0,.8,n))
 
 plt.figure()
 i = 0
