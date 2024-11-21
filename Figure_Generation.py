@@ -7,9 +7,15 @@ from scipy.optimize import minimize
 from scipy.optimize import leastsq
 import pandas as pd
 import lmfit
+from matplotlib import font_manager
+font_manager.fontManager.addfont('/Users/hopeless/Library/Fonts/cmunrm.ttf')
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'CMU Serif'
+plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams.update({'font.size': 16})
 
 plt.ion()
-plt.rcParams['text.usetex'] = True
+
 ################################################################
 # working B params -> from C-axis raman fit 11/13
 # B20 = -0.02926696 # init = -0.03559
@@ -38,21 +44,29 @@ ramanData = ramanData-ramanData.min(axis=None)
 # normalize 
 ramanData = ramanData/ramanData.max(axis=None)
 
+zfsub = ramanData
+for col in ramanData.columns: 
+    zfsub[col] = ramanData[col]-ramanData['0.001']
+
 fields = ['0.001','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'] # just want to plot every tesla
 
 n = len(fields)
-colors = plt.cm.cool(np.linspace(0,.8,n))
+colors = plt.cm.inferno(np.linspace(0,.8,n))
 
 plt.figure()
 i = 0
 for f in fields: 
     spec = ramanData[f]+i/3
     plt.plot(ramanData.index, spec, label = f, color= colors[i])
+    if i == 0: 
+        plt.annotate('H = 0T', xy = (90, i/3 +.15), fontsize = 9)
+    elif i ==7 or i==14:
+        plt.annotate('H = ' + f + 'T', xy = (90, i/3 +.15), fontsize = 9)
     i+=1
 # plt.legend(draggable = True)
 plt.xlim(0,100)
 plt.title('Raman Data, 0-100cm')
-plt.xlabel('wavenumber (cm^-1)')
+plt.xlabel('Energy (cm$^{-1}$)')
 plt.ylabel('Intensity (arb)')
 
 # now plot the raman lines
@@ -61,11 +75,15 @@ i = 0
 for f in fields: 
     spec = ramanData[f]+i/3
     plt.plot(ramanData.index, spec, label = f, color= colors[i])
+    if i == 0: 
+        plt.annotate('H = 0T', xy = (176, i/3 +.05), fontsize = 9)
+    elif i ==7 or i==14:
+        plt.annotate('H = ' + f + 'T', xy = (176, i/3 +.05), fontsize = 9)
     i+=1
 # plt.legend()
-plt.xlim(100,200)
+plt.xlim(100,500)
 plt.title('Raman Data, phonon lines, 100-200 cm')
-plt.xlabel('wavenumber (cm^-1)')
+plt.xlabel('Energy (cm$^{-1}$)')
 plt.ylabel('Intensity (arb)')
 
 # now plot high energy lines
@@ -74,11 +92,15 @@ i = 0
 for f in fields: 
     spec = ramanData[f]+i/5
     plt.plot(ramanData.index, spec, label = f, color= colors[i])
+    if i == 0: 
+        plt.annotate('H = 0T', xy = (176, i/3 +.05), fontsize = 9)
+    elif i ==7 or i==14:
+        plt.annotate('H = ' + f + 'T', xy = (176, i/3 +.05), fontsize = 9)
     i+=1
 # plt.legend()
 plt.xlim(200,560)
 plt.title('Raman Data, high energy, 200-560 cm \n possible 13/2 lines')
-plt.xlabel('wavenumber (cm^-1)')
+plt.xlabel('Energy (cm$^{-1}$)')
 plt.ylabel('Intensity (arb)')
 
 
