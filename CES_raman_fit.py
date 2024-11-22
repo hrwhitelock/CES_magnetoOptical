@@ -77,7 +77,7 @@ kBT =kB*temperature
 # this ZF subtraction is important because I want to remove all **unchanged** raman line
 # there's one field dependent raman line and that's really cool!!!!
 
-fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_raman.csv'
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CsErSe2_raman.csv'
 rawData = pd.read_csv(fname, index_col=0, skiprows=0, header=1, delimiter=',')
 ramanData = rawData
 
@@ -404,7 +404,7 @@ now i refit with AB plane params and see what happens
 B20 =  -0.03559
 B40 =  -0.0003849 
 B43 =  -0.01393
-B60 =   3.054e-06
+B60 =   3.035e-06
 B63 =  -4.695e-06
 B66 =   3.3815e-05
 
@@ -444,9 +444,9 @@ params['amp8'].set(value = 0.4, vary = False)
 params['amp9'].set(value = 0.2, vary = False)
 params['amp10'].set(value = 0.05, vary = False)
 params['width'].set(value = 1, vary=False)
-params['phononCen'].set(value = 49.2, vary = False)
-params['phononAmp'].set(value = 0.6, vary = False)
-params['phononWid'].set(value = 1, vary = False)
+# params['phononCen'].set(value = 49.2, vary = False)
+# params['phononAmp'].set(value = 0.6, vary = False)
+# params['phononWid'].set(value = 1, vary = False)
 # params['amp11'].set(value = 0.5, min = 0.0, max = 1)
 # params['amp12'].set(value = 0.5, min = 0.0, max = 1)
 # params['amp13'].set(value = 0.5, min = 0.0, max = 1)
@@ -457,7 +457,7 @@ params['phononWid'].set(value = 1, vary = False)
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenums, params =params)
+result = model.fit(z, field=field, wavenum=wavenums, params =params, method ='ampgo')
 
 print(result.fit_report())
 

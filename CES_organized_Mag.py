@@ -53,7 +53,9 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
-field = [[0,0,b] for b in np.linspace(0,10,100000)]
+f = np.linspace(0,10, 1000)
+ffine = np.concatenate((np.linspace(0,1,100000), np.linspace(0,12,1000000)))
+field = [[0,0,b] for b in ffine]
 magMe_C = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 
 
