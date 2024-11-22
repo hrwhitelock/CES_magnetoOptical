@@ -113,15 +113,15 @@ plt.ylabel('Intensity (arb)')
 field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
 waveArr= wavenums
-fieldArr = field 
-
+fieldArr = np.linspace(0,20, 100)
 
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.054e-06 # fixed)
+B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
+
 
 ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
 arrC = np.array(arrC)
@@ -132,7 +132,7 @@ ampC = np.array(ampC)
 ampC = ampC.T
 
 plt.figure()
-plt.contourf(field, wavenums, ramanData,50)
+plt.contourf(field, wavenums, ramanData,50, cmap = 'jet')
 plt.xlim(0,14)
 plt.ylim(0,120)
 plt.clim(0, 1)
@@ -140,9 +140,41 @@ plt.colorbar()
 plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i<16: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'r', alpha=1, linewidth= 1)
     if i>=16: 
         plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
+
+
+##################################################################################################
+# lets try this plotting lines over a waterfall plot
+
+n = len(fields)
+colors = plt.cm.inferno(np.linspace(0,.8,n))
+
+fig,ax1 =  plt.subplots()
+i = 0
+for f in fields: 
+    spec = ramanData[f]*1.2+i/1.05
+    ax1.plot(ramanData.index, spec, label = f, color= colors[i])
+    if i == 0: 
+        ax1.annotate('H = 0T', xy = (90, i +.15), fontsize = 9)
+    elif i ==7 or i==14:
+        ax1.annotate('H = ' + f + 'T', xy = (90, i +.15), fontsize = 9)
+    i+=1
+plt.ylim(0,15)
+ax2 = ax1.twinx() 
+for i in range(40):
+    if i<16: 
+        ax2.plot(arrC[i], fieldArr, 'r', alpha=1, linewidth= 1)
+    if i>=16: 
+        ax2.plot(arrC[i], fieldArr,'r--', alpha=0.3)
+# plt.legend(draggable = True)
+ax2.set_ylabel('Field [T]')
+plt.xlim(0,100)
+plt.title('Raman Data, 0-100cm')
+ax1.set_xlabel('Energy (cm$^{-1}$)')
+ax1.set_ylabel('Intensity (arb)')
+plt.ylim(0,15)
 
 ################################################
 # plot line from Allen's params
@@ -183,7 +215,7 @@ for i in range(40):
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.054e-06 # fixed)
+B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -204,16 +236,17 @@ phononWid = 0.95
 amp9 = 0.136
 amp10 = 0.097
 width = 1.247
+#field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10,width
 arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66,
-                    amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,width, 
-                    phononCen, phononAmp, phononWid, amp9, amp10)
+                    amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10, 
+                    width)
 
 arrC = np.array(arrC)
 
 
 
 plt.figure()
-plt.contourf(fieldArr,waveArr,arrC.T, 100)
+plt.contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
 # plt.xlim(0,17.5)
 # plt.ylim(20,100)
 # plt.clim(.1,2.5)
@@ -228,13 +261,25 @@ field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
 
 plt.figure()
-plt.contourf(field, wavenums, ramanData,50)
+plt.contourf(field, wavenums, ramanData,100, cmap='jet')
 plt.xlim(0,14)
 plt.ylim(0,120)
 # plt.clim(0, 1)
 plt.colorbar()
 plt.title('CsErSe2 H||c raman data')
 
+############################################################
+# lets put both on the same plot for easy compare
+fig = plt.figure()
+gs = fig.add_gridspec(1,2, hspace=0, wspace=0)
+axs = gs.subplots(sharex=True, sharey=True)
+fig.suptitle('Sharing both axes')
+plt1 = axs[0].contourf(field, wavenums, ramanData,100, cmap='jet')
+axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
+# Hide x labels and tick labels for all but bottom plot.
+for ax in axs:
+    ax.label_outer()
+plt.xlim(0,120)
 ############################################################
 # without the data, just a plot of my lines in red, Allen's in blue
 # me first!
