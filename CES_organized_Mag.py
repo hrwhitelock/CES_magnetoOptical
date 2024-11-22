@@ -23,8 +23,8 @@ kBT = kB*temperature
 gJ = cef.LandeGFactor('Er3+')
 
 
-Jperp = -0.2e-3*-2 #meV
-Jz = -2.4e-3*-0.2 #meV
+Jperp = -0.9e-3 #meV
+Jz = 0.48e-3 #meV
 q= 6
 
 # init objects
@@ -54,7 +54,7 @@ AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
 f = np.linspace(0,10, 1000)
-ffine = np.concatenate((np.linspace(0,1,100000), np.linspace(0,12,1000000)))
+ffine = np.concatenate((np.linspace(0,1,100000), np.linspace(1,4.8,1000), np.linspace(4.8,5.8, 10000), np.linspace(5.8,12, 1000)))
 field = [[0,0,b] for b in ffine]
 magMe_C = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 
@@ -67,6 +67,15 @@ plt.plot(field[2], magAllen_C[2])
 plt.title('magnetization')
 plt.xlabel('applied field')
 plt.ylabel('mag')
+
+# okay, os I accidentally doubled 0-1, so lets pick out the doubled data
+# first, sort by field
+
+# print to file because that calculation time was GOD AWFUL
+np.savetxt("/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CES_Caxis_magCalculation_RamanParams.txt", magMe_C)
+np.savetxt("/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CES_Caxis_magCalculation_NeutronParams.txt", magAllen_C)
+# lets try savign in numpy format
+np.savez("/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CES_Caxis_magCalculation.npz", arr1 = ffine, arr2 = magMe_C, arr3=magAllen_C)
 
 ## now to MFT correction
 def MolecularFieldTheory(H, Hth, Mth, lamb):
@@ -124,3 +133,34 @@ plt.legend()
 plt.title('C magnetization')
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
+
+###################################################################################
+# Now let's plot at diff temps
+temps = [0.01, 0.05, 0.1, .2, .5, .8]
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+
+field = [[0,0,b] for b in ffine]
+m = []
+
+for temperature in temps: 
+    magMe = np.array([tempErObj.magnetization(ion, temperature, f) for f in field]).T
+    tempMag = magMe[2]
+    temp = MolecularFieldTheory(f, ffine, tempMag, lambC*-0.2)
+    temp = [m*-1 for m in temp]
+    # mft_mZ_me_C = [m*-1 for m in mme_C]
+    m.append(temp) # what the actual fuck is this naming holy shit
+
+###################################################################################
+plt.figure()
+for i in range(1, len(m)): 
+    plt.plot(f, m[i], label = str(temps[i])+'K', color = colors[i])
+
+# plt.vlines(5.4, 0, 10)
+plt.legend()
+# plt.ylim(0,3)
+# plt.yscale('log')
+# plt.xlim(0,1)
+plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
+plt.xlabel('Field (T)')
+plt.ylabel('dM/dH') 
