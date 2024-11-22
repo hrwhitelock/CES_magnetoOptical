@@ -273,13 +273,25 @@ plt.title('CsErSe2 H||c raman data')
 fig = plt.figure()
 gs = fig.add_gridspec(1,2, hspace=0, wspace=0)
 axs = gs.subplots(sharex=True, sharey=True)
-fig.suptitle('Sharing both axes')
 plt1 = axs[0].contourf(field, wavenums, ramanData,100, cmap='jet')
-axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
+axs[0].set_title('Raman Data')
+plt2 = axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
+axs[1].set_title('Simulated Data')
+axs[1].set_xlabel('Field (T)')
+axs[0].set_ylabel('Energy (cm$^{-1}$')
+axs[0].set_xlabel('Field (T)')
+
 # Hide x labels and tick labels for all but bottom plot.
 for ax in axs:
     ax.label_outer()
-plt.xlim(0,120)
+plt.xlim(0,14)
+plt.ylim(0,120)
+
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+fig.colorbar(plt2, cax=cbar_ax)
+
+
 ############################################################
 # without the data, just a plot of my lines in red, Allen's in blue
 # me first!
