@@ -339,8 +339,8 @@ plt.title('CsErSe2 H||c with overlayed  calclines')
 for i in range(40):
     if i<16: 
         plt.plot(fieldArr, arrC[i], 'r', alpha=0.4)
-    # if i>=16: 
-    #     plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
+    if i>=16: 
+        plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
 
 waveArr= np.linspace(0,500, 1000)
 fieldArr = np.linspace(0,14, 100)
@@ -348,7 +348,7 @@ fieldArr = np.linspace(0,14, 100)
 arrC = zeemanSplitC(fieldArr, waveArr, result.params['B20'], result.params['B40'],result.params['B43']
                     ,result.params['B60'],result.params['B63'],result.params['B66'],
                     result.params['amp1'],result.params['amp2'],result.params['amp3'],result.params['amp4'],result.params['amp5'],
-                    result.params['amp6'],result.params['amp7'],result.params['amp8'], 0.5, 49.2, 1,1,.1,.1)#result.params['amp9'],result.params['amp10'], 
+                    result.params['amp6'],result.params['amp7'],result.params['amp8'], result.params['amp9'], result.params['amp10'])#result.params['amp9'],result.params['amp10'], 
 
 
 # arr = zeemanSplit(fieldArr, waveArr,result.params['B20'], result.params['B40'], result.params['B43'], result.params['B60'], result.params['B63'], result.params['B66']) 
