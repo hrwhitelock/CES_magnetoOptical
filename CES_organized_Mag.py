@@ -63,9 +63,9 @@ magF = np.linspace(0,10,10000)
 MFTField = np.linspace(0,8,10000)
 # magF = np.concatenate((np.linspace(0,1,100000), np.linspace(1,4.8,1000), np.linspace(4.8,5.8, 10000), np.linspace(5.8,12, 1000)))
 field = [[0,0,b] for b in magF]
-myCaxisMagnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
-myCaxisMagnetization2K = myCaxisMagnetization[2]
-myCaxisMagnetization2K = [m*-1 for m in myCaxisMagnetization] # make the magnetization the correct sign
+myCaxisMagnetization = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+myCaxisMagnetization = myCaxisMagnetization[2]
+myCaxisMagnetization = [m*-1 for m in myCaxisMagnetization] # make the magnetization the correct sign
 
 allenCaxisMagnetization = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
 allenCaxisMagnetization = allenCaxisMagnetization[2]
@@ -84,7 +84,7 @@ def MolecularFieldTheory(H, Hth, Mth, lamb):
     return newM
 
 
-myMFTCaxis = MolecularFieldTheory(MFTField, magF, myCaxisMagnetization, Jz) # allens def of J is lamb unfortunately
+myMFTCaxis2K = MolecularFieldTheory(MFTField, magF, myCaxisMagnetization, Jz) # allens def of J is lamb unfortunately
 allenMFTCaxis = MolecularFieldTheory(MFTField, magF, allenCaxisMagnetization, JzAllen)
 
 # now we load the data
@@ -108,7 +108,7 @@ plt.figure()
 plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='data ($H \\parallel c$)')
 plt.plot(MFTField, myMFTCaxis, '-', label = 'Raman fit B params')
 plt.plot(MFTField, allenMFTCaxis, '-',label = 'Neutron fit B params')
-plt.plot(magF, myCaxisMagnetization, '--', label = 'Raman fit Bparams, no MFT')
+plt.plot(magF, myCaxisMagnetization2K, '--', label = 'Raman fit Bparams, no MFT')
 plt.plot(magF, allenCaxisMagnetization, '--', label = 'Neutron fit Bparams, no MFT')
 # plt.xlim(0,6)
 # plt.ylim(0,10)
@@ -129,39 +129,46 @@ Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
 
 
 # let's make some temperature dependent data
-
-field = [[0,0,b] for b in magF]
+magF_mpms = np.linspace(-8,8,1000)
+field = [[0,0,b] for b in magF_mpms]
+temperature = 2
 magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 magnetization2K = magnetization2K[2]
 magnetization2K = [m*-1 for m in magnetization2K] # make the magnetization the correct sign
 
+temperature = 6
 magnetization6K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 magnetization6K = magnetization6K[2]
 magnetization6K = [m*-1 for m in magnetization6K] # make the magnetization the correct sign
 
+temperature = 20
 magnetization20K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
 magnetization20K = magnetization20K[2]
 magnetization20K = [m*-1 for m in magnetization20K] # make the magnetization the correct sign
 
-
-MFT2K = MolecularFieldTheory(MFTField, magF, magnetization2K, Jz)
-MFT6K = MolecularFieldTheory(MFTField, magF, magnetization6K, Jz)
-MFT20K = MolecularFieldTheory(MFTField, magF, magnetization20K, Jz)
+MFTField_mpms = np.linspace(-8,8,10000)
+MFT2K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization2K, Jz)
+MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, Jz)
+MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, Jz)
 
 plt.figure()
 plt.plot(Mdata20K[0], Mdata20K[1], 'o', label = '20K MPMS data')
 plt.plot(Mdata6K[0], Mdata6K[1], 'o', label = '6K MPMS data')
 plt.plot(Mdata2K[0], Mdata2K[1], 'o', label = '2K MPMS data')
-plt.plot(MFTField, myMFTCaxis, '-', label = 'Raman fit B params')
-plt.plot(MFTField, allenMFTCaxis, '-',label = 'Neutron fit B params')
-plt.plot(magF, myCaxisMagnetization, '--', label = 'Raman fit Bparams, no MFT')
-plt.plot(magF, allenCaxisMagnetization, '--', label = 'Neutron fit Bparams, no MFT')
+plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='from Allens paper')
+plt.plot(MFTField_mpms, MFT2K, '-', label = 'MFT 2K')
+plt.plot(MFTField_mpms, MFT6K, '-', label = 'MFT 6K')
+plt.plot(MFTField_mpms, MFT20K, '-', label = 'MFT 20K')
+plt.plot(magF_mpms, magnetization2K, '--', label = '2K, no MFT')
+plt.plot(magF_mpms, magnetization6K, '--', label = '6K, no MFT')
+plt.plot(magF_mpms, magnetization20K, '--', label = '20K, no MFT')
 # plt.xlim(0,6)
 # plt.ylim(0,10)
 plt.legend()
 plt.title('C magnetization')
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
+plt.show()
 
 
 ###################################################################################
