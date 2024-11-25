@@ -26,7 +26,7 @@ gJ = cef.LandeGFactor('Er3+')
 
 
 Jperp = -0.9e-3 #meV
-Jz = -0.48e-3 #meV
+Jz = 0.48e-3 #meV
 
 JperpAllen = -0.2 # meV
 JzAllen = -2.4e-3 # meV
@@ -59,8 +59,9 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
-magF = np.linspace(0,10,10000)
+magF = np.linspace(0,10,1000)
 MFTField = np.linspace(0,8,10000)
+temperature = 2
 # magF = np.concatenate((np.linspace(0,1,100000), np.linspace(1,4.8,1000), np.linspace(4.8,5.8, 10000), np.linspace(5.8,12, 1000)))
 field = [[0,0,b] for b in magF]
 myCaxisMagnetization = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
@@ -84,7 +85,7 @@ def MolecularFieldTheory(H, Hth, Mth, lamb):
     return newM
 
 
-myMFTCaxis2K = MolecularFieldTheory(MFTField, magF, myCaxisMagnetization, Jz) # allens def of J is lamb unfortunately
+myMFTCaxis = MolecularFieldTheory(MFTField, magF, myCaxisMagnetization, Jz) # allens def of J is lamb unfortunately
 allenMFTCaxis = MolecularFieldTheory(MFTField, magF, allenCaxisMagnetization, JzAllen)
 
 # now we load the data
@@ -108,7 +109,7 @@ plt.figure()
 plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='data ($H \\parallel c$)')
 plt.plot(MFTField, myMFTCaxis, '-', label = 'Raman fit B params')
 plt.plot(MFTField, allenMFTCaxis, '-',label = 'Neutron fit B params')
-plt.plot(magF, myCaxisMagnetization2K, '--', label = 'Raman fit Bparams, no MFT')
+plt.plot(magF, myCaxisMagnetization, '--', label = 'Raman fit Bparams, no MFT')
 plt.plot(magF, allenCaxisMagnetization, '--', label = 'Neutron fit Bparams, no MFT')
 # plt.xlim(0,6)
 # plt.ylim(0,10)
@@ -126,6 +127,7 @@ fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2
 Mdata20K = np.genfromtxt(fname20K, delimiter=',',  unpack=True, skip_header=1)
 Mdata6K = np.genfromtxt(fname6K, delimiter=',',  unpack=True, skip_header=1)
 Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
+
 
 
 # let's make some temperature dependent data
@@ -152,9 +154,9 @@ MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, Jz)
 MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, Jz)
 
 plt.figure()
-plt.plot(Mdata20K[0], Mdata20K[1], 'o', label = '20K MPMS data')
-plt.plot(Mdata6K[0], Mdata6K[1], 'o', label = '6K MPMS data')
-plt.plot(Mdata2K[0], Mdata2K[1], 'o', label = '2K MPMS data')
+plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
+plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
+plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
 plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='from Allens paper')
 plt.plot(MFTField_mpms, MFT2K, '-', label = 'MFT 2K')
 plt.plot(MFTField_mpms, MFT6K, '-', label = 'MFT 6K')
@@ -177,7 +179,7 @@ plt.show()
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.03e-6# fixed)
+B60 =  3.06e-6# fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -197,6 +199,9 @@ plt.vlines(x = 5.4, ymin=0, ymax = 300)
 plt.xlabel('Field (T)')
 plt.ylabel('dM/dH')
 
+# this just really isn't fucking good enough
+# you can't just iteratively change variables by hand and seriously believe that
+# I do not believe this and will NOT put my name on a paper that does that
 
 ###################################################################################
 # okay, so now we plot some temp dependance
@@ -204,6 +209,7 @@ plt.ylabel('dM/dH')
 temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
+
 
 field = [[0,0,b] for b in magF]
 tempMag =[]
@@ -225,6 +231,9 @@ plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n tes
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
 
+tempmag = pd.DataFrame(data = np.array(tempMag).T, index = MFTField, columns = temps)
+tempmag.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/MvsH.csv')
+
 ###################################################################################
 # now temp dependent dmdh
 n = len(temps)
@@ -237,12 +246,14 @@ for mag in tempMag:
     temp = np.gradient(mag)
     dmdH.append(temp)
 
+plt.figure()
 for i in range(len(temps)): 
     plt.plot(MFTField, dmdH[i], label = str(temps[i])+'K', color = colors[i])
 
 plt.legend()
-plt.xlabel(' applied field')
+plt.xlabel('Field (T)')
 plt.ylabel('dm/dH')
+plt.yscale('log')
 # plt.vlines(x = 5.4, ymin=0, ymax = 12)
 # plt.xlim(0,7)
 # plt.ylim(-1,12)
@@ -251,3 +262,113 @@ plt.title('C axis dM/dH \n calculated from Raman fit B params')
 # I really think I should fit B60, J, because they aren't seperate..... I move B60 a different way depending on 
 # the sign of B60..................
 # this weekend I want to write a custom fit function to fit params simultaneously
+
+dmdh = pd.DataFrame(data = np.array(dmdH).T, index = MFTField, columns = temps)
+dmdh.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dmdh.csv')
+
+###################################################################################
+# lets do susceptibility
+def susceptibility(ionObj, fieldVal, temps):
+    chi = []
+    for temp in temps: 
+        f = np.linspace(fieldVal-0.1, 0.1+fieldVal, 100) 
+        field = [[0,0,b] for b in f]
+        mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
+        m = MolecularFieldTheory(f, f, mag[2], Jz)
+        m = np.array(m).T
+        x = np.gradient(m, f) 
+        # now we've gotta access the very low field value
+        valIdx = findIdx(field, [0,0,fieldVal])
+        chi.append(x[valIdx])
+    return chi
+def findIdx(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
+fieldVal = .1
+df = 0.001
+temps = np.concatenate((np.linspace(.001, 2, 100), np.linspace(2,20,100), np.linspace(20,300, 279)))
+mysus = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+# sus = ErObj.susceptibility(ion, temps, field, df)
+neutronSus = susceptibility(AllenErObj, fieldVal, temps)
+
+
+field = [0,0,.1]
+susPCF = MyErObj.susceptibility(ion, temps, field, df)
+susPCF = np.array(susPCF).T[2]
+len(susPCF)
+
+myinv = [-1/x for x in mysus]
+neutroninv = [-1/x for x in neutronSus]
+# sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
+susinvPCF = [-1/x for x in susPCF]
+plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
+plt.plot(temps, myinv, '--', label = 'Raman B params MFT')
+plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
+plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT')
+plt.title('calculated MFT susceptibility at 0.1T ')
+plt.xlabel('temperature (K)')
+plt.ylabel('1/chi')
+plt.legend()
+plt.xlim(0, 200)
+plt.ylim(0,10)
+
+# now save as csv so I can load into matlab 
+# this is so fucking stupid 
+
+mysus = pd.DataFrame(data = np.array(myinv).T, index = temps)
+mysus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/mysus.csv')
+
+neutronsus = pd.DataFrame(data = np.array(neutroninv).T, index = temps)
+neutronsus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/neutronsus.csv')
+
+
+###################################################################################
+# now i need to import all the fucking dmdh data because heave for fucking bid that be in an easy format
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 1.008] 
+magF = np.linspace(0,13, 10000)
+MFTField = np.linspace(0,12,10000)
+field = [[0,0,b] for b in magF]
+tempMag =[]
+
+for temperature in temps: 
+    magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+    temp = MolecularFieldTheory(MFTField, magF, -1*magMe[2], Jz)
+    tempMag.append(temp) # what the actual fuck is this naming holy shi
+dmdH = []
+for mag in tempMag: 
+    temp = np.gradient(mag)
+    dmdH.append(temp)
+
+
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/45mKdn035.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/100mKUp021.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/174mKDn020.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/249mKUp019.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/345mKDn018.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/422mKUp017.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/543mKDn016.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/658mKUp015.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/827mKDn013-14.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/1008mKdn033.txt']
+labels = ['25mK', '45mK', '100mK', '174mK', '249mK', '345mK', '422mK', '543mK', '658mK', '827mK', '1008mK']
+xArrs = []
+yArrs =[]
+for fname in fnames: 
+    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+    xArrs.append(temp[0])
+    yArrs.append(temp[1])
+
+n = len(labels)
+colors = plt.cm.cividis(np.linspace(0,1,n))
+
+plt.figure()
+i = 0
+for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdH ): 
+    y = y/max(y)
+    dm = dm/max(dm)
+    plt.plot(x,y+i*.15, label = label, color = color)
+    plt.plot(MFTField, dm +i*.15, '--', label = label, color = color)
+    i+=1
