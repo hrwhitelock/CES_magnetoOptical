@@ -10,6 +10,8 @@ import pandas as pd
 from numba import njit
 import lmfit
 
+plt.ion() 
+
 # define some constants
 temperature = 2 # in K
 
@@ -24,7 +26,7 @@ gJ = cef.LandeGFactor('Er3+')
 
 
 Jperp = -0.9e-3 #meV
-Jz = 0.48e-3 #meV
+Jz = -0.48e-3 #meV
 
 JperpAllen = -0.2 # meV
 JzAllen = -2.4e-3 # meV
@@ -57,13 +59,13 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
-magF = np.linspace(0,10,500)
-MFTField = np.linspace(0,8,1000)
+magF = np.linspace(0,10,10000)
+MFTField = np.linspace(0,8,10000)
 # magF = np.concatenate((np.linspace(0,1,100000), np.linspace(1,4.8,1000), np.linspace(4.8,5.8, 10000), np.linspace(5.8,12, 1000)))
 field = [[0,0,b] for b in magF]
-myCaxisMagnetization = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
-myCaxisMagnetization = myCaxisMagnetization[2]
-myCaxisMagnetization = [m*-1 for m in myCaxisMagnetization] # make the magnetization the correct sign
+myCaxisMagnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+myCaxisMagnetization2K = myCaxisMagnetization[2]
+myCaxisMagnetization2K = [m*-1 for m in myCaxisMagnetization] # make the magnetization the correct sign
 
 allenCaxisMagnetization = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
 allenCaxisMagnetization = allenCaxisMagnetization[2]
@@ -116,6 +118,53 @@ plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
 
 ###################################################################################
+# lets load the MPMS data
+fname20K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_20K.txt'
+fname6K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_6K.txt'
+fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_2K.txt'
+
+Mdata20K = np.genfromtxt(fname20K, delimiter=',',  unpack=True, skip_header=1)
+Mdata6K = np.genfromtxt(fname6K, delimiter=',',  unpack=True, skip_header=1)
+Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
+
+
+# let's make some temperature dependent data
+
+field = [[0,0,b] for b in magF]
+magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization2K = magnetization2K[2]
+magnetization2K = [m*-1 for m in magnetization2K] # make the magnetization the correct sign
+
+magnetization6K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization6K = magnetization6K[2]
+magnetization6K = [m*-1 for m in magnetization6K] # make the magnetization the correct sign
+
+magnetization20K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization20K = magnetization20K[2]
+magnetization20K = [m*-1 for m in magnetization20K] # make the magnetization the correct sign
+
+
+MFT2K = MolecularFieldTheory(MFTField, magF, magnetization2K, Jz)
+MFT6K = MolecularFieldTheory(MFTField, magF, magnetization6K, Jz)
+MFT20K = MolecularFieldTheory(MFTField, magF, magnetization20K, Jz)
+
+plt.figure()
+plt.plot(Mdata20K[0], Mdata20K[1], 'o', label = '20K MPMS data')
+plt.plot(Mdata6K[0], Mdata6K[1], 'o', label = '6K MPMS data')
+plt.plot(Mdata2K[0], Mdata2K[1], 'o', label = '2K MPMS data')
+plt.plot(MFTField, myMFTCaxis, '-', label = 'Raman fit B params')
+plt.plot(MFTField, allenMFTCaxis, '-',label = 'Neutron fit B params')
+plt.plot(magF, myCaxisMagnetization, '--', label = 'Raman fit Bparams, no MFT')
+plt.plot(magF, allenCaxisMagnetization, '--', label = 'Neutron fit Bparams, no MFT')
+# plt.xlim(0,6)
+# plt.ylim(0,10)
+plt.legend()
+plt.title('C magnetization')
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (uB/Er)')
+
+
+###################################################################################
 # Now let's nail down B60
 # init objects
 B20 = -0.03265325 # init = -0.03559)
@@ -145,7 +194,7 @@ plt.ylabel('dM/dH')
 ###################################################################################
 # okay, so now we plot some temp dependance
 
-temps = [0.025, 0.045,0.1]#, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 
@@ -178,7 +227,7 @@ i = 0
 # calculate gradient
 dmdH = []
 for mag in tempMag: 
-    temp = np.gradient(temp)
+    temp = np.gradient(mag)
     dmdH.append(temp)
 
 for i in range(len(temps)): 
@@ -187,9 +236,9 @@ for i in range(len(temps)):
 plt.legend()
 plt.xlabel(' applied field')
 plt.ylabel('dm/dH')
-plt.vlines(x = 5.4, ymin=0, ymax = 12)
+# plt.vlines(x = 5.4, ymin=0, ymax = 12)
 # plt.xlim(0,7)
-plt.ylim(-1,12)
+# plt.ylim(-1,12)
 plt.title('C axis dM/dH \n calculated from Raman fit B params')
 
 # I really think I should fit B60, J, because they aren't seperate..... I move B60 a different way depending on 
