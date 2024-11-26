@@ -286,6 +286,20 @@ def findIdx(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
+### grab C axis susceptibility
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_01T.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_1T.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_3T.txt']
+labels = ['0.1T', '1T', '3T']
+xArrs = []
+yArrs =[]
+
+
+for fname in fnames: 
+    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+    xArrs.append(temp[0])
+    yArrs.append(temp[1])
+
 fieldVal = .1
 df = 0.001
 temps = np.concatenate((np.linspace(.001, 2, 100), np.linspace(2,20,100), np.linspace(20,300, 279)))
@@ -303,6 +317,10 @@ myinv = [-1/x for x in mysus]
 neutroninv = [-1/x for x in neutronSus]
 # sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
 susinvPCF = [-1/x for x in susPCF]
+plt.figure()
+for i in range(len(labels)): 
+    plt.plot(xArrs[i], yArrs[i], label = labels[i])
+
 plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
 plt.plot(temps, myinv, '--', label = 'Raman B params MFT')
 plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
@@ -383,6 +401,9 @@ plt.title('dM/dH from SCM1 \n calculated dM/dH in dotted line')
 plt.ylabel('dM/dH (arb)')
 plt.xlabel('Field (T)')
 
+dmdh_calc = pd.DataFrame(data = np.array(dmdH).T, index = MFTField, columns = labels)
+dmdh_calc.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dmdh_calc.csv')
+
 ###################################################################################
 # okay, so now let's integrate
 # first we have to sort gross
@@ -440,13 +461,15 @@ for fname in fnames:
 
 # simulate 
 fields = [0.358, 1.16, 3.7, 5.4, 6.4]
+# fields = [[0,0,b] for b in fields]
 tempArr = np.linspace(0.01,1, 100 )
 susArr = []
 for f in fields: 
-    sus = MyErObj.susceptibility(MyErObj, f, temps)
+    sus = susceptibility(MyErObj, f, tempArr)
     susArr.append(sus)
 
-
+n = len(labels)
+colors = plt.cm.cool(np.linspace(0,0.8,n))
 plt.figure()
 for i in range(len(labels)): 
     # sort first
@@ -466,3 +489,83 @@ colors = plt.cm.cool(np.linspace(0,0.8,n))
 
 for i  in range(len(susArr)): 
     plt.plot(tempArr, susArr[i], label = str(fields[i]), color = colors[i] )
+
+
+
+
+
+###################################################################################
+# lets do ab plane chi(T)
+def susceptibilityAB(ionObj, fieldVal, temps):
+    chi = []
+    for temp in temps: 
+        f = np.linspace(fieldVal-0.1, 0.1+fieldVal, 100) 
+        field = [[0,b,0] for b in f]
+        mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
+        m = MolecularFieldTheory(f, f, mag[1], Jperp)
+        m = np.array(m).T
+        x = np.gradient(m, f) 
+        # now we've gotta access the very low field value
+        valIdx = findIdx(field, [0,fieldVal,0])
+        chi.append(x[valIdx])
+    return chi
+
+
+
+### grab AB plane susceptibility
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_AB_-6T.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_AB_01T.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/scm1_chi_T_AB_1T.txt']
+labels = ['-6T', '0.1', '1T']
+xArrs = []
+yArrs =[]
+
+
+for fname in fnames: 
+    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+    xArrs.append(temp[0])
+    yArrs.append(temp[1])
+
+
+fieldVal = .1
+df = 0.001
+temps = np.concatenate((np.linspace(.001, 2, 100), np.linspace(2,20,100), np.linspace(20,300, 279)))
+mysus = susceptibilityAB(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+# sus = ErObj.susceptibility(ion, temps, field, df)
+neutronSus = susceptibilityAB(AllenErObj, fieldVal, temps)
+
+
+field = [0,0.1,0]
+susPCF = MyErObj.susceptibility(ion, temps, field, df)
+susPCF = np.array(susPCF).T[1]
+len(susPCF)
+
+myinv = [-1/x for x in mysus]
+neutroninv = [-1/x for x in neutronSus]
+# sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
+susinvPCF = [-1/x for x in susPCF]
+plt.figure()
+for i in range(len(labels)): 
+    plt.plot(xArrs[i], yArrs[i], label = labels[i])
+
+
+# plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
+plt.plot(temps, myinv, '--', label = 'Raman B params MFT')
+plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
+plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT')
+plt.title('calculated MFT susceptibility at 0.1T \n AB plane')
+plt.xlabel('temperature (K)')
+plt.ylabel('1/chi')
+plt.legend()
+plt.xlim(0, 200)
+plt.ylim(0,10)
+
+# now save as csv so I can load into matlab 
+# this is so fucking stupid 
+
+mysus = pd.DataFrame(data = np.array(myinv).T, index = temps)
+mysus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/mysus.csv')
+
+neutronsus = pd.DataFrame(data = np.array(neutroninv).T, index = temps)
+neutronsus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/neutronsus.csv')
+

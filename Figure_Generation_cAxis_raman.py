@@ -131,18 +131,26 @@ arrC = arrC.T
 ampC = np.array(ampC)
 ampC = ampC.T
 
-plt.figure()
-plt.contourf(field, wavenums, ramanData,50, cmap = 'jet')
+cmap = mcolors.ListedColormap(['magenta'])
+
+fig, ax2 = plt.subplots()
+plt.contourf(field, wavenums, ramanData,100, cmap = 'jet')
 plt.xlim(0,14)
 plt.ylim(0,120)
 plt.clim(0, 1)
 plt.colorbar()
 plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
-for i in range(40):
+for i in range(len(arrC)):
     if i<16: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=1, linewidth= 1)
-    if i>=16: 
-        plt.plot(fieldArr, arrC[i], 'r--', alpha=0.3)
+        plt.plot(fieldArr, arrC[i], 'r', alpha=1, linewidth= .7)
+    if i>=16:  
+        alphas = ampC[i]
+        # Create a LineCollection
+        points = np.array([fieldArr, arrC[i]]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        lc = LineCollection(segments, cmap=cmap, alpha=alphas)
+        ax2.add_collection(lc)
+        ax2.autoscale()
 
 
 ##################################################################################################
@@ -150,7 +158,7 @@ for i in range(40):
 
 n = len(fields)
 colors = plt.cm.inferno(np.linspace(0,.8,n))
-
+cmap = mcolors.ListedColormap(['red'])
 fig,ax1 =  plt.subplots()
 i = 0
 for f in fields: 
@@ -163,11 +171,17 @@ for f in fields:
     i+=1
 plt.ylim(0,15)
 ax2 = ax1.twinx() 
-for i in range(40):
+for i in range(len(arrC)):
     if i<16: 
-        ax2.plot(arrC[i], fieldArr, 'r', alpha=1, linewidth= 1)
-    if i>=16: 
-        ax2.plot(arrC[i], fieldArr,'r--', alpha=0.3)
+        plt.plot(arrC[i], fieldArr, 'r', alpha=1, linewidth= .7)
+    if i>=16:  
+        alphas = ampC[i]
+        # Create a LineCollection
+        points = np.array([arrC[i], fieldArr]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        lc = LineCollection(segments, cmap=cmap, alpha=alphas)
+        ax2.add_collection(lc)
+        ax2.autoscale()
 # plt.legend(draggable = True)
 ax2.set_ylabel('Field [T]')
 plt.xlim(0,100)
