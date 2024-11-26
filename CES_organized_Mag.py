@@ -356,19 +356,55 @@ fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt',
 labels = ['25mK', '45mK', '100mK', '174mK', '249mK', '345mK', '422mK', '543mK', '658mK', '827mK', '1008mK']
 xArrs = []
 yArrs =[]
+
 for fname in fnames: 
     temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
     xArrs.append(temp[0])
     yArrs.append(temp[1])
 
 n = len(labels)
-colors = plt.cm.cividis(np.linspace(0,1,n))
+colors = plt.cm.inferno(np.linspace(0,1,n))
+
+sm = plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1))
+
 
 plt.figure()
+# cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1),ax=plt.gca()))
 i = 0
 for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdH ): 
     y = y/max(y)
+    dm = np.log(dm)
+    dm = dm+min(dm)*-1
     dm = dm/max(dm)
-    plt.plot(x,y+i*.15, label = label, color = color)
-    plt.plot(MFTField, dm +i*.15, '--', label = label, color = color)
+    plt.plot(x,y+i*.5, label = label, color = color)
+    plt.plot(MFTField, dm +i*.5, '--', label = label, color = color)
     i+=1
+plt.title('dM/dH from SCM1 \n calculated dM/dH in dotted line')
+plt.ylabel('dM/dH (arb)')
+plt.xlabel('Field (T)')
+
+###################################################################################
+# okay, so now let's integrate
+# first we have to sort gross
+
+integratedMag = []
+for x,y in zip(xArrs, yArrs): 
+    x = np.array(x)
+    y = np.array(y)
+    y = y/max(y)
+    inds = x.argsort()
+    x = x[inds[::1]]
+    y = y[inds[::1]]
+    temp = np.cumsum(y)
+    integratedMag.append(temp)
+
+n = len(labels)
+colors = plt.cm.inferno(np.linspace(0,0.8,n))
+
+plt.figure()
+for x,y,label, color in zip(xArrs, integratedMag, labels, colors): 
+    x = np.array(x)
+    inds = x.argsort()
+    x = x[inds[::1]]
+    y = y/max(y)
+    plt.plot(x, y, label = label, color = color)
