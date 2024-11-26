@@ -326,7 +326,7 @@ neutronsus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_d
 
 ###################################################################################
 # now i need to import all the fucking dmdh data because heave for fucking bid that be in an easy format
-temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 1.008] 
+temps = [0.025, 0.045,0.1, 0.174, .25, .35, .422, .543, .658, .827, 1.008] 
 magF = np.linspace(0,13, 10000)
 MFTField = np.linspace(0,12,10000)
 field = [[0,0,b] for b in magF]
@@ -363,7 +363,7 @@ for fname in fnames:
     yArrs.append(temp[1])
 
 n = len(labels)
-colors = plt.cm.inferno(np.linspace(0,1,n))
+colors = plt.cm.inferno(np.linspace(0,0.8,n))
 
 sm = plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1))
 
@@ -402,9 +402,67 @@ n = len(labels)
 colors = plt.cm.inferno(np.linspace(0,0.8,n))
 
 plt.figure()
+i = 0
 for x,y,label, color in zip(xArrs, integratedMag, labels, colors): 
     x = np.array(x)
     inds = x.argsort()
     x = x[inds[::1]]
     y = y/max(y)
-    plt.plot(x, y, label = label, color = color)
+    plt.plot(x, y+i*.5, label = label, color = color)
+    plt.plot(magF, tempMag[i]/max(tempMag[i])+i*.5, '--', label = label, color = color) 
+    i +=1
+
+plt.title('integrated chi(H) \n numerically integrated from SCM1 data \n calculated curve in dotted')
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (arb)')
+
+###################################################################################
+# now we load the low temp chi(T)
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0cool25.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0warm26.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0cool27.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0warm28.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0cool29.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0warm30.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt']
+labels = ['.358T', '.358T', '1.16T', '1.16T', '3.7T', '3.7T','5.4T', '6.4T', '6.4T']
+xArrs = []
+yArrs =[]
+
+
+for fname in fnames: 
+    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+    xArrs.append(temp[0])
+    yArrs.append(temp[1])
+
+
+# simulate 
+fields = [0.358, 1.16, 3.7, 5.4, 6.4]
+tempArr = np.linspace(0.01,1, 100 )
+susArr = []
+for f in fields: 
+    sus = MyErObj.susceptibility(MyErObj, f, temps)
+    susArr.append(sus)
+
+
+plt.figure()
+for i in range(len(labels)): 
+    # sort first
+    x = np.array(xArrs[i])
+    inds = x.argsort()
+    x = x[inds[::1]]
+    y = yArrs[i]
+    y = y[inds[::1]]
+    color = colors[i]
+    if i>0: 
+        if labels[i]== labels[i-1]: 
+            color = colors[i-1]
+    plt.plot(x, y/y[-1], label = labels[i], color = color)
+
+n = len(fields)
+colors = plt.cm.cool(np.linspace(0,0.8,n))
+
+for i  in range(len(susArr)): 
+    plt.plot(tempArr, susArr[i], label = str(fields[i]), color = colors[i] )
