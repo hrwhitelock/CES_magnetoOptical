@@ -118,6 +118,23 @@ plt.title('C magnetization')
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
 
+
+# Save data to HDF5
+with h5py.File('magnetization_data_calculation_and_allen_c_axis.h5', 'w') as f:
+    # Save the data arrays
+    f.create_dataset('magF', data=magF)
+    f.create_dataset('MFTField', data=MFTField)
+    f.create_dataset('temperature', data=temperature)
+    f.create_dataset('field', data=field)
+    f.create_dataset('myCaxisMagnetization', data=myCaxisMagnetization)
+    f.create_dataset('allenCaxisMagnetization', data=allenCaxisMagnetization)
+    f.create_dataset('myMFTCaxis', data=myMFTCaxis)
+    f.create_dataset('allenMFTCaxis', data=allenMFTCaxis)
+    f.create_dataset('CESMHdata', data=CESMHdata)
+    f.create_dataset('CESMTdata', data=CESMTdata)
+
+print("Data saved to 'magnetization_data_caluclation_and_allen_c_axis.h5'.")
+
 ###################################################################################
 # lets load the MPMS data
 fname20K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_20K.txt'
@@ -173,6 +190,23 @@ plt.ylabel('Magnetization (uB/Er)')
 plt.show()
 
 
+# Save all the data to an HDF5 file
+with h5py.File('magnetization_data_caluclation_mpms_data_c_axis.h5', 'w') as f:
+    f.create_dataset('magF_mpms', data=magF_mpms)
+    f.create_dataset('MFTField_mpms', data=MFTField_mpms)
+    f.create_dataset('magnetization2K', data=magnetization2K)
+    f.create_dataset('magnetization6K', data=magnetization6K)
+    f.create_dataset('magnetization20K', data=magnetization20K)
+    f.create_dataset('MFT2K', data=MFT2K)
+    f.create_dataset('MFT6K', data=MFT6K)
+    f.create_dataset('MFT20K', data=MFT20K)
+    f.create_dataset('Mdata2K', data=Mdata2K)
+    f.create_dataset('Mdata6K', data=Mdata6K)
+    f.create_dataset('Mdata20K', data=Mdata20K)
+    f.create_dataset('CESMHdata', data=CESMHdata)
+
+print("Data saved to 'magnetization_data.h5'.")
+
 ###################################################################################
 # Now let's nail down B60
 # init objects
@@ -219,6 +253,12 @@ for temperature in temps:
     temp = MolecularFieldTheory(MFTField, magF, -1*magMe[2], Jz)
     tempMag.append(temp) # what the actual fuck is this naming holy shit
 
+# Save data to an HDF5 file
+with h5py.File('M_vs_H_temperature_dependence.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('tempMag', data=np.array(tempMag))
+
 plt.figure()
 
 for i in range(0, len(tempMag)): 
@@ -231,8 +271,7 @@ plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n tes
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
 
-tempmag = pd.DataFrame(data = np.array(tempMag).T, index = MFTField, columns = temps)
-tempmag.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/MvsH.csv')
+
 
 ###################################################################################
 # now temp dependent dmdh
@@ -259,12 +298,10 @@ plt.yscale('log')
 # plt.ylim(-1,12)
 plt.title('C axis dM/dH \n calculated from Raman fit B params')
 
-# I really think I should fit B60, J, because they aren't seperate..... I move B60 a different way depending on 
-# the sign of B60..................
-# this weekend I want to write a custom fit function to fit params simultaneously
-
-dmdh = pd.DataFrame(data = np.array(dmdH).T, index = MFTField, columns = temps)
-dmdh.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dmdh.csv')
+with h5py.File('dMdH_temperature_dependence.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('dmdH', data=np.array(dmdH))
 
 ###################################################################################
 # lets do susceptibility
@@ -332,15 +369,6 @@ plt.legend()
 plt.xlim(0, 200)
 plt.ylim(0,10)
 
-# now save as csv so I can load into matlab 
-# this is so fucking stupid 
-
-mysus = pd.DataFrame(data = np.array(myinv).T, index = temps)
-mysus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/mysus.csv')
-
-neutronsus = pd.DataFrame(data = np.array(neutroninv).T, index = temps)
-neutronsus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/neutronsus.csv')
-
 
 ###################################################################################
 # now i need to import all the fucking dmdh data because heave for fucking bid that be in an easy format
@@ -401,8 +429,16 @@ plt.title('dM/dH from SCM1 \n calculated dM/dH in dotted line')
 plt.ylabel('dM/dH (arb)')
 plt.xlabel('Field (T)')
 
-dmdh_calc = pd.DataFrame(data = np.array(dmdH).T, index = MFTField, columns = labels)
-dmdh_calc.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dmdh_calc.csv')
+# Save data to HDF5
+with h5py.File('magnetization_analysis.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('magF', data=magF)
+    hdf.create_dataset('tempMag', data=np.array(tempMag))
+    hdf.create_dataset('dmdH', data=np.array(dmdH))
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
 
 ###################################################################################
 # okay, so now let's integrate
@@ -460,7 +496,7 @@ for fname in fnames:
 
 
 # simulate 
-fields = [0.358, 1.16, 3.7, 5.4, 6.4]
+fields = [0.3, 1, 4, 5.5, 6]
 # fields = [[0,0,b] for b in fields]
 tempArr = np.linspace(0.01,1, 100 )
 susArr = []
