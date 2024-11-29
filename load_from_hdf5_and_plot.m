@@ -253,18 +253,23 @@ labels = h5read('dMdH_temperature_dependence_withdata.h5', '/labels');
 magF = h5read('dMdH_temperature_dependence_withdata.h5', '/magF');
 tempMag = h5read('dMdH_temperature_dependence_withdata.h5', '/tempMag');
 
-
+integratedMag = {}; 
 % now we integrate yArrs
 for i = 1:length(yArrs)
-    x = xArrs(i); 
-    y = yArrs(i); 
-    % first sort x
+    x = xArrs{i}; 
+    y = yArrs{i};
+    y = y/max(y); 
     
+    % first sort x
+    [x, inds] = sort(x);
+    y = y(inds); 
+    temporary = cumsum(y); 
+    integratedMag{end+1} = temporary; 
 end
 
 % Plotting
 n = length(labels);
-colors = inferno(n); % Replace with a custom inferno colormap
+colors = jet(n);
 
 figure;
 hold on;
@@ -277,13 +282,70 @@ for i = 1:n
     intMag = integratedMag{i} / max(integratedMag{i}); % Normalize integratedMag
     
     % Plot data
-    plot(x, intMag + (i - 1) * 0.5, 'DisplayName', labels{i}, 'Color', colors(i, :));
-    plot(magF, tempMag{i} / max(tempMag{i}) + (i - 1) * 0.5, '--', 'Color', colors(i, :));
+    plot(x, intMag + i * 0.5, 'DisplayName', labels{i}, 'Color', colors(i, :));
+    plot(magF, tempMag(i) / max(tempMag(i)) + i * 0.5, '--', 'Color', colors(i, :));
 end
 
 % Add labels, title, and legend
 title('Integrated chi(H) \n Numerically Integrated from SCM1 Data \n Calculated Curve in Dotted');
 xlabel('Field (T)');
 ylabel('Magnetization (arb)');
+legend('show');
+hold off;
+
+%% low temp chi(H)
+% Load data from HDF5 file
+xArrs = h5read('susceptibility_low_temp.h5', '/xArrs');
+yArrs = h5read('susceptibility_low_temp.h5', '/yArrs');
+labels = h5read('susceptibility_low_temp.h5', '/labels');
+fields = h5read('susceptibility_low_temp.h5', '/fields');
+tempArr = h5read('susceptibility_low_temp.h5', '/tempArr');
+susArr = h5read('susceptibility_low_temp.h5', '/susArr');
+
+% Set up colormap
+nLabels = length(labels);
+dataColors = cool(nLabels); % Colormap for experimental data
+nFields = length(fields);
+calcColors = cool(nFields); % Colormap for calculated data
+
+% Create figure
+figure;
+hold on;
+
+% Plot experimental data
+yyaxis left;
+for i = 1:nLabels
+    x = xArrs{i};
+    y = yArrs{i};
+    
+    % Sort data
+    [x, sortIdx] = sort(x);
+    y = y(sortIdx);
+    
+    % Normalize y data
+    y = y / y(end);
+    
+    % Check for repeated labels to use consistent colors
+    if i > 1 && strcmp(labels{i}, labels{i-1})
+        plotColor = dataColors(i-1, :);
+    else
+        plotColor = dataColors(i, :);
+    end
+    
+    plot(x, y, 'o', 'DisplayName', labels{i}, 'Color', plotColor);
+end
+ylabel('Data Chi (arbitrarily scaled)');
+xlabel('Field (T)');
+
+% Plot calculated susceptibility
+yyaxis right;
+for i = 1:nFields
+    sus = susArr(:, i);
+    plot(tempArr, sus, '--', 'DisplayName', sprintf('%.1fT', fields(i)), 'Color', calcColors(i, :));
+end
+ylabel('Calculated Chi');
+
+% Add title and legend
+title('Field-Dependent Susceptibility Analysis');
 legend('show');
 hold off;

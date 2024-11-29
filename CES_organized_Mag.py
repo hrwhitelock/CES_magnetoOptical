@@ -544,6 +544,25 @@ for fname in fnames:
     yArrs.append(temp[1])
 
 
+def susceptibility(ionObj, fieldVal, temps):
+    chi = []
+    for temp in temps: 
+        f = np.arange(fieldVal-1*fieldVal, 1*fieldVal+fieldVal, .2*fieldVal) 
+        field = [[0,0,b] for b in f]
+        mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
+        m = MolecularFieldTheory(f, f, -mag[2], Jz)
+        m = np.array(m).T
+        x = np.gradient(m, f) 
+        # now we've gotta access the very low field value
+        valIdx = findIdx(field, [0,0,fieldVal])
+        chi.append(x[valIdx])
+    return chi
+def findIdx(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx
+
+
 # simulate 
 fields = [0.3, 1, 4, 5.5, 6]
 # fields = [[0,0,b] for b in fields]
@@ -555,7 +574,7 @@ for f in fields:
 
 n = len(labels)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
-plt.figure()
+fig, ax1 = plt.subplots()
 for i in range(len(labels)): 
     # sort first
     x = np.array(xArrs[i])
@@ -567,17 +586,24 @@ for i in range(len(labels)):
     if i>0: 
         if labels[i]== labels[i-1]: 
             color = colors[i-1]
-    plt.plot(x, y/y[-1], label = labels[i], color = color)
+    ax1.plot(x, y/y[-1], label = labels[i], color = color)
+
+ax1.set_ylabel('data Chi (arbitrarily scaled)')
+ax1.set_xlabel('Field (T)')
+
+ax2 = ax1.twinx()
 
 n = len(fields)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
 
-for i  in range(len(susArr)): 
-    plt.plot(tempArr, susArr[i], label = str(fields[i]), color = colors[i] )
 
+for i  in range(len(susArr)): 
+    sus = susArr[i]
+    ax2.plot(tempArr, sus, '--',  label = str(fields[i]), color = colors[i] )
+ax2.set_ylabel('calculated Chi')
 
 # Save data to HDF5
-with h5py.File('susceptibility_analysis.h5', 'w') as hdf:
+with h5py.File('susceptibility_low_temp.h5', 'w') as hdf:
     hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
     hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
     hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
