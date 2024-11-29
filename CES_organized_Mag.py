@@ -308,7 +308,7 @@ with h5py.File('dMdH_temperature_dependence.h5', 'w') as hdf:
 def susceptibility(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
-        f = np.linspace(fieldVal-0.1, 0.1+fieldVal, 100) 
+        f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
         field = [[0,0,b] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
         m = MolecularFieldTheory(f, f, mag[2], Jz)
@@ -339,10 +339,23 @@ for fname in fnames:
 
 fieldVal = .1
 df = 0.001
-temps = np.concatenate((np.linspace(.001, 2, 100), np.linspace(2,20,100), np.linspace(20,300, 279)))
-mysus = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+temps = np.concatenate((np.linspace(.01, 2, 50), np.linspace(2,20,50), np.linspace(20,300, 279)))
+mysus01T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
 # sus = ErObj.susceptibility(ion, temps, field, df)
-neutronSus = susceptibility(AllenErObj, fieldVal, temps)
+neutronSus01T = susceptibility(AllenErObj, fieldVal, temps)
+
+fieldVal = 1
+df = 0.001
+mysus1T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+# sus = ErObj.susceptibility(ion, temps, field, df)
+neutronSus1T = susceptibility(AllenErObj, fieldVal, temps)
+
+fieldVal = 3
+df = 0.001
+
+mysus3T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+# sus = ErObj.susceptibility(ion, temps, field, df)
+neutronSus3T = susceptibility(AllenErObj, fieldVal, temps)
 
 
 field = [0,0,.1]
@@ -350,18 +363,31 @@ susPCF = MyErObj.susceptibility(ion, temps, field, df)
 susPCF = np.array(susPCF).T[2]
 len(susPCF)
 
-myinv = [-1/x for x in mysus]
-neutroninv = [-1/x for x in neutronSus]
-# sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
+myinv01T = [-1/x for x in mysus01T]
+neutroninv01T = [-1/x for x in neutronSus01T]
+myinv1T = [-1/x for x in mysus1T]
+neutroninv1T = [-1/x for x in neutronSus1T]
+myinv3T = [-1/x for x in mysus3T]
+neutroninv3T = [-1/x for x in neutronSus3T]
+
+
+
 susinvPCF = [-1/x for x in susPCF]
 plt.figure()
 for i in range(len(labels)): 
-    plt.plot(xArrs[i], yArrs[i], label = labels[i])
+    plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
 plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
-plt.plot(temps, myinv, '--', label = 'Raman B params MFT')
-plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
-plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT')
+plt.plot(temps, myinv01T, '--', label = 'Raman B params MFT 0.1T')
+plt.plot(temps, neutroninv01T, '-.', label = 'neutrons B params MFT 0.1T' )
+
+plt.plot(temps, myinv1T, '--', label = 'Raman B params MFT')
+plt.plot(temps, neutroninv1T, '-.', label = 'neutrons B params MFT' )
+
+plt.plot(temps, myinv3T, '--', label = 'Raman B params MFT')
+plt.plot(temps, neutroninv3T, '-.', label = 'neutrons B params MFT' )
+
+plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT, 0.1T')
 plt.title('calculated MFT susceptibility at 0.1T ')
 plt.xlabel('temperature (K)')
 plt.ylabel('1/chi')
@@ -369,6 +395,19 @@ plt.legend()
 plt.xlim(0, 200)
 plt.ylim(0,10)
 
+# Save data to HDF5
+with h5py.File('susceptibility_wide_temp_range.h5', 'w') as hdf:
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('myinv01T', data=myinv01T)
+    hdf.create_dataset('neutroninv01T', data=neutroninv01T)
+    hdf.create_dataset('myinv1T', data=myinv1T)
+    hdf.create_dataset('neutroninv1T', data=neutroninv1T)
+    hdf.create_dataset('myinv3T', data=myinv3T)
+    hdf.create_dataset('neutroninv3T', data=neutroninv3T)
+    hdf.create_dataset('susinvPCF', data=susinvPCF)
 
 ###################################################################################
 # now i need to import all the fucking dmdh data because heave for fucking bid that be in an easy format
@@ -473,6 +512,16 @@ plt.title('integrated chi(H) \n numerically integrated from SCM1 data \n calcula
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (arb)')
 
+with h5py.File('integrated_magnetization.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('magF', data=magF)
+    hdf.create_dataset('tempMag', data=np.array(tempMag))
+    hdf.create_dataset('integratedMag', data=integratedMag)
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
+
 ###################################################################################
 # now we load the low temp chi(T)
 fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt', 
@@ -498,7 +547,7 @@ for fname in fnames:
 # simulate 
 fields = [0.3, 1, 4, 5.5, 6]
 # fields = [[0,0,b] for b in fields]
-tempArr = np.linspace(0.01,1, 100 )
+tempArr = np.linspace(0.01,2, 100 )
 susArr = []
 for f in fields: 
     sus = susceptibility(MyErObj, f, tempArr)
@@ -526,6 +575,15 @@ colors = plt.cm.cool(np.linspace(0,0.8,n))
 for i  in range(len(susArr)): 
     plt.plot(tempArr, susArr[i], label = str(fields[i]), color = colors[i] )
 
+
+# Save data to HDF5
+with h5py.File('susceptibility_analysis.h5', 'w') as hdf:
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
+    hdf.create_dataset('fields', data=fields)
+    hdf.create_dataset('tempArr', data=tempArr)
+    hdf.create_dataset('susArr', data=np.array(susArr))
 
 
 
