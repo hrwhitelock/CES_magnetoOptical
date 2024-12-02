@@ -181,7 +181,7 @@ plt.plot(MFTField_mpms, MFT20K, '-', label = 'MFT 20K')
 plt.plot(magF_mpms, magnetization2K, '--', label = '2K, no MFT')
 plt.plot(magF_mpms, magnetization6K, '--', label = '6K, no MFT')
 plt.plot(magF_mpms, magnetization20K, '--', label = '20K, no MFT')
-# plt.xlim(0,6)
+plt.xlim(0,8)
 # plt.ylim(0,10)
 plt.legend()
 plt.title('C magnetization')
@@ -701,4 +701,74 @@ with h5py.File('susceptibility_AB_plane.h5', 'w') as hdf:
     hdf.create_dataset('neutroninv', data=neutroninv)
     hdf.create_dataset('susinvPCF', data=susinvPCF)
 
+
+###################################################################################
+# make AB plane magnetization
+fname20K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParAB_MvsH_20K.txt'
+fname6K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParAB_MvsH_6K.txt'
+fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParAB_MvsH_2K.txt'
+
+Mdata20K = np.genfromtxt(fname20K, delimiter=',',  unpack=True, skip_header=1)
+Mdata6K = np.genfromtxt(fname6K, delimiter=',',  unpack=True, skip_header=1)
+Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
+
+
+
+# let's make some temperature dependent data
+magF_mpms = np.linspace(-8,8,1000)
+field = [[0,b,0] for b in magF_mpms]
+temperature = 2
+magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization2K = magnetization2K[1]
+magnetization2K = [m*-1 for m in magnetization2K] # make the magnetization the correct sign
+
+temperature = 6
+magnetization6K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization6K = magnetization6K[1]
+magnetization6K = [m*-1 for m in magnetization6K] # make the magnetization the correct sign
+
+temperature = 20
+magnetization20K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization20K = magnetization20K[1]
+magnetization20K = [m*-1 for m in magnetization20K] # make the magnetization the correct sign
+
+MFTField_mpms = np.linspace(-8,8,10000)
+MFT2K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization2K, Jperp)
+MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, Jperp)
+MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, Jperp)
+
+plt.figure()
+plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
+plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
+plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
+plt.plot(CESMHdata[0]/1e4,CESMHdata[1],'b.', label='from Allens paper')
+plt.plot(MFTField_mpms, MFT2K, '-', label = 'MFT 2K')
+plt.plot(MFTField_mpms, MFT6K, '-', label = 'MFT 6K')
+plt.plot(MFTField_mpms, MFT20K, '-', label = 'MFT 20K')
+plt.plot(magF_mpms, magnetization2K, '--', label = '2K, no MFT')
+plt.plot(magF_mpms, magnetization6K, '--', label = '6K, no MFT')
+plt.plot(magF_mpms, magnetization20K, '--', label = '20K, no MFT')
+plt.xlim(0,8)
+# plt.ylim(0,10)
+plt.legend()
+plt.title('AB plane magnetization')
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (uB/Er)')
+plt.show()
+
+
+# Save all the data to an HDF5 file
+with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f:
+    f.create_dataset('magF_mpms', data=magF_mpms)
+    f.create_dataset('MFTField_mpms', data=MFTField_mpms)
+    f.create_dataset('magnetization2K', data=magnetization2K)
+    f.create_dataset('magnetization6K', data=magnetization6K)
+    f.create_dataset('magnetization20K', data=magnetization20K)
+    f.create_dataset('MFT2K', data=MFT2K)
+    f.create_dataset('MFT6K', data=MFT6K)
+    f.create_dataset('MFT20K', data=MFT20K)
+    f.create_dataset('Mdata2K', data=Mdata2K)
+    f.create_dataset('Mdata6K', data=Mdata6K)
+    f.create_dataset('Mdata20K', data=Mdata20K)
+    f.create_dataset('CESMHdata', data=CESMHdata)
 
