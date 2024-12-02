@@ -195,6 +195,47 @@ xlabel('Field (T)');
 legend show;
 hold off;
 
+%% now plot dmdh with no offset
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dMdH_temperature_dependence_withdata.h5';
+temps = h5read(fname, '/temps');
+MFTField = h5read(fname, '/MFTField');
+dmdH = h5read(fname, '/dmdH');
+xArrs = h5read(fname, '/xArrs');
+yArrs = h5read(fname, '/yArrs');
+labels = h5read(fname, '/labels');
+% labels = cellstr(char(labels')); % Convert labels to cell array of strings
+
+% Plot settings
+n = length(labels);
+colors = jet(n); % wanted inferno, can't find it :(
+
+figure;
+hold on;
+
+for i = 1:n
+    % Normalize yArrs and dmdH for plotting
+    y = yArrs{i} / max(yArrs{i});
+    dm = dmdH(:, i);
+    dm = dm + abs(min(dm));
+    dm = dm / max(dm);
+    
+    % Offset for better visualization
+    offset = (i - 1) * 0.5;
+    
+    % Plot experimental data
+    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    
+    % Plot calculated data
+    plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
+end
+
+title('dM/dH from SCM1 \n calculated dM/dH in dotted line');
+ylabel('dM/dH (arb)');
+xlabel('Field (T)');
+legend show;
+hold off;
+
+
 %% susceptibility
 
 % Load HDF5 data

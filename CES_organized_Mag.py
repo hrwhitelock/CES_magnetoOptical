@@ -37,7 +37,7 @@ q= 6
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.03e-6# fixed)
+B60 =  3.079e-6# fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -213,7 +213,7 @@ print("Data saved to 'magnetization_data.h5'.")
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.06e-6# fixed)
+B60 =  3.079e-6# fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -406,8 +406,8 @@ with h5py.File('susceptibility_wide_temp_range.h5', 'w') as hdf:
     hdf.create_dataset('susinvPCF', data=susinvPCF)
 
 ###################################################################################
-# now i need to import all the fucking dmdh data because heave for fucking bid that be in an easy format
-temps = [0.025, 0.045,0.1, 0.174, .25, .35, .422, .543, .658, .827, 1.008] 
+# now i need to import all the fucking dmdh data 
+temps = [0.025, 0.1, 0.174, .25, .35, .422, .543, .658, .827, 1.008] 
 magF = np.linspace(0,13, 10000)
 MFTField = np.linspace(0,12,10000)
 field = [[0,0,b] for b in magF]
@@ -423,8 +423,7 @@ for mag in tempMag:
     dmdH.append(temp)
 
 
-fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/45mKdn035.txt', 
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt', # '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/45mKdn035.txt',
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/100mKUp021.txt',
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/174mKDn020.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/249mKUp019.txt', 
@@ -434,7 +433,7 @@ fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt',
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/658mKUp015.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/827mKDn013-14.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/1008mKdn033.txt']
-labels = ['25mK', '45mK', '100mK', '174mK', '249mK', '345mK', '422mK', '543mK', '658mK', '827mK', '1008mK']
+labels = ['25mK', '100mK', '174mK', '249mK', '345mK', '422mK', '543mK', '658mK', '827mK', '1008mK']
 xArrs = []
 yArrs =[]
 
@@ -453,12 +452,15 @@ plt.figure()
 # cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1),ax=plt.gca()))
 i = 0
 for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdH ): 
+    y = np.log(y)
+    y = y + min(y)*-1
     y = y/max(y)
     dm = np.log(dm)
     dm = dm+min(dm)*-1
     dm = dm/max(dm)
-    plt.plot(x,y+i*.5, label = label, color = color)
-    plt.plot(MFTField, dm +i*.5, '--', label = label, color = color)
+    plt.plot(x,y+i*.4, label = label, color = color)
+    plt.annotate(labels[i], xy = (11, i*.4 +.1), fontsize = 9)
+    plt.plot(MFTField, dm +i*.4, '--', label = label, color = color)
     i+=1
 plt.title('dM/dH from SCM1 \n calculated dM/dH in dotted line')
 plt.ylabel('dM/dH (arb)')
@@ -483,7 +485,7 @@ integratedMag = []
 for x,y in zip(xArrs, yArrs): 
     x = np.array(x)
     y = np.array(y)
-    y = y/max(y)
+    y = y/y[len(y)-100] # this is kinda bad, but it's so arbitrary i don't care
     inds = x.argsort()
     x = x[inds[::1]]
     y = y[inds[::1]]
@@ -500,8 +502,9 @@ for x,y,label, color in zip(xArrs, integratedMag, labels, colors):
     inds = x.argsort()
     x = x[inds[::1]]
     y = y/max(y)
-    plt.plot(x, y+i*.5, label = label, color = color)
-    plt.plot(magF, tempMag[i]/max(tempMag[i])+i*.5, '--', label = label, color = color) 
+    plt.plot(x, y+i*.4, label = label, color = color)
+    plt.annotate(labels[i], xy = (11, i*.4 +1.05), fontsize = 9)
+    plt.plot(magF, tempMag[i]/max(tempMag[i])+i*.4, '--', label = label, color = color) 
     i +=1
 
 plt.title('integrated chi(H) \n numerically integrated from SCM1 data \n calculated curve in dotted')
@@ -767,4 +770,3 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
     f.create_dataset('Mdata6K', data=Mdata6K)
     f.create_dataset('Mdata20K', data=Mdata20K)
     f.create_dataset('CESMHdata', data=CESMHdata)
-

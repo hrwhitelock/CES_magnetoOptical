@@ -118,7 +118,7 @@ fieldArr = np.linspace(0,20, 100)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
