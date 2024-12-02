@@ -55,21 +55,21 @@ xlabel('Field (T)');
 ylabel('Magnetization (uB/Er)');
 
 %% make mpms magnetization fig
-info = h5info('magnetization_data_caluclation_mpms_data_c_axis.h5');
+info = h5info('magnetization_data_calculation_mpms_data_c_axis.h5');
 
 % Load datasets
-magF_mpms = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magF_mpms');
-MFTField_mpms = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFTField_mpms');
-magnetization2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization2K');
-magnetization6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization6K');
-magnetization20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization20K');
-MFT2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT2K');
-MFT6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT6K');
-MFT20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT20K');
-Mdata2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata2K');
-Mdata6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata6K');
-Mdata20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata20K');
-CESMHdata = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/CESMHdata');
+magF_mpms = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magF_mpms');
+MFTField_mpms = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFTField_mpms');
+magnetization2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization2K');
+magnetization6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization6K');
+magnetization20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization20K');
+MFT2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT2K');
+MFT6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT6K');
+MFT20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT20K');
+Mdata2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata2K');
+Mdata6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata6K');
+Mdata20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata20K');
+CESMHdata = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/CESMHdata');
 
 % Plot data
 figure;
@@ -387,4 +387,47 @@ ylabel('1/Chi');
 legend('show');
 xlim([0, 200]);
 ylim([0, 10]);
+hold off;
+
+%% get mpms ab plane magnetization
+% Load data from HDF5 file
+magF_mpms = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magF_mpms');
+MFTField_mpms = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFTField_mpms');
+magnetization2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization2K');
+magnetization6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization6K');
+magnetization20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization20K');
+MFT2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT2K');
+MFT6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT6K');
+MFT20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT20K');
+Mdata2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata2K');
+Mdata6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata6K');
+Mdata20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata20K');
+CESMHdata = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/CESMHdata');
+
+% Plot the data
+figure;
+hold on;
+
+% MPMS data
+plot(Mdata20K(:, 1), Mdata20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+plot(Mdata6K(:, 1), Mdata6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+plot(Mdata2K(:, 1), Mdata2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+
+% Allen's paper data
+plot(CESMHdata(:, 1) / 1e4, CESMHdata(:, 2), 'b.', 'DisplayName', 'From Allen''s paper');
+
+% MFT and calculated magnetization
+plot(MFTField_mpms, MFT2K, '-', 'DisplayName', 'MFT 2K');
+plot(MFTField_mpms, MFT6K, '-', 'DisplayName', 'MFT 6K');
+plot(MFTField_mpms, MFT20K, '-', 'DisplayName', 'MFT 20K');
+plot(magF_mpms, magnetization2K, '--', 'DisplayName', '2K, no MFT');
+plot(magF_mpms, magnetization6K, '--', 'DisplayName', '6K, no MFT');
+plot(magF_mpms, magnetization20K, '--', 'DisplayName', '20K, no MFT');
+
+% Customize the plot
+xlim([0, 8]);
+title('AB plane magnetization');
+xlabel('Field (T)');
+ylabel('Magnetization (\mu_B/Er)');
+legend show;
 hold off;

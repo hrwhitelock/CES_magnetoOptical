@@ -233,10 +233,6 @@ plt.vlines(x = 5.4, ymin=0, ymax = 300)
 plt.xlabel('Field (T)')
 plt.ylabel('dM/dH')
 
-# this just really isn't fucking good enough
-# you can't just iteratively change variables by hand and seriously believe that
-# I do not believe this and will NOT put my name on a paper that does that
-
 ###################################################################################
 # okay, so now we plot some temp dependance
 
