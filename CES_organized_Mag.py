@@ -619,7 +619,7 @@ with h5py.File('susceptibility_low_temp.h5', 'w') as hdf:
 def susceptibilityAB(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
-        f = np.linspace(fieldVal-0.1, 0.1+fieldVal, 100) 
+        f = np.linspace(fieldVal-0.5, 0.5+fieldVal, 100) 
         field = [[0,b,0] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
         m = MolecularFieldTheory(f, f, mag[1], Jperp)
@@ -654,6 +654,11 @@ mysus = susceptibilityAB(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, 
 # sus = ErObj.susceptibility(ion, temps, field, df)
 neutronSus = susceptibilityAB(AllenErObj, fieldVal, temps)
 
+fieldVal = 1
+mysus1T = susceptibilityAB(MyErObj, fieldVal, temps)
+
+fieldVal = -6
+mysus6T = susceptibilityAB(MyErObj, fieldVal, temps)
 
 field = [0,0.1,0]
 susPCF = MyErObj.susceptibility(ion, temps, field, df)
@@ -662,15 +667,19 @@ len(susPCF)
 
 myinv = [-1/x for x in mysus]
 neutroninv = [-1/x for x in neutronSus]
+myinv1T = [-1/x for x in mysus1T]
+myinv6T = [-1/x for x in mysus6T]
 # sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
 susinvPCF = [-1/x for x in susPCF]
 plt.figure()
 for i in range(len(labels)): 
-    plt.plot(xArrs[i], yArrs[i], label = labels[i])
+    plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
 
 # plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
-plt.plot(temps, myinv, '--', label = 'Raman B params MFT')
+plt.plot(temps, myinv, '--', label = 'Raman B params MFT, 0.1T')
+plt.plot(temps, myinv1T, '--', label = 'Raman B params MFT, 1T')
+plt.plot(temps, myinv6T, '--', label = 'Raman B params MFT, -6T')
 plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
 plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT')
 plt.title('calculated MFT susceptibility at 0.1T \n AB plane')
@@ -680,12 +689,16 @@ plt.legend()
 plt.xlim(0, 200)
 plt.ylim(0,10)
 
-# now save as csv so I can load into matlab 
-# this is so fucking stupid 
+# Save data to HDF5
+with h5py.File('susceptibility_AB_plane.h5', 'w') as hdf:
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('myinv01T', data=myinv)
+    hdf.create_dataset('myinv1T', data=myinv1T)
+    hdf.create_dataset('myinv6T', data=myinv6T)
+    hdf.create_dataset('neutroninv', data=neutroninv)
+    hdf.create_dataset('susinvPCF', data=susinvPCF)
 
-mysus = pd.DataFrame(data = np.array(myinv).T, index = temps)
-mysus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/mysus.csv')
-
-neutronsus = pd.DataFrame(data = np.array(neutroninv).T, index = temps)
-neutronsus.to_csv('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/neutronsus.csv')
 

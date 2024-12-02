@@ -368,15 +368,14 @@ hold on;
 
 % Plot experimental data
 for i = 1:length(labels)
-    x = xArrs{i};
-    y = yArrs{i};
-    plot(x, y.*1.35, 'DisplayName', labels{i});
+    x = xArrs(:,i);
+    y = yArrs(:,i);
+    plot(x, y, 'DisplayName', labels{i});
 end
 
 % Plot calculated susceptibility
 plot(temps, myinv01T, '--', 'DisplayName', 'Raman B params MFT, 0.1T');
-plot(temps, myinv1T, '--', 'DisplayName', 'Raman B params MFT, 1T');
-plot(temps, myinv6T, '--', 'DisplayName', 'Raman B params MFT, 6T');
+
 plot(temps, neutroninv, '-.', 'DisplayName', 'neutrons B params MFT');
 plot(temps, susinvPCF, '--', 'DisplayName', 'Raman B params no MFT');
 
