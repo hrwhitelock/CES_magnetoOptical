@@ -63,7 +63,7 @@ fieldArr = np.linspace(0,20, 100)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -144,7 +144,7 @@ plt.ylim(0,17.5)
 B20 =  -0.03559
 B40 =  -0.0003849 
 B43 =  -0.01393
-B60 =   3.054e-06
+B60 =   3.154e-06
 B63 =  -4.695e-06
 B66 =   3.3815e-05
 
@@ -178,7 +178,7 @@ for i in range(40):
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -342,3 +342,44 @@ ax.zaxis.set_major_formatter('{x:.02f}')
 fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
+
+
+########################################################################################################################
+# make the same data vs calculation plot
+field = [float(b) for b in dataC.columns.values]
+wavenums = [float(i) for i in dataC.index.values]
+waveArr= np.linspace(0,120, 480)
+fieldArr = np.linspace(0,18, 100)
+fig = plt.figure()
+gs = fig.add_gridspec(1,2, hspace=0, wspace=0)
+axs = gs.subplots(sharex=True, sharey=True)
+plt1 = axs[0].contourf(field, wavenums, dataC,100, cmap='jet')
+plt1.set_clim(vmin = 0,vmax = 1)
+axs[0].set_title('IR Data H||c')
+plt2 = axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'Reds')
+axs[1].set_title('Simulated Data H||c')
+axs[1].set_xlabel('Field (T)')
+axs[0].set_ylabel('Energy (cm$^{-1}$)')
+axs[0].set_xlabel('Field (T)')
+
+# Hide x labels and tick labels for all but bottom plot.
+for ax in axs:
+    ax.label_outer()
+plt.xlim(0,14)
+plt.ylim(0,120)
+
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+fig.colorbar(plt2, cax=cbar_ax)
+
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+ # ookay, let's make some line plots for fig 1
+ # panel 1, hline at evals
+ # panel 2, ab plane
+ # panel 3, c axis
+
+ def 

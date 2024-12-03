@@ -214,13 +214,9 @@ hold on;
 
 for i = 1:n
     % Normalize yArrs and dmdH for plotting
-    y = yArrs{i} / max(yArrs{i});
-    dm = dmdH(:, i);
-    dm = dm + abs(min(dm));
+    y = yArrs{i} / max(yArrs{i}); %normalized data dmdh
+    dm = dmdH(:, i); % calcluated dmdh
     dm = dm / max(dm);
-    
-    % Offset for better visualization
-    offset = (i - 1) * 0.5;
     
     % Plot experimental data
     plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));

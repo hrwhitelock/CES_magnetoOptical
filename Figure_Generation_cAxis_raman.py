@@ -44,9 +44,9 @@ ramanData = ramanData-ramanData.min(axis=None)
 # normalize 
 ramanData = ramanData/ramanData.max(axis=None)
 
-zfsub = ramanData
-for col in ramanData.columns: 
-    zfsub[col] = ramanData[col]-ramanData['0.001']
+# zfsub = ramanData
+# for col in ramanData.columns: 
+#     zfsub[col] = ramanData[col]-ramanData['0.001']
 
 fields = ['0.001','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'] # just want to plot every tesla
 
@@ -195,7 +195,7 @@ plt.ylim(0,15)
 B20 =  -0.03559
 B40 =  -0.0003849 
 B43 =  -0.01393
-B60 =   3.054e-06
+B60 =   3.154e-06
 B63 =  -4.695e-06
 B66 =   3.3815e-05
 
@@ -229,12 +229,12 @@ for i in range(40):
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
 waveArr= np.linspace(0,120, 480)
-fieldArr = np.linspace(0,14, 100)
+fieldArr = np.linspace(0,18, 100)
  # field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,width, phononCen, phononAmp, phononWid, amp9, amp10)
 amp1 = 0.1
 amp2 = 0.3
@@ -260,7 +260,7 @@ arrC = np.array(arrC)
 
 
 plt.figure()
-plt.contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
+plt.contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'Reds')
 # plt.xlim(0,17.5)
 # plt.ylim(20,100)
 # plt.clim(.1,2.5)
@@ -275,7 +275,7 @@ field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
 
 plt.figure()
-plt.contourf(field, wavenums, ramanData,100, cmap='jet')
+plt.contourf(field, wavenums, ramanData,100, cmap='Reds')
 plt.xlim(0,14)
 plt.ylim(0,120)
 # plt.clim(0, 1)
@@ -284,15 +284,19 @@ plt.title('CsErSe2 H||c raman data')
 
 ############################################################
 # lets put both on the same plot for easy compare
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+waveArr= np.linspace(0,120, 480)
+fieldArr = np.linspace(0,18, 100)
 fig = plt.figure()
 gs = fig.add_gridspec(1,2, hspace=0, wspace=0)
 axs = gs.subplots(sharex=True, sharey=True)
-plt1 = axs[0].contourf(field, wavenums, ramanData,100, cmap='jet')
-axs[0].set_title('Raman Data')
-plt2 = axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'jet')
-axs[1].set_title('Simulated Data')
+plt1 = axs[0].contourf(field, wavenums, ramanData,100, cmap='viridis')
+axs[0].set_title('Raman Data H||c')
+plt2 = axs[1].contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'Reds')
+axs[1].set_title('Simulated Data H||c')
 axs[1].set_xlabel('Field (T)')
-axs[0].set_ylabel('Energy (cm$^{-1}$')
+axs[0].set_ylabel('Energy (cm$^{-1}$)')
 axs[0].set_xlabel('Field (T)')
 
 # Hide x labels and tick labels for all but bottom plot.
@@ -312,7 +316,7 @@ fig.colorbar(plt2, cax=cbar_ax)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.054e-06 # fixed)
+B60 =  3.079e-6 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -344,7 +348,7 @@ for i in range(40):
 B20 =  -0.03559
 B40 =  -0.0003849 
 B43 =  -0.01393
-B60 =   3.054e-06
+B60 =   3.154e-06
 B63 =  -4.695e-06
 B66 =   3.3815e-05
 

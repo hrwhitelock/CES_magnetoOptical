@@ -304,7 +304,8 @@ with h5py.File('dMdH_temperature_dependence.h5', 'w') as hdf:
 def susceptibility(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
-        f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
+        # f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
+        f = np.linspace(fieldVal-0.1, fieldVal+0.1, 100)
         field = [[0,0,b] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
         m = MolecularFieldTheory(f, f, mag[2], Jz)
@@ -545,8 +546,9 @@ for fname in fnames:
 
 def susceptibility(ionObj, fieldVal, temps):
     chi = []
+    mag = []
     for temp in temps: 
-        f = np.arange(fieldVal-1*fieldVal, 1*fieldVal+fieldVal, .2*fieldVal) 
+        f = np.linspace(fieldVal-0.1, .1+fieldVal, 201) 
         field = [[0,0,b] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
         m = MolecularFieldTheory(f, f, -mag[2], Jz)
@@ -555,7 +557,8 @@ def susceptibility(ionObj, fieldVal, temps):
         # now we've gotta access the very low field value
         valIdx = findIdx(field, [0,0,fieldVal])
         chi.append(x[valIdx])
-    return chi
+        mag.append(m)
+    return chi, mag
 def findIdx(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
@@ -563,13 +566,15 @@ def findIdx(array, value):
 
 
 # simulate 
-fields = [0.3, 1, 4, 5.5, 6]
+fields = [0.358, 1.16, 3.7, 5.4, 6.4]
 # fields = [[0,0,b] for b in fields]
-tempArr = np.linspace(0.01,2, 100 )
+tempArr = np.linspace(0.03,1.5, 100)
 susArr = []
+magArr = []
 for f in fields: 
-    sus = susceptibility(MyErObj, f, tempArr)
+    [sus, mag] = susceptibility(MyErObj, f, tempArr)
     susArr.append(sus)
+    magArr.append(mag)
 
 n = len(labels)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
@@ -595,7 +600,7 @@ ax2 = ax1.twinx()
 n = len(fields)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
 
-
+plt.figure()
 for i  in range(len(susArr)): 
     sus = susArr[i]
     ax2.plot(tempArr, sus, '--',  label = str(fields[i]), color = colors[i] )

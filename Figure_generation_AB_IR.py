@@ -61,7 +61,7 @@ fieldArr = np.linspace(0,20, 100)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6#3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -75,7 +75,7 @@ ampAB = np.array(ampAB)
 ampAB = ampAB.T
 
 plt.figure()
-plt.contourf(field, wavenums, dataB,100, cmap = 'jet')
+plt.contourf(field, wavenums, dataB,100, cmap = 'Reds')
 plt.xlim(0,14)
 plt.ylim(0,120)
 plt.clim(0, 1)
@@ -127,7 +127,7 @@ plt.ylim(0,18)
 B20 =  -0.03559
 B40 =  -0.0003849 
 B43 =  -0.01393
-B60 =   3.054e-06
+B60 =   3.154e-06
 B63 =  -4.695e-06
 B66 =   3.3815e-05
 
@@ -161,7 +161,7 @@ for i in range(40):
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -192,7 +192,7 @@ arrAB = np.array(arrAB)
 
 
 plt.figure()
-plt.contourf(fieldArr,waveArr,arrAB.T, 100, cmap = 'jet')
+plt.contourf(fieldArr,waveArr,arrAB.T, 100, cmap = 'Reds')
 # plt.xlim(0,17.5)
 # plt.ylim(20,100)
 # plt.clim(.1,2.5)
@@ -207,7 +207,7 @@ field = [float(b) for b in dataB.columns.values]
 wavenums = [float(i) for i in dataB.index.values]
 
 plt.figure()
-plt.contourf(field, wavenums, dataB,100, cmap='jet')
+plt.contourf(field, wavenums, dataB,100, cmap='Reds')
 plt.xlim(0,14)
 plt.ylim(0,120)
 # plt.clim(0, 1)
@@ -216,14 +216,19 @@ plt.title('CsErSe2 H||AB IR data')
 
 ############################################################
 # lets put both on the same plot for easy compare
+field = [float(b) for b in dataB.columns.values]
+wavenums = [float(i) for i in dataB.index.values]
+waveArr= np.linspace(0,120, 480)
+fieldArr = np.linspace(0,18, 100)
 fig = plt.figure()
 gs = fig.add_gridspec(1,2, hspace=0, wspace=0)
 axs = gs.subplots(sharex=True, sharey=True)
 plt1 = axs[0].contourf(field, wavenums, dataB,100, cmap='jet')
-axs[0].set_title('IR Data')
-plt2 = axs[1].contourf(fieldArr,waveArr,arrAB.T, 100, cmap = 'jet')
+plt1.set_clim(vmin = 0,vmax = 1)
+axs[0].set_title('IR Data H||b')
+plt2 = axs[1].contourf(fieldArr,waveArr,arrAB.T, 100, cmap = 'Reds')
 
-axs[1].set_title('Simulated Data')
+axs[1].set_title('Simulated Data H||b')
 axs[1].set_xlabel('Field (T)')
 axs[0].set_ylabel('Energy (cm$^{-1}$')
 axs[0].set_xlabel('Field (T)')
@@ -233,7 +238,7 @@ for ax in axs:
     ax.label_outer()
 plt.xlim(0,17.5)
 plt.ylim(0,120)
-plt.clim(0,1)
+# plt.clim(0,1)
 
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
