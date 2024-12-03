@@ -468,3 +468,36 @@ xlabel('Field (T)');
 ylabel('Magnetization (\mu_B/Er)');
 legend show;
 hold off;
+
+%% test out the susceptibility issue
+% Load data from HDF5 file
+h5file = 'test_susceptibility.h5';
+
+% Read datasets
+
+myinv01T = h5read(h5file, '/myinv01T');
+neutroninv01T = h5read(h5file, '/neutroninv01T');
+mysus01T = h5read(h5file, '/mysus01T');
+neutronsus01T = h5read(h5file, '/neutronsus01T');
+temps = h5read(h5file, '/temps');
+mvsHinvchi = h5read(h5file, '/mvsHinvchi');
+mvsHchi = h5read(h5file, '/mvsHchi');
+mvsHtemps = h5read(h5file, '/mvsHtemps');
+% Recreate the figure
+figure;
+hold on;
+
+% Plot manually extracted data
+plot(mvsHtemps, mvsHinvchi, 'o', 'DisplayName', 'inv chi extracted manually from Mvs H');
+
+% Plot the calculated data
+plot(temps, mysus01T, '--', 'DisplayName', 'Raman B params MFT 0.1T');
+plot(temps, neutronsus01T, '-.', 'DisplayName', 'neutrons B params MFT 0.1T');
+
+% Formatting
+title('Calculated MFT susceptibility at 0.1T');
+xlabel('Temperature (K)');
+ylabel('1/\chi');
+legend('show');
+
+hold off;

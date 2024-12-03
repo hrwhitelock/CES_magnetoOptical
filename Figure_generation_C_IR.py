@@ -377,9 +377,82 @@ fig.colorbar(plt2, cax=cbar_ax)
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
- # ookay, let's make some line plots for fig 1
- # panel 1, hline at evals
- # panel 2, ab plane
- # panel 3, c axis
+# ookay, let's make some line plots for fig 1
+# panel 1, hline at evals
+# panel 2, ab plane
+# panel 3, c axis
+# need new fn that returns no norm
+temperature = 10
+def splitLinesAB(field, B20, B40, B43, B60, B63, B66):
+    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+    ionObj = cef.CFLevels.Bdict(ion,Bparams)
+    kBT = temperature*kB
+    try: # for the case we pass in a single B val
+        JdotB = muB*(field*cef.Operator.Jy(ionObj.J))*cef.LandeGFactor(ion)
+        H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
+        ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
+        evals = ionObj.eigenvaluesNoNorm
+        dE =[eval for eval in evals] 
+    except AttributeError : # for when we pass in an array 
+        dE = []
+        for b in field: 
+            JdotB = muB*(b*cef.Operator.Jy(ionObj.J))*cef.LandeGFactor(ion)
+            H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
+            ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
+            evals = ionObj.eigenvaluesNoNorm
+            dE_temp =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+            dE.append(dE_temp)
+    return dE
 
- def 
+def splitLinesC(field, B20, B40, B43, B60, B63, B66):
+    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+    ionObj = cef.CFLevels.Bdict(ion,Bparams)
+    kBT = temperature*kB
+    try: # for the case we pass in a single B val
+        JdotB = muB*(field*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
+        H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
+        ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
+        evals = ionObj.eigenvaluesNoNorm
+        dE =[eval for eval in evals] 
+    except AttributeError : # for when we pass in an array 
+        dE = []
+        for b in field: 
+            JdotB = muB*(b*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
+            H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
+            ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
+            evals = ionObj.eigenvaluesNoNorm
+            dE_temp =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+            dE.append(dE_temp)
+    return dE
+
+# first let's get the zf vals
+ZFevals = splitLinesC(0, B20, B40, B43, B60, B63, B66)
+
+# now let's get the AB vals
+field = np.linspace(0,10,50)
+ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66)
+
+# now let's get the Cvals
+field = np.linspace(0,10,50)
+Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66)
+
+ABevals = np.array(ABevals).T
+Cevals = np.array(Cevals).T
+
+# then plot
+
+fig = plt.figure()
+gs = fig.add_gridspec(1,3, hspace = 0, wspace =0)
+axs = gs.subplots(sharex = True, sharey = True)
+
+# first plot is horz lines
+for eval in ZFevals:
+    axs[0].axhline(y=eval, xmin = 0, xmax = 10, c='black')
+axs[0].set_title('H = 0')
+for eval in ABevals: 
+    axs[1].plot(field, eval, color = 'black')
+axs[1].set_title('H||b')
+
+for eval in Cevals: 
+    axs[2].plot(field, eval, color = 'black')
+axs[2].set_title('H||c')

@@ -316,7 +316,7 @@ fig.colorbar(plt2, cax=cbar_ax)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.079e-6 # fixed)
+B60 =  3.035e-6 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -334,15 +334,15 @@ arrC = arrC.T
 ampC = np.array(ampC)
 ampC = ampC.T
 
-plt.figure()
+# plt.figure()
 plt.xlabel('Field (T)')
 plt.ylabel('Energy (cm$^{-1}$)')
 # plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i ==1: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'calculated from Raman fit')
+        plt.plot(fieldArr, arrC[i], 'bo', alpha=0.7, label = 'calculated from Raman fit')
     elif i<16 and i !=1: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7)
 
 # now Allen
 B20 =  -0.03559

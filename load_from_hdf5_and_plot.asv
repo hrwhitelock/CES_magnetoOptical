@@ -55,21 +55,21 @@ xlabel('Field (T)');
 ylabel('Magnetization (uB/Er)');
 
 %% make mpms magnetization fig
-info = h5info('magnetization_data_caluclation_mpms_data_c_axis.h5');
+info = h5info('magnetization_data_calculation_mpms_data_c_axis.h5');
 
 % Load datasets
-magF_mpms = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magF_mpms');
-MFTField_mpms = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFTField_mpms');
-magnetization2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization2K');
-magnetization6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization6K');
-magnetization20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/magnetization20K');
-MFT2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT2K');
-MFT6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT6K');
-MFT20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/MFT20K');
-Mdata2K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata2K');
-Mdata6K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata6K');
-Mdata20K = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/Mdata20K');
-CESMHdata = h5read('magnetization_data_caluclation_mpms_data_c_axis.h5', '/CESMHdata');
+magF_mpms = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magF_mpms');
+MFTField_mpms = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFTField_mpms');
+magnetization2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization2K');
+magnetization6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization6K');
+magnetization20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/magnetization20K');
+MFT2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT2K');
+MFT6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT6K');
+MFT20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/MFT20K');
+Mdata2K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata2K');
+Mdata6K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata6K');
+Mdata20K = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/Mdata20K');
+CESMHdata = h5read('magnetization_data_calculation_mpms_data_c_axis.h5', '/CESMHdata');
 
 % Plot data
 figure;
@@ -194,6 +194,43 @@ ylabel('dM/dH (arb)');
 xlabel('Field (T)');
 legend show;
 hold off;
+
+%% now plot dmdh with no offset
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/calculated_data/dMdH_temperature_dependence_withdata.h5';
+temps = h5read(fname, '/temps');
+MFTField = h5read(fname, '/MFTField');
+dmdH = h5read(fname, '/dmdH');
+xArrs = h5read(fname, '/xArrs');
+yArrs = h5read(fname, '/yArrs');
+labels = h5read(fname, '/labels');
+% labels = cellstr(char(labels')); % Convert labels to cell array of strings
+
+% Plot settings
+n = length(labels);
+colors = jet(n); % wanted inferno, can't find it :(
+
+figure;
+hold on;
+
+for i = 1:n
+    % Normalize yArrs and dmdH for plotting
+    y = yArrs{i} / max(yArrs{i}); %normalized data dmdh
+    dm = dmdH(:, i); % calcluated dmdh
+    dm = dm / max(dm);
+    
+    % Plot experimental data
+    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    
+    % Plot calculated data
+    plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
+end
+
+title('dM/dH from SCM1 \n calculated dM/dH in dotted line');
+ylabel('dM/dH (arb)');
+xlabel('Field (T)');
+legend show;
+hold off;
+
 
 %% susceptibility
 
@@ -368,14 +405,15 @@ hold on;
 
 % Plot experimental data
 for i = 1:length(labels)
-    x = xArrs(:,i);
-    y = yArrs(:,i);
-    plot(x, y, 'DisplayName', labels{i});
+    x = xArrs{i};
+    y = yArrs{i};
+    plot(x, y.*1.35, 'DisplayName', labels{i});
 end
 
 % Plot calculated susceptibility
 plot(temps, myinv01T, '--', 'DisplayName', 'Raman B params MFT, 0.1T');
-
+plot(temps, myinv1T, '--', 'DisplayName', 'Raman B params MFT, 1T');
+plot(temps, myinv6T, '--', 'DisplayName', 'Raman B params MFT, 6T');
 plot(temps, neutroninv, '-.', 'DisplayName', 'neutrons B params MFT');
 plot(temps, susinvPCF, '--', 'DisplayName', 'Raman B params no MFT');
 
@@ -386,4 +424,77 @@ ylabel('1/Chi');
 legend('show');
 xlim([0, 200]);
 ylim([0, 10]);
+hold off;
+
+%% get mpms ab plane magnetization
+% Load data from HDF5 file
+magF_mpms = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magF_mpms');
+MFTField_mpms = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFTField_mpms');
+magnetization2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization2K');
+magnetization6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization6K');
+magnetization20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/magnetization20K');
+MFT2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT2K');
+MFT6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT6K');
+MFT20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/MFT20K');
+Mdata2K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata2K');
+Mdata6K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata6K');
+Mdata20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdata20K');
+CESMHdata = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/CESMHdata');
+
+% Plot the data
+figure;
+hold on;
+
+% MPMS data
+plot(Mdata20K(:, 1), Mdata20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+plot(Mdata6K(:, 1), Mdata6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+plot(Mdata2K(:, 1), Mdata2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+
+% Allen's paper data
+plot(CESMHdata(:, 1) / 1e4, CESMHdata(:, 2), 'b.', 'DisplayName', 'From Allen''s paper');
+
+% MFT and calculated magnetization
+plot(MFTField_mpms, MFT2K, '-', 'DisplayName', 'MFT 2K');
+plot(MFTField_mpms, MFT6K, '-', 'DisplayName', 'MFT 6K');
+plot(MFTField_mpms, MFT20K, '-', 'DisplayName', 'MFT 20K');
+plot(magF_mpms, magnetization2K, '--', 'DisplayName', '2K, no MFT');
+plot(magF_mpms, magnetization6K, '--', 'DisplayName', '6K, no MFT');
+plot(magF_mpms, magnetization20K, '--', 'DisplayName', '20K, no MFT');
+
+% Customize the plot
+xlim([0, 8]);
+title('AB plane magnetization');
+xlabel('Field (T)');
+ylabel('Magnetization (\mu_B/Er)');
+legend show;
+hold off;
+
+%% test out the susceptibility issue
+% Load data from HDF5 file
+h5file = 'test_susceptibility.h5';
+
+% Read datasets
+
+myinv01T = h5read(h5file, '/myinv01T');
+neutroninv01T = h5read(h5file, '/neutroninv01T');
+temps = h5read(h5file, '/temps');
+mvsHinvchi = h5read(h5file, '/mvsHinvchi');
+mvsHtemps = h5read(h5file, '/mvsHtemps');
+% Recreate the figure
+figure;
+hold on;
+
+% Plot manually extracted data
+plot(mvsHtemps, mvsHinvchi, 'o', 'DisplayName', 'inv chi extracted manually from Mvs H');
+
+% Plot the calculated data
+plot(temps, mysus01T, '--', 'DisplayName', 'Raman B params MFT 0.1T');
+plot(temps, neutroninv01T, '-.', 'DisplayName', 'neutrons B params MFT 0.1T');
+
+% Formatting
+title('Calculated MFT susceptibility at 0.1T');
+xlabel('Temperature (K)');
+ylabel('1/\chi');
+legend('show');
+
 hold off;

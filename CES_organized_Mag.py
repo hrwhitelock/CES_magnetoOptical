@@ -236,7 +236,7 @@ plt.ylabel('dM/dH')
 ###################################################################################
 # okay, so now we plot some temp dependance
 
-temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+temps = [0.005, 0.01,0.15, 0.02,  0.025, 0.05,0.075, 0.1,.125, 0.15, 0.171, .25, .35, .45, .543, .827, 1, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 
@@ -266,6 +266,8 @@ plt.xlim(0,9)
 plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
+
+
 
 
 
@@ -546,7 +548,7 @@ for fname in fnames:
 
 def susceptibility(ionObj, fieldVal, temps):
     chi = []
-    mag = []
+    magArr = []
     for temp in temps: 
         f = np.linspace(fieldVal-0.1, .1+fieldVal, 201) 
         field = [[0,0,b] for b in f]
@@ -557,8 +559,7 @@ def susceptibility(ionObj, fieldVal, temps):
         # now we've gotta access the very low field value
         valIdx = findIdx(field, [0,0,fieldVal])
         chi.append(x[valIdx])
-        mag.append(m)
-    return chi, mag
+    return chi
 def findIdx(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
@@ -570,11 +571,9 @@ fields = [0.358, 1.16, 3.7, 5.4, 6.4]
 # fields = [[0,0,b] for b in fields]
 tempArr = np.linspace(0.03,1.5, 100)
 susArr = []
-magArr = []
 for f in fields: 
-    [sus, mag] = susceptibility(MyErObj, f, tempArr)
+    sus = susceptibility(MyErObj, f, tempArr)
     susArr.append(sus)
-    magArr.append(mag)
 
 n = len(labels)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
@@ -600,11 +599,13 @@ ax2 = ax1.twinx()
 n = len(fields)
 colors = plt.cm.cool(np.linspace(0,0.8,n))
 
-plt.figure()
 for i  in range(len(susArr)): 
     sus = susArr[i]
     ax2.plot(tempArr, sus, '--',  label = str(fields[i]), color = colors[i] )
 ax2.set_ylabel('calculated Chi')
+
+
+
 
 # Save data to HDF5
 with h5py.File('susceptibility_low_temp.h5', 'w') as hdf:
@@ -775,3 +776,40 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
     f.create_dataset('Mdata6K', data=Mdata6K)
     f.create_dataset('Mdata20K', data=Mdata20K)
     f.create_dataset('CESMHdata', data=CESMHdata)
+
+
+
+###################################################################################
+###################################################################################
+# okay, so now let's do M vs H for the AB plane
+
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+
+
+field = [[0,b,0] for b in magF]
+tempMag =[]
+
+for temperature in temps: 
+    magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+    temp = MolecularFieldTheory(MFTField, magF, -1*magMe[1], Jperp)
+    tempMag.append(temp) # what the actual fuck is this naming holy shit
+
+# Save data to an HDF5 file
+with h5py.File('M_vs_H_temperature_dependence.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('tempMag', data=np.array(tempMag))
+
+plt.figure()
+
+for i in range(0, len(tempMag)): 
+    plt.plot(MFTField, tempMag[i], label = str(temps[i])+'K', color = colors[i])
+
+plt.legend()
+# plt.ylim(0,3)
+plt.xlim(0,9)
+plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization')
