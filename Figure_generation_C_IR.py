@@ -100,6 +100,20 @@ for i in range(len(arrC)):
         ax.autoscale()
 plt.show()
 
+with h5py.File('CsErSe2_IR_c_axis_line_calculation.h5', 'w') as hdf:
+    hdf.create_dataset('data', data=dataC.values)
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('ampC', data=ampC)
+    hdf.create_dataset('arrC', data=arrC)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
 
 ##################################################################################################
 # lets try this plotting lines over a waterfall plot
@@ -139,6 +153,8 @@ ax1.set_xlabel('Energy (cm$^{-1}$)')
 ax1.set_ylabel('Intensity (arb)')
 plt.ylim(0,17.5)
 
+
+
 ################################################
 # plot line from Allen's params
 B20 =  -0.03559
@@ -173,6 +189,8 @@ for i in range(40):
     if i<16: 
         plt.plot(fieldArr, arrC[i], 'r', alpha=0.7) 
 
+
+
 ################################################
 # plot simulated data
 B20 = -0.03265325 # init = -0.03559)
@@ -198,7 +216,7 @@ phononAmp = 0.499
 phononWid = 0.95
 amp9 = 0.136
 amp10 = 0.097
-width = 0.9
+width = 0.5
 #field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10,width
 arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66,
                     amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10, 
@@ -217,6 +235,20 @@ plt.title('simulated fitted CES H||C data \n B20: '+ str(B20)+' B40: '+str(B40)+
 plt.xlabel('Field (T)')
 plt.ylabel('Wavenumber (cm$^{-1}$)')
 plt.colorbar()
+
+with h5py.File('CsErSe2_IR_c_axis_simulation.h5', 'w') as hdf:
+    hdf.create_dataset('data', data=dataC.values)
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('simulatedData', data=arrC)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
 
 ############################################################
 # now let's plot jsut the IR data (H||b)

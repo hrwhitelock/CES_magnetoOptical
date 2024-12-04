@@ -280,7 +280,7 @@ i = 0
 # calculate gradient
 dmdH = []
 for mag in tempMag: 
-    temp = np.gradient(mag)
+    temp = np.gradient(mag, MFTField)
     dmdH.append(temp)
 
 plt.figure()
@@ -307,14 +307,13 @@ def susceptibility(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
         # f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
-        f = np.linspace(fieldVal-0.1, fieldVal+0.1, 100)
+        f = np.arange(fieldVal-0.5, fieldVal+0.5, .0012)
         field = [[0,0,b] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
-        m = MolecularFieldTheory(f, f, mag[2], Jz)
+        m = MolecularFieldTheory(f, f, -mag[2], Jz)
         m = np.array(m).T
         x = np.gradient(m, f) 
-        # now we've gotta access the very low field value
-        valIdx = findIdx(field, [0,0,fieldVal])
+        valIdx = findIdx(f, fieldVal)
         chi.append(x[valIdx])
     return chi
 def findIdx(array, value):
@@ -336,32 +335,33 @@ for fname in fnames:
     xArrs.append(temp[0])
     yArrs.append(temp[1])
 
-fieldVal = .1
-df = 0.001
+fieldVal = 0.0
 temps = np.concatenate((np.linspace(.01, 2, 50), np.linspace(2,20,50), np.linspace(20,300, 279)))
-mysus01T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
-# sus = ErObj.susceptibility(ion, temps, field, df)
+mysus0T = susceptibility(MyErObj, fieldVal, temps) 
+neutronSus0T = susceptibility(AllenErObj, fieldVal, temps)
+
+fieldVal = 0.1
+temps = np.concatenate((np.linspace(.01, 2, 50), np.linspace(2,20,50), np.linspace(20,300, 279)))
+mysus01T = susceptibility(MyErObj, fieldVal, temps) 
 neutronSus01T = susceptibility(AllenErObj, fieldVal, temps)
 
-fieldVal = 1
-df = 0.001
-mysus1T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
-# sus = ErObj.susceptibility(ion, temps, field, df)
+fieldVal = 1.0
+mysus1T = susceptibility(MyErObj, fieldVal, temps) 
 neutronSus1T = susceptibility(AllenErObj, fieldVal, temps)
 
-fieldVal = 3
-df = 0.001
-
-mysus3T = susceptibility(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
-# sus = ErObj.susceptibility(ion, temps, field, df)
+fieldVal = 3.0
+mysus3T = susceptibility(MyErObj, fieldVal, temps) 
 neutronSus3T = susceptibility(AllenErObj, fieldVal, temps)
 
 
 field = [0,0,.1]
+df = 0.0012 # same as other spacing
 susPCF = MyErObj.susceptibility(ion, temps, field, df)
 susPCF = np.array(susPCF).T[2]
 len(susPCF)
 
+myinv0T = [-1/x for x in mysus0T]
+neutroninv0T = [-1/x for x in neutronSus0T]
 myinv01T = [-1/x for x in mysus01T]
 neutroninv01T = [-1/x for x in neutronSus01T]
 myinv1T = [-1/x for x in mysus1T]
@@ -377,6 +377,9 @@ for i in range(len(labels)):
     plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
 plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
+plt.plot(temps, myinv0T, '--', label = 'Raman B params MFT 0T')
+plt.plot(temps, neutroninv0T, '-.', label = 'neutrons B params MFT 0T' )
+
 plt.plot(temps, myinv01T, '--', label = 'Raman B params MFT 0.1T')
 plt.plot(temps, neutroninv01T, '-.', label = 'neutrons B params MFT 0.1T' )
 
@@ -402,6 +405,8 @@ with h5py.File('susceptibility_wide_temp_range.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('myinv01T', data=myinv01T)
     hdf.create_dataset('neutroninv01T', data=neutroninv01T)
+    hdf.create_dataset('myinv0T', data=myinv0T)
+    hdf.create_dataset('neutroninv0T', data=neutroninv0T)
     hdf.create_dataset('myinv1T', data=myinv1T)
     hdf.create_dataset('neutroninv1T', data=neutroninv1T)
     hdf.create_dataset('myinv3T', data=myinv3T)
@@ -546,26 +551,6 @@ for fname in fnames:
     yArrs.append(temp[1])
 
 
-def susceptibility(ionObj, fieldVal, temps):
-    chi = []
-    magArr = []
-    for temp in temps: 
-        f = np.linspace(fieldVal-0.1, .1+fieldVal, 201) 
-        field = [[0,0,b] for b in f]
-        mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
-        m = MolecularFieldTheory(f, f, -mag[2], Jz)
-        m = np.array(m).T
-        x = np.gradient(m, f) 
-        # now we've gotta access the very low field value
-        valIdx = findIdx(field, [0,0,fieldVal])
-        chi.append(x[valIdx])
-    return chi
-def findIdx(array, value):
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return idx
-
-
 # simulate 
 fields = [0.358, 1.16, 3.7, 5.4, 6.4]
 # fields = [[0,0,b] for b in fields]
@@ -624,7 +609,7 @@ with h5py.File('susceptibility_low_temp.h5', 'w') as hdf:
 def susceptibilityAB(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
-        f = np.linspace(fieldVal-0.5, 0.5+fieldVal, 100) 
+        f = np.linspace(fieldVal-0.1, 1+fieldVal, 200) 
         field = [[0,b,0] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
         m = MolecularFieldTheory(f, f, mag[1], Jperp)

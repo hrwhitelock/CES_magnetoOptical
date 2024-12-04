@@ -74,6 +74,21 @@ arrAB = arrAB.T
 ampAB = np.array(ampAB)
 ampAB = ampAB.T
 
+with h5py.File('CsErSe2_IR_b_axis_line_calculation.h5', 'w') as hdf:
+    hdf.create_dataset('data', data=dataB.values)
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('ampAB', data=ampAB)
+    hdf.create_dataset('arrAB', data=arrAB)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
+
 plt.figure()
 plt.contourf(field, wavenums, dataB,100, cmap = 'Reds')
 plt.xlim(0,14)
@@ -188,6 +203,21 @@ arrAB = zeemanSplitAB(fieldArr, waveArr, B20, B40, B43, B60, B63, B66,
                     width)
 
 arrAB = np.array(arrAB)
+
+with h5py.File('CsErSe2_IR_b_axis_simulation.h5', 'w') as hdf:
+    hdf.create_dataset('data', data=dataB.values)
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('simulatedData', data=arrAB)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
+
 
 
 

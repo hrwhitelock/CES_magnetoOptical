@@ -268,6 +268,20 @@ plt.title('simulated fitted CES H||c data \n B20: '+ str(B20)+' B40: '+str(B40)+
 plt.xlabel('Field (T)')
 plt.ylabel('Wavenumber (cm$^{-1}$)')
 plt.colorbar()
+with h5py.File('CsErSe2_raman_simulation.h5', 'w') as hdf:
+    hdf.create_dataset('ramanData', data=ramanData.values)
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('simulatedData', data=arrC)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
+
 
 ############################################################
 # now let's plot jsut the raman data (c-axis)
@@ -379,16 +393,14 @@ plt.legend()
 # plt.title('Calculated CES lines')
 
 
-with h5py.File('CsErSe2_raman_calculation.h5', 'w') as hdf:
+with h5py.File('CsErSe2_raman_line_calculation.h5', 'w') as hdf:
     hdf.create_dataset('ramanData', data=ramanData.values)
-    hdf.create_dataset('fields', data=np.array(fields, dtype='S'))
+    hdf.create_dataset('fields', data=np.array(field, dtype='S'))
     hdf.create_dataset('wavenums', data=wavenums)
-    hdf.create_dataset('field', data=field)
     hdf.create_dataset('waveArr', data=waveArr)
     hdf.create_dataset('fieldArr', data=fieldArr)
     hdf.create_dataset('ampC', data=ampC)
     hdf.create_dataset('arrC', data=arrC)
-    hdf.create_dataset('simulatedRaman', data= simulatedRaman)
     hdf.attrs['B20'] = B20
     hdf.attrs['B40'] = B40
     hdf.attrs['B43'] = B43
