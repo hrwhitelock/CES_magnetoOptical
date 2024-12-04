@@ -422,7 +422,7 @@ for temperature in temps:
     tempMag.append(temp) # what the actual fuck is this naming holy shi
 dmdH = []
 for mag in tempMag: 
-    temp = np.gradient(mag)
+    temp = np.gradient(mag, MFTField) # MFTField
     dmdH.append(temp)
 
 
@@ -786,8 +786,8 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
 temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
-
-
+magF = np.linspace(0,13,100000)
+MFTField = np.linspace(0,12, 10000000)
 field = [[0,b,0] for b in magF]
 tempMag =[]
 
@@ -797,7 +797,7 @@ for temperature in temps:
     tempMag.append(temp) # what the actual fuck is this naming holy shit
 
 # Save data to an HDF5 file
-with h5py.File('M_vs_H_temperature_dependence.h5', 'w') as hdf:
+with h5py.File('M_vs_H_temperature_dependence_AB_plane.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('MFTField', data=MFTField)
     hdf.create_dataset('tempMag', data=np.array(tempMag))
@@ -811,5 +811,41 @@ plt.legend()
 # plt.ylim(0,3)
 plt.xlim(0,9)
 plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization')
+
+
+
+###################################################################################
+# okay, so now we plot some temp dependance
+
+temps = np.arange(0.1, 1, .01)
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+
+f = np.linspace(0,0.5, 10000)
+field = [[0,0,b] for b in f]
+tempMag =[]
+
+for temperature in temps: 
+    magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+    temp = MolecularFieldTheory(f, f, -1*magMe[2], Jz)
+    tempMag.append(temp) # what the actual fuck is this naming holy shit
+
+# Save data to an HDF5 file
+with h5py.File('M_vs_H_temperature_dependence_fine_spacing.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('f', data=f)
+    hdf.create_dataset('tempMag', data=np.array(tempMag))
+
+plt.figure()
+
+for i in range(0, len(tempMag)): 
+    plt.plot(f, tempMag[i], label = str(temps[i])+'K', color = colors[i])
+
+plt.legend()
+# plt.ylim(0,3)
+plt.xlim(0,9)
+plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')

@@ -249,7 +249,7 @@ phononAmp = 0.499
 phononWid = 0.95
 amp9 = 0.136
 amp10 = 0.097
-width = 1.247
+width = 0.5
 #field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10,width
 arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66,
                     amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10, 
@@ -309,6 +309,7 @@ fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 fig.colorbar(plt2, cax=cbar_ax)
 
+simulatedRaman = arrC
 
 ############################################################
 # without the data, just a plot of my lines in red, Allen's in blue
@@ -316,7 +317,7 @@ fig.colorbar(plt2, cax=cbar_ax)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.035e-6 # fixed)
+B60 =  3.079e-6 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -376,3 +377,21 @@ for i in range(40):
         plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
 plt.legend()
 # plt.title('Calculated CES lines')
+
+
+with h5py.File('CsErSe2_raman_calculation.h5', 'w') as hdf:
+    hdf.create_dataset('ramanData', data=ramanData.values)
+    hdf.create_dataset('fields', data=np.array(fields, dtype='S'))
+    hdf.create_dataset('wavenums', data=wavenums)
+    hdf.create_dataset('field', data=field)
+    hdf.create_dataset('waveArr', data=waveArr)
+    hdf.create_dataset('fieldArr', data=fieldArr)
+    hdf.create_dataset('ampC', data=ampC)
+    hdf.create_dataset('arrC', data=arrC)
+    hdf.create_dataset('simulatedRaman', data= simulatedRaman)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66

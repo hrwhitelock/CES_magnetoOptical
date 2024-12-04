@@ -216,10 +216,10 @@ for i = 1:n
     % Normalize yArrs and dmdH for plotting
     y = yArrs{i} / max(yArrs{i}); %normalized data dmdh
     dm = dmdH(:, i); % calcluated dmdh
-    dm = dm / max(dm);
+    % dm = dm / max(dm);
     
     % Plot experimental data
-    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    % plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
     
     % Plot calculated data
     plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
@@ -500,4 +500,40 @@ xlabel('Temperature (K)');
 ylabel('1/\chi');
 legend('show');
 
+hold off;
+
+%% mosre sus diagnosis
+h5file = 'sus_diagnosis.h5';
+
+% Read datasets
+mag = h5read(h5file, '/mag');
+field = h5read(h5file, '/field');
+m = h5read(h5file, '/m');
+
+figure; 
+plot(field, m, 'DisplayName',   'mft magnetism')
+
+%% fine spaced M vs H
+h5file = 'M_vs_H_temperature_dependence_fine_spacing.h5';
+
+% Read datasets
+temps = h5read(h5file, '/temps');
+field = h5read(h5file, '/f');
+tempMag = h5read(h5file, '/tempMag');
+
+figure;
+hold on;
+cmap = jet(length(temps)); % Colormap for consistency
+
+for i = 1:length(temps)
+    plot(field, tempMag(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', cmap(i, :));
+end
+
+% legend show;
+% xlim([0 9]);
+title({'C axis magnetization MFT', ...
+       'calculated from Raman fit B params', ...
+       'test B60 = <INSERT VALUE>'});
+xlabel('Field (T)');
+ylabel('Magnetization');
 hold off;

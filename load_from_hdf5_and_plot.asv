@@ -140,7 +140,7 @@ figure;
 hold on;
 
 for i = 1:n
-    plot(MFTField, dmdH(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', colors(i, :));
+    plot(MFTField, dmdH(:, i)*, 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', colors(i, :));
 end
 
 legend show;
@@ -216,10 +216,10 @@ for i = 1:n
     % Normalize yArrs and dmdH for plotting
     y = yArrs{i} / max(yArrs{i}); %normalized data dmdh
     dm = dmdH(:, i); % calcluated dmdh
-    dm = dm / max(dm);
+    % dm = dm / max(dm);
     
     % Plot experimental data
-    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    % plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
     
     % Plot calculated data
     plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
@@ -477,8 +477,11 @@ h5file = 'test_susceptibility.h5';
 
 myinv01T = h5read(h5file, '/myinv01T');
 neutroninv01T = h5read(h5file, '/neutroninv01T');
+mysus01T = h5read(h5file, '/mysus01T');
+neutronsus01T = h5read(h5file, '/neutronsus01T');
 temps = h5read(h5file, '/temps');
 mvsHinvchi = h5read(h5file, '/mvsHinvchi');
+mvsHchi = h5read(h5file, '/mvsHchi');
 mvsHtemps = h5read(h5file, '/mvsHtemps');
 % Recreate the figure
 figure;
@@ -489,7 +492,7 @@ plot(mvsHtemps, mvsHinvchi, 'o', 'DisplayName', 'inv chi extracted manually from
 
 % Plot the calculated data
 plot(temps, mysus01T, '--', 'DisplayName', 'Raman B params MFT 0.1T');
-plot(temps, neutroninv01T, '-.', 'DisplayName', 'neutrons B params MFT 0.1T');
+plot(temps, neutronsus01T, '-.', 'DisplayName', 'neutrons B params MFT 0.1T');
 
 % Formatting
 title('Calculated MFT susceptibility at 0.1T');
@@ -498,3 +501,14 @@ ylabel('1/\chi');
 legend('show');
 
 hold off;
+
+%% mosre sus diagnosis
+h5file = 'sus_diagnosis.h5';
+
+% Read datasets
+mag = h5read(h5file, '/mag');
+field = h5read(h5file, '/field');
+m = h5read(h5file, '/m');
+
+figure; 
+plot(field, m, 'DisplayName',   'mft magnetism')
