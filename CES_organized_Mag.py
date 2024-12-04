@@ -475,7 +475,7 @@ plt.ylabel('dM/dH (arb)')
 plt.xlabel('Field (T)')
 
 # Save data to HDF5
-with h5py.File('magnetization_analysis.h5', 'w') as hdf:
+with h5py.File('dmdh_with_scm1_data.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('MFTField', data=MFTField)
     hdf.create_dataset('magF', data=magF)
@@ -771,8 +771,8 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
 temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
-magF = np.linspace(0,13,100000)
-MFTField = np.linspace(0,12, 10000000)
+magF = np.linspace(0,8,1000)
+MFTField = np.linspace(0,6, 1000)
 field = [[0,b,0] for b in magF]
 tempMag =[]
 

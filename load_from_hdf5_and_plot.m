@@ -157,12 +157,12 @@ hold off;
 %% dmdh with data
 
 % Load HDF5 data
-temps = h5read('dMdH_temperature_dependence_withdata.h5', '/temps');
-MFTField = h5read('dMdH_temperature_dependence_withdata.h5', '/MFTField');
-dmdH = h5read('dMdH_temperature_dependence_withdatas.h5', '/dmdH');
-xArrs = h5read('dMdH_temperature_dependence_withdata.h5', '/xArrs');
-yArrs = h5read('dMdH_temperature_dependence_withdata.h5', '/yArrs');
-labels = h5read('dMdH_temperature_dependence_withdata.h5', '/labels');
+temps = h5read('dmdh_with_scm1_data.h5', '/temps');
+MFTField = h5read('dmdh_with_scm1_data.h5', '/MFTField');
+dmdH = h5read('dmdh_with_scm1_data.h5', '/dmdH');
+xArrs = h5read('dmdh_with_scm1_data.h5', '/xArrs');
+yArrs = h5read('dmdh_with_scm1_data.h5', '/yArrs');
+labels = h5read('dmdh_with_scm1_data.h5', '/labels');
 % labels = cellstr(char(labels')); % Convert labels to cell array of strings
 
 % Plot settings
