@@ -414,7 +414,7 @@ fig.colorbar(plt2, cax=cbar_ax)
 # panel 2, ab plane
 # panel 3, c axis
 # need new fn that returns no norm
-temperature = 10
+temperature = 1
 def splitLinesAB(field, B20, B40, B43, B60, B63, B66):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)

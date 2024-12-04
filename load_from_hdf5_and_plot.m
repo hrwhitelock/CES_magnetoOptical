@@ -239,6 +239,8 @@ xArrs = h5read('susceptibility_wide_temp_range.h5', '/xArrs');
 yArrs = h5read('susceptibility_wide_temp_range.h5', '/yArrs');
 labels = h5read('susceptibility_wide_temp_range.h5', '/labels');
 temps = h5read('susceptibility_wide_temp_range.h5', '/temps');
+myinv0T = h5read('susceptibility_wide_temp_range.h5', '/myinv0T');
+neutroninv0T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv0T');
 myinv01T = h5read('susceptibility_wide_temp_range.h5', '/myinv01T');
 neutroninv01T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv01T');
 myinv1T = h5read('susceptibility_wide_temp_range.h5', '/myinv1T');
@@ -246,8 +248,10 @@ neutroninv1T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv1T');
 myinv3T = h5read('susceptibility_wide_temp_range.h5', '/myinv3T');
 neutroninv3T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv3T');
 susinvPCF = h5read('susceptibility_wide_temp_range.h5', '/susinvPCF');
+CESMTdata = h5read('susceptibility_wide_temp_range.h5', '/CESMTdata');
 
-
+Na = 6.02214076e23 ;
+SCF = 1/(1.07828221e24/Na);
 % Create the plot
 figure;
 hold on;
@@ -264,6 +268,8 @@ end
 plot(CESMTdata(:, 12), 1 ./ CESMTdata(:, 12) * SCF, 'DisplayName', 'C-axis data from Allen''s paper');
 
 % Plot simulated data for different fields
+plot(temps, myinv0T, '--', 'DisplayName', 'Raman B params MFT 0T');
+plot(temps, neutroninv0T, '-.', 'DisplayName', 'Neutrons B params MFT 0T');
 plot(temps, myinv01T, '--', 'DisplayName', 'Raman B params MFT 0.1T');
 plot(temps, neutroninv01T, '-.', 'DisplayName', 'Neutrons B params MFT 0.1T');
 plot(temps, myinv1T, '--', 'DisplayName', 'Raman B params MFT 1T');

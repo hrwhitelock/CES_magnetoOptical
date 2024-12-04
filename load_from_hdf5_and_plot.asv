@@ -140,7 +140,7 @@ figure;
 hold on;
 
 for i = 1:n
-    plot(MFTField, dmdH(:, i)*, 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', colors(i, :));
+    plot(MFTField, dmdH(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', colors(i, :));
 end
 
 legend show;
@@ -157,12 +157,12 @@ hold off;
 %% dmdh with data
 
 % Load HDF5 data
-temps = h5read('dMdH_temperature_dependence_withdata.h5', '/temps');
-MFTField = h5read('dMdH_temperature_dependence_withdata.h5', '/MFTField');
-dmdH = h5read('dMdH_temperature_dependence_withdatas.h5', '/dmdH');
-xArrs = h5read('dMdH_temperature_dependence_withdata.h5', '/xArrs');
-yArrs = h5read('dMdH_temperature_dependence_withdata.h5', '/yArrs');
-labels = h5read('dMdH_temperature_dependence_withdata.h5', '/labels');
+temps = h5read('dmdh_with_scm1_data.h5', '/temps');
+MFTField = h5read('dmdh_with_scm1_data.h5', '/MFTField');
+dmdH = h5read('dmdh_with_scm1_data.h5', '/dmdH');
+xArrs = h5read('dmdh_with_scm1_data.h5', '/xArrs');
+yArrs = h5read('dmdh_with_scm1_data.h5', '/yArrs');
+labels = h5read('dmdh_with_scm1_data.h5', '/labels');
 % labels = cellstr(char(labels')); % Convert labels to cell array of strings
 
 % Plot settings
@@ -239,6 +239,8 @@ xArrs = h5read('susceptibility_wide_temp_range.h5', '/xArrs');
 yArrs = h5read('susceptibility_wide_temp_range.h5', '/yArrs');
 labels = h5read('susceptibility_wide_temp_range.h5', '/labels');
 temps = h5read('susceptibility_wide_temp_range.h5', '/temps');
+myinv01T = h5read('susceptibility_wide_temp_range.h5', '/myinv0T');
+neutroninv01T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv0T');
 myinv01T = h5read('susceptibility_wide_temp_range.h5', '/myinv01T');
 neutroninv01T = h5read('susceptibility_wide_temp_range.h5', '/neutroninv01T');
 myinv1T = h5read('susceptibility_wide_temp_range.h5', '/myinv1T');
@@ -512,3 +514,28 @@ m = h5read(h5file, '/m');
 
 figure; 
 plot(field, m, 'DisplayName',   'mft magnetism')
+
+%% fine spaced M vs H
+h5file = 'M_vs_H_temperature_dependence_fine_spacing.h5';
+
+% Read datasets
+temps = h5read(h5file, '/temps');
+field = h5read(h5file, '/f');
+tempMag = h5read(h5file, '/tempMag');
+
+figure;
+hold on;
+cmap = jet(length(temps)); % Colormap for consistency
+
+for i = 1:length(temps)
+    plot(field, tempMag(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', cmap(i, :));
+end
+
+% legend show;
+% xlim([0 9]);
+title({'C axis magnetization MFT', ...
+       'calculated from Raman fit B params', ...
+       'test B60 = <INSERT VALUE>'});
+xlabel('Field (T)');
+ylabel('Magnetization');
+hold off;
