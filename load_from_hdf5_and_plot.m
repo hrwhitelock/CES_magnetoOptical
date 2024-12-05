@@ -108,7 +108,7 @@ MFTField = h5read('M_vs_H_temperature_dependence.h5', '/MFTField');
 tempMag = h5read('M_vs_H_temperature_dependence.h5', '/tempMag');
 
 % Create the plot
-figure;
+figure; grid on; box on; 
 hold on;
 cmap = jet(length(temps)); % Colormap for consistency
 
@@ -136,7 +136,7 @@ n = length(temps);
 colors = jet(n);
 
 % Create the plot
-figure;
+figure; grid on; box on; 
 hold on;
 
 for i = 1:n
@@ -169,7 +169,7 @@ labels = h5read('dmdh_with_scm1_data.h5', '/labels');
 n = length(labels);
 colors = jet(n); % wanted inferno, can't find it :(
 
-figure;
+figure; grid on; box on; 
 hold on;
 
 for i = 1:n
@@ -209,17 +209,17 @@ labels = h5read(fname, '/labels');
 n = length(labels);
 colors = jet(n); % wanted inferno, can't find it :(
 
-figure;
+figure; grid on; box on; 
 hold on;
 
 for i = 1:n
     % Normalize yArrs and dmdH for plotting
-    y = yArrs{i} / max(yArrs{i}); %normalized data dmdh
+    y = yArrs{i}; %/ max(yArrs{i}); %normalized data dmdh
     dm = dmdH(:, i); % calcluated dmdh
     % dm = dm / max(dm);
     
     % Plot experimental data
-    % plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
     
     % Plot calculated data
     plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
@@ -253,7 +253,7 @@ CESMTdata = h5read('susceptibility_wide_temp_range.h5', '/CESMTdata');
 Na = 6.02214076e23 ;
 SCF = 1/(1.07828221e24/Na);
 % Create the plot
-figure;
+figure; grid on; box on; 
 hold on;
 
 % Plot experimental data
@@ -314,7 +314,7 @@ end
 n = length(labels);
 colors = jet(n);
 
-figure;
+figure; grid on; box on; 
 hold on;
 for i = 1:n
     % Sort and normalize x and y data
@@ -352,7 +352,7 @@ nFields = length(fields);
 calcColors = cool(nFields); % Colormap for calculated data
 
 % Create figure
-figure;
+figure; grid on; box on; 
 hold on;
 
 % Plot experimental data
@@ -399,29 +399,31 @@ xArrs = h5read('susceptibility_AB_plane.h5', '/xArrs');
 yArrs = h5read('susceptibility_AB_plane.h5', '/yArrs');
 labels = h5read('susceptibility_AB_plane.h5', '/labels');
 temps = h5read('susceptibility_AB_plane.h5', '/temps');
-myinv01T = h5read('susceptibility_AB_plane.h5', '/myinv01T');
-myinv1T = h5read('susceptibility_AB_plane.h5', '/myinv1T');
-myinv6T = h5read('susceptibility_AB_plane.h5', '/myinv6T');
-neutroninv = h5read('susceptibility_AB_plane.h5', '/neutroninv');
-susinvPCF = h5read('susceptibility_AB_plane.h5', '/susinvPCF');
+mysus0T = h5read('susceptibility_AB_plane.h5', '/mysus0T');
+mysus01T = h5read('susceptibility_AB_plane.h5', '/mysus01T');
+mysus1T = h5read('susceptibility_AB_plane.h5', '/mysus1T');
+mysus6T = h5read('susceptibility_AB_plane.h5', '/mysus6T');
+neutronsus = h5read('susceptibility_AB_plane.h5', '/neutronsus01T');
+susPCF = h5read('susceptibility_AB_plane.h5', '/sussusPCF');
 
 % Create figure
-figure;
+figure; grid on; box on; 
 hold on;
 
 % Plot experimental data
 for i = 1:length(labels)
     x = xArrs{i};
     y = yArrs{i};
-    plot(x, y.*1.35, 'DisplayName', labels{i});
+    plot(x, y.*1.35, 'DisplayName', [labels{i}, 'MPMS data']);
 end
 
 % Plot calculated susceptibility
-plot(temps, myinv01T, '--', 'DisplayName', 'Raman B params MFT, 0.1T');
-plot(temps, myinv1T, '--', 'DisplayName', 'Raman B params MFT, 1T');
-plot(temps, myinv6T, '--', 'DisplayName', 'Raman B params MFT, 6T');
-plot(temps, neutroninv, '-.', 'DisplayName', 'neutrons B params MFT');
-plot(temps, susinvPCF, '--', 'DisplayName', 'Raman B params no MFT');
+plot(temps, 1./mysus0T, '--', 'DisplayName', 'Raman B params MFT, 0T');
+plot(temps, 1./mysus01T, '--', 'DisplayName', 'Raman B params MFT, 0.1T');
+plot(temps, 1./mysus1T, '--', 'DisplayName', 'Raman B params MFT, 1T');
+plot(temps, 1./mysus6T, '--', 'DisplayName', 'Raman B params MFT, 6T');
+plot(temps, 1./neutronsus, '-.', 'DisplayName', 'neutrons B params MFT');
+plot(temps, -1./susPCF, '--', 'DisplayName', 'Raman B params no MFT');
 
 % Add labels, legend, and title
 title('calculated MFT susceptibility at 0.1T (AB plane)');
@@ -448,7 +450,7 @@ Mdata20K = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/Mdat
 CESMHdata = h5read('magnetization_data_calculation_mpms_data_AB_plane.h5', '/CESMHdata');
 
 % Plot the data
-figure;
+figure; grid on; box on; 
 hold on;
 
 % MPMS data
@@ -490,7 +492,7 @@ mvsHinvchi = h5read(h5file, '/mvsHinvchi');
 mvsHchi = h5read(h5file, '/mvsHchi');
 mvsHtemps = h5read(h5file, '/mvsHtemps');
 % Recreate the figure
-figure;
+figure; grid on; box on; 
 hold on;
 
 % Plot manually extracted data
@@ -516,7 +518,7 @@ mag = h5read(h5file, '/mag');
 field = h5read(h5file, '/field');
 m = h5read(h5file, '/m');
 
-figure; 
+figure; grid on; box on;  
 plot(field, m, 'DisplayName',   'mft magnetism')
 
 %% fine spaced M vs H
@@ -527,7 +529,7 @@ temps = h5read(h5file, '/temps');
 field = h5read(h5file, '/f');
 tempMag = h5read(h5file, '/tempMag');
 
-figure;
+figure; grid on; box on; 
 hold on;
 cmap = jet(length(temps)); % Colormap for consistency
 
@@ -540,6 +542,54 @@ end
 title({'C axis magnetization MFT', ...
        'calculated from Raman fit B params', ...
        'test B60 = <INSERT VALUE>'});
+xlabel('Field (T)');
+ylabel('Magnetization');
+hold off;
+
+%% M vs H for ab plane
+h5file = 'M_vs_H_temperature_dependence_AB_plane.h5';
+
+% Read datasets
+temps = h5read(h5file, '/temps');
+field = h5read(h5file, '/MFTField');
+tempMag = h5read(h5file, '/tempMag');
+
+figure; grid on; box on; 
+hold on;
+cmap = jet(length(temps)); % Colormap for consistency
+
+for i = 1:length(temps)
+    plot(field, tempMag(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', cmap(i, :));
+end
+
+% legend show;
+% xlim([0 9]);
+title({'B axis magnetization MFT', ...
+       'Above 1K due to convergence issue'});
+xlabel('Field (T)');
+ylabel('Magnetization');
+hold off;
+
+%% dmdh AB plane
+h5file = 'dMdH_temperature_dependence_AB_plane.h5'; 
+
+% Read datasets
+temps = h5read(h5file, '/temps');
+field = h5read(h5file, '/MFTField');
+dMdH = h5read(h5file, '/dMdH');
+
+figure; grid on; box on; 
+hold on;
+cmap = jet(length(temps)); % Colormap for consistency
+
+for i = 1:length(temps)
+    plot(field, dMdH(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', cmap(i, :));
+end
+
+% legend show;
+% xlim([0 9]);
+title({'B axis dMdH MFT', ...
+       'Above 1K due to convergence issue'});
 xlabel('Field (T)');
 ylabel('Magnetization');
 hold off;

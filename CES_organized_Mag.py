@@ -136,6 +136,10 @@ with h5py.File('magnetization_data_calculation_and_allen_c_axis.h5', 'w') as f:
 print("Data saved to 'magnetization_data_caluclation_and_allen_c_axis.h5'.")
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
 # lets load the MPMS data
 fname20K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_20K.txt'
 fname6K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_6K.txt'
@@ -208,6 +212,11 @@ with h5py.File('magnetization_data_caluclation_mpms_data_c_axis.h5', 'w') as f:
 print("Data saved to 'magnetization_data.h5'.")
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
 # Now let's nail down B60
 # init objects
 B20 = -0.03265325 # init = -0.03559)
@@ -234,6 +243,11 @@ plt.xlabel('Field (T)')
 plt.ylabel('dM/dH')
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
 # okay, so now we plot some temp dependance
 
 temps = [0.005, 0.01,0.15, 0.02,  0.025, 0.05,0.075, 0.1,.125, 0.15, 0.171, .25, .35, .45, .543, .827, 1, 2, 6, 20]
@@ -267,10 +281,10 @@ plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n tes
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
 
-
-
-
-
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
 ###################################################################################
 # now temp dependent dmdh
 n = len(temps)
@@ -301,6 +315,10 @@ with h5py.File('dMdH_temperature_dependence.h5', 'w') as hdf:
     hdf.create_dataset('MFTField', data=MFTField)
     hdf.create_dataset('dmdH', data=np.array(dmdH))
 
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
 ###################################################################################
 # lets do susceptibility
 def susceptibility(ionObj, fieldVal, temps):
@@ -415,6 +433,11 @@ with h5py.File('susceptibility_wide_temp_range.h5', 'w') as hdf:
     hdf.create_dataset('CESMTdata', data=CESMTdata)
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
 # now i need to import all the dmdh data 
 temps = [0.025, 0.1, 0.174, .25, .35, .422, .543, .658, .827, 1.008] 
 magF = np.linspace(0,13, 10000)
@@ -487,6 +510,10 @@ with h5py.File('dmdh_with_scm1_data.h5', 'w') as hdf:
     hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
 # okay, so now let's integrate
 # first we have to sort gross
 
@@ -531,6 +558,10 @@ with h5py.File('integrated_magnetization.h5', 'w') as hdf:
     hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
 
 ###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
 # now we load the low temp chi(T)
 fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0cool25.txt', 
@@ -562,7 +593,7 @@ for f in fields:
     susArr.append(sus)
 
 n = len(labels)
-colors = plt.cm.cool(np.linspace(0,0.8,n))
+colors = plt.cm.viridis(np.linspace(0,.7,n))
 fig, ax1 = plt.subplots()
 for i in range(len(labels)): 
     # sort first
@@ -575,7 +606,7 @@ for i in range(len(labels)):
     if i>0: 
         if labels[i]== labels[i-1]: 
             color = colors[i-1]
-    ax1.plot(x, y/y[-1], label = labels[i], color = color)
+    ax1.plot(x, y/max(y), label = labels[i], color = color)
 
 ax1.set_ylabel('data Chi (arbitrarily scaled)')
 ax1.set_xlabel('Field (T)')
@@ -583,11 +614,11 @@ ax1.set_xlabel('Field (T)')
 ax2 = ax1.twinx()
 
 n = len(fields)
-colors = plt.cm.cool(np.linspace(0,0.8,n))
+colors = plt.cm.viridis(np.linspace(0,0.7,n))
 
 for i  in range(len(susArr)): 
     sus = susArr[i]
-    ax2.plot(tempArr, sus, '--',  label = str(fields[i]), color = colors[i] )
+    ax2.plot(tempArr, sus/max(sus), '--',  label = str(fields[i]), color = colors[i] )
 ax2.set_ylabel('calculated Chi')
 
 
@@ -613,11 +644,11 @@ def susceptibilityAB(ionObj, fieldVal, temps):
         f = np.linspace(fieldVal-0.1, 1+fieldVal, 200) 
         field = [[0,b,0] for b in f]
         mag= np.array([ionObj.magnetization(ion, temp, f) for f in field]).T
-        m = MolecularFieldTheory(f, f, mag[1], Jperp)
+        m = MolecularFieldTheory(f, f, -mag[1], Jperp)
         m = np.array(m).T
         x = np.gradient(m, f) 
         # now we've gotta access the very low field value
-        valIdx = findIdx(field, [0,fieldVal,0])
+        valIdx = findIdx(f, fieldVal)
         chi.append(x[valIdx])
     return chi
 
@@ -661,11 +692,11 @@ len(susPCF)
 
 myinv01T = [1/x for x in mysus01T]
 myinv0T = [1/x for x in mysus0T]
-neutroninv = [1/x for x in neutronSus]
+neutroninv01T = [1/x for x in neutronSus01T]
 myinv1T = [1/x for x in mysus1T]
 myinv6T = [1/x for x in mysus6T]
 # sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
-susinvPCF = [1/x for x in susPCF]
+susinvPCF = [-1/x for x in susPCF]
 plt.figure()
 for i in range(len(labels)): 
     plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
@@ -676,14 +707,14 @@ plt.plot(temps, myinv01T, '--', label = 'Raman B params MFT, 0.1T')
 plt.plot(temps, myinv0T, '--', label = 'Raman B params MFT, 0T')
 plt.plot(temps, myinv1T, '--', label = 'Raman B params MFT, 1T')
 plt.plot(temps, myinv6T, '--', label = 'Raman B params MFT, -6T')
-plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
+plt.plot(temps, neutroninv01T, '-.', label = 'neutrons B params MFT' )
 plt.plot(temps, susinvPCF, '--', label = 'Raman B params no MFT')
 plt.title('calculated MFT susceptibility at 0.1T \n AB plane')
 plt.xlabel('temperature (K)')
 plt.ylabel('1/chi')
 plt.legend()
-plt.xlim(0, 200)
-plt.ylim(0,10)
+# plt.xlim(0, 200)
+# plt.ylim(0,10)
 
 # Save data to HDF5
 with h5py.File('susceptibility_AB_plane.h5', 'w') as hdf:
@@ -693,10 +724,10 @@ with h5py.File('susceptibility_AB_plane.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('mysus0T', data=mysus0T)
     hdf.create_dataset('mysus1T', data=mysus1T)
-    hdf.create_dataset('mysus01T', data=mysus01)
+    hdf.create_dataset('mysus01T', data=mysus01T)
     hdf.create_dataset('mysus6T', data=mysus6T)
-    hdf.create_dataset('neutronsus01T', data=neutronsus01T)
-    hdf.create_dataset('sussusPCF', data=sussusPCF)
+    hdf.create_dataset('neutronsus01T', data=neutronSus01T)
+    hdf.create_dataset('sussusPCF', data=susPCF)
 
 
 ###################################################################################
@@ -778,8 +809,8 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
 temps = np.arange(1, 20, .5) #[0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
-magF = np.linspace(-1,1,100)
-MFTField = np.linspace(-.5,0.5, 1000)
+magF = np.linspace(-1,10,100)
+MFTField = np.linspace(-.5,8, 1000)
 field = [[0,b,0] for b in magF]
 tempMagB =[]
 nomftB = []
@@ -795,7 +826,7 @@ for temperature in temps:
 with h5py.File('M_vs_H_temperature_dependence_AB_plane.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('MFTField', data=MFTField)
-    hdf.create_dataset('tempMag', data=np.array(tempMag))
+    hdf.create_dataset('tempMag', data=np.array(tempMagB))
 
 plt.figure()
 
@@ -803,14 +834,36 @@ for i in range(0, len(tempMagB)):
     plt.plot(MFTField, tempMagB[i], label = str(temps[i])+'K', color = colors[i])
 
 plt.legend()
-
+plt.xlim(0,8)
+plt.ylim(0,7)
 plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(MyErObj.B[3]))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
 plt.grid(True)
+###################################################################################
+# now let's do dM/dH for the AB plane
+dMdH = []
+for mag in tempMagB: 
+    temporary = np.gradient(mag, MFTField)
+    dMdH.append(temporary)
 
+with h5py.File('dMdH_temperature_dependence_AB_plane.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('dMdH', data=np.array(dMdH))
 
+plt.figure()
 
+for dm, temp, color in zip(dMdH, temps, colors): 
+    plt.plot(MFTField, dm, label = str(temp)+'K', color = color)
+
+plt.legend()
+plt.xlim(0,8)
+plt.ylim(0,7)
+plt.title('B axis dM/dH MFT \n calculated from Raman fit B params \n test B60 = '+str(MyErObj.B[3]))
+plt.xlabel('Field (T)')
+plt.ylabel('dM/dH (\muB/T)')
+plt.grid(True)
 ###################################################################################
 # okay, so now we plot some temp dependance
 
