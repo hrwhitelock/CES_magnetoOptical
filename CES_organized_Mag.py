@@ -77,7 +77,7 @@ def MolecularFieldTheory(H, Hth, Mth, lamb):
     '''Use mean field theory to correct magnetization
     for an exchange strength lamb. H is the number of fields to calculate,
     Hth and Mth are the theoretical single-ion magnetization curves to correct.'''
-    n = 100
+    n = 11 # try odd for reasons
     newM = np.interp(H, Hth, Mth)
     for i in range(n):
         newH = H + 6*lamb*newM/muB/(gJ)**2
@@ -640,13 +640,16 @@ for fname in fnames:
 
 fieldVal = .1
 df = 0.001
-temps = np.concatenate((np.linspace(.001, 2, 100), np.linspace(2,20,100), np.linspace(20,300, 279)))
-mysus = susceptibilityAB(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
+temps = np.concatenate((np.linspace(1, 2, 20), np.linspace(2,20,50), np.linspace(20,300, 279)))
+mysus01T = susceptibilityAB(MyErObj, fieldVal, temps) #myErObj.susceptibility(ion, temps, field, df)
 # sus = ErObj.susceptibility(ion, temps, field, df)
-neutronSus = susceptibilityAB(AllenErObj, fieldVal, temps)
+neutronSus01T = susceptibilityAB(AllenErObj, fieldVal, temps)
 
 fieldVal = 1
 mysus1T = susceptibilityAB(MyErObj, fieldVal, temps)
+
+fieldVal = 0
+mysus0T = susceptibilityAB(MyErObj, fieldVal, temps)
 
 fieldVal = -6
 mysus6T = susceptibilityAB(MyErObj, fieldVal, temps)
@@ -656,19 +659,21 @@ susPCF = MyErObj.susceptibility(ion, temps, field, df)
 susPCF = np.array(susPCF).T[1]
 len(susPCF)
 
-myinv = [-1/x for x in mysus]
-neutroninv = [-1/x for x in neutronSus]
-myinv1T = [-1/x for x in mysus1T]
-myinv6T = [-1/x for x in mysus6T]
+myinv01T = [1/x for x in mysus01T]
+myinv0T = [1/x for x in mysus0T]
+neutroninv = [1/x for x in neutronSus]
+myinv1T = [1/x for x in mysus1T]
+myinv6T = [1/x for x in mysus6T]
 # sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
-susinvPCF = [-1/x for x in susPCF]
+susinvPCF = [1/x for x in susPCF]
 plt.figure()
 for i in range(len(labels)): 
     plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
 
 # plt.plot(CESMTdata[12], 1/CESMTdata[13]*SCF, label='c-axis data from Allens paper')
-plt.plot(temps, myinv, '--', label = 'Raman B params MFT, 0.1T')
+plt.plot(temps, myinv01T, '--', label = 'Raman B params MFT, 0.1T')
+plt.plot(temps, myinv0T, '--', label = 'Raman B params MFT, 0T')
 plt.plot(temps, myinv1T, '--', label = 'Raman B params MFT, 1T')
 plt.plot(temps, myinv6T, '--', label = 'Raman B params MFT, -6T')
 plt.plot(temps, neutroninv, '-.', label = 'neutrons B params MFT' )
@@ -686,11 +691,12 @@ with h5py.File('susceptibility_AB_plane.h5', 'w') as hdf:
     hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
     hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
     hdf.create_dataset('temps', data=temps)
-    hdf.create_dataset('myinv01T', data=myinv)
-    hdf.create_dataset('myinv1T', data=myinv1T)
-    hdf.create_dataset('myinv6T', data=myinv6T)
-    hdf.create_dataset('neutroninv', data=neutroninv)
-    hdf.create_dataset('susinvPCF', data=susinvPCF)
+    hdf.create_dataset('mysus0T', data=mysus0T)
+    hdf.create_dataset('mysus1T', data=mysus1T)
+    hdf.create_dataset('mysus01T', data=mysus01)
+    hdf.create_dataset('mysus6T', data=mysus6T)
+    hdf.create_dataset('neutronsus01T', data=neutronsus01T)
+    hdf.create_dataset('sussusPCF', data=sussusPCF)
 
 
 ###################################################################################
@@ -769,36 +775,21 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
 ###################################################################################
 # okay, so now let's do M vs H for the AB plane
 
-temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+temps = np.arange(1, 20, .5) #[0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 magF = np.linspace(-1,1,100)
 MFTField = np.linspace(-.5,0.5, 1000)
-field = [[b,b,0] for b in magF]
+field = [[0,b,0] for b in magF]
 tempMagB =[]
 nomftB = []
-tempMagA =[]
-nomftA = []
+
 for temperature in temps: 
     magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
-    nomftA.append(-1*magMe[0])
     nomftB.append(-1*magMe[1])
-    tempA = MolecularFieldTheory(MFTField, magF, -1*magMe[0], Jperp/2)
-    tempB = MolecularFieldTheory(MFTField, magF, -1*magMe[1], Jperp/2)
-    tempMagA.append(tempA) 
+    tempB = MolecularFieldTheory(MFTField, magF, -1*magMe[1], Jperp) 
     tempMagB.append(tempB)
 
-
-
-# calculate along c xis 
-tempMagC =[]
-nomftC = []
-field = [[0,0,b] for b in magF]
-for temperature in temps: 
-    magMe = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
-    nomftC.append(-1*magMe[2])
-    tempC = MolecularFieldTheory(MFTField, magF, -1*magMe[2], Jz)
-    tempMagC.append(tempC) 
 
 # Save data to an HDF5 file
 with h5py.File('M_vs_H_temperature_dependence_AB_plane.h5', 'w') as hdf:
@@ -811,67 +802,11 @@ plt.figure()
 for i in range(0, len(tempMagB)): 
     plt.plot(MFTField, tempMagB[i], label = str(temps[i])+'K', color = colors[i])
 
-for i in range(0, len(tempMagA)): 
-    plt.plot(MFTField, tempMagA[i], '--', label = str(temps[i])+'K', color = colors[i])
-# plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
-# plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
-# plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
-
 plt.legend()
-# plt.ylim(0,3)
 
 plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(MyErObj.B[3]))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
-plt.grid(True)
-
-
-# plot OG mag with no mft
-plt.figure()
-for i in range(0, len(tempMagB)): 
-    plt.plot(magF, np.log(nomftB[i]), label = str(temps[i])+'K', color = colors[i])
-
-for i in range(0, len(tempMagA)): 
-    plt.plot(magF, np.log(nomftA[i]), '--', label = str(temps[i])+'K', color = colors[i])
-
-plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
-plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
-plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
-plt.legend()
-# plt.ylim(0,3)
-
-plt.title('B axis magnetization NO MFT \n calculated from Raman fit B params \n test B60 = '+str(MyErObj.B[3]))
-plt.xlabel('Field (T)')
-plt.ylabel('Magnetization NO MFT')
-plt.grid(True)
-
-
-plt.figure()
-
-for i in range(0, len(tempMagC)): 
-    plt.plot(MFTField, tempMagC[i], label = str(temps[i])+'K', color = colors[i])
-
-
-plt.legend()
-# plt.ylim(0,3)
-# plt.xlim(0,9)
-plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
-plt.xlabel('Field (T)')
-plt.ylabel('Magnetization')
-plt.grid(True)
-
-
-# plot OG mag with no mft
-plt.figure()
-for i in range(0, len(tempMagC)): 
-    plt.plot(magF, nomftC[i], label = str(temps[i])+'K', color = colors[i])
-
-plt.legend()
-# plt.ylim(0,3)
-# plt.xlim(0,9)
-plt.title('C axis magnetization NO MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
-plt.xlabel('Field (T)')
-plt.ylabel('Magnetization NO MFT')
 plt.grid(True)
 
 
