@@ -149,10 +149,10 @@ Mdata20K = np.genfromtxt(fname20K, delimiter=',',  unpack=True, skip_header=1)
 Mdata6K = np.genfromtxt(fname6K, delimiter=',',  unpack=True, skip_header=1)
 Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
 
-
+testJz = -2.4e-4
 
 # let's make some temperature dependent data
-magF_mpms = np.linspace(-8,8,1000)
+magF_mpms = np.linspace(-8,8,100)
 field = [[0,0,b] for b in magF_mpms]
 temperature = 2
 magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
@@ -175,6 +175,7 @@ MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, Jz)
 MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, Jz)
 
 plt.figure()
+plt.grid(True)
 plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
 plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
 plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
@@ -185,10 +186,12 @@ plt.plot(MFTField_mpms, MFT20K, '-', label = 'MFT 20K')
 plt.plot(magF_mpms, magnetization2K, '--', label = '2K, no MFT')
 plt.plot(magF_mpms, magnetization6K, '--', label = '6K, no MFT')
 plt.plot(magF_mpms, magnetization20K, '--', label = '20K, no MFT')
-plt.xlim(0,8)
-# plt.ylim(0,10)
+plt.xlim(0,7)
+plt.ylim(0,8)
 plt.legend()
-plt.title('C magnetization')
+plt.title('C magnetization \n B20 ='+str(MyErObj.B[0])+ 'B40 = '+str(MyErObj.B[1])+'B43 =' +str(MyErObj.B[2])+'B60 =' +str(MyErObj.B[3]) + 'B63 = '+str(MyErObj.B[4])+ 'B66 = '+str(MyErObj.B[5]) +'\n Jperp = '+ str(Jperp)+'\n JperpAllen = '+ str(JperpAllen)+'\n Jz = '+ str(Jz)+'\n JzAllen = '+ str(JzAllen))
+# plt.title('c-axis magnetization with test Jz = ' + str(testJz))
+
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
 plt.show()
@@ -208,6 +211,16 @@ with h5py.File('magnetization_data_caluclation_mpms_data_c_axis.h5', 'w') as f:
     f.create_dataset('Mdata6K', data=Mdata6K)
     f.create_dataset('Mdata20K', data=Mdata20K)
     f.create_dataset('CESMHdata', data=CESMHdata)
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
+    hdf.attrs['Jperp'] = Jperp
+    hdf.attrs['Jz'] = Jz
+    hdf.attrs['JperpAllen'] = JperpAllen
+    hdf.attrs['JzAllen'] = JzAllen
 
 print("Data saved to 'magnetization_data.h5'.")
 
@@ -237,6 +250,7 @@ m = MolecularFieldTheory(MFTField, magF, magMe, Jz)
 dmdh = np.gradient(m, MFTField)
 
 plt.figure()
+plt.grid(True)
 plt.plot(MFTField, dmdh)
 plt.vlines(x = 5.4, ymin=0, ymax = 300)
 plt.xlabel('Field (T)')
@@ -270,6 +284,7 @@ with h5py.File('M_vs_H_temperature_dependence.h5', 'w') as hdf:
     hdf.create_dataset('tempMag', data=np.array(tempMag))
 
 plt.figure()
+plt.grid(True)
 
 for i in range(0, len(tempMag)): 
     plt.plot(MFTField, tempMag[i], label = str(temps[i])+'K', color = colors[i])
@@ -298,6 +313,7 @@ for mag in tempMag:
     dmdH.append(temp)
 
 plt.figure()
+plt.grid(True)
 for i in range(len(temps)): 
     plt.plot(MFTField, dmdH[i], label = str(temps[i])+'K', color = colors[i])
 
@@ -391,6 +407,7 @@ neutroninv3T = [1/x for x in neutronSus3T]
 
 susinvPCF = [-1/x for x in susPCF]
 plt.figure()
+plt.grid(True)
 for i in range(len(labels)): 
     plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
@@ -481,6 +498,7 @@ sm = plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1
 
 
 plt.figure()
+plt.grid(True)
 # cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1),ax=plt.gca()))
 i = 0
 for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdH ): 
@@ -532,6 +550,7 @@ n = len(labels)
 colors = plt.cm.inferno(np.linspace(0,0.8,n))
 
 plt.figure()
+plt.grid(True)
 i = 0
 for x,y,label, color in zip(xArrs, integratedMag, labels, colors): 
     x = np.array(x)
@@ -572,7 +591,7 @@ fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt',
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0warm30.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt']
-labels = ['.358T', '.358T', '1.16T', '1.16T', '3.7T', '3.7T','5.4T', '6.4T', '6.4T']
+labels = ['.0358T', '.0358T', '.116T', '.116T', ,'5.4T', '0.64T', '0.64T']
 xArrs = []
 yArrs =[]
 
@@ -698,6 +717,7 @@ myinv6T = [1/x for x in mysus6T]
 # sus =  [ErObj.susceptibility(ion, t, field, df) for t in temps]
 susinvPCF = [-1/x for x in susPCF]
 plt.figure()
+plt.grid(True)
 for i in range(len(labels)): 
     plt.plot(xArrs[i], yArrs[i]*1.35, label = labels[i])
 
@@ -743,7 +763,7 @@ Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
 
 
 # let's make some temperature dependent data
-magF_mpms = np.linspace(-8,8,1000)
+magF_mpms = np.linspace(-8,8,100)
 field = [[0,b,0] for b in magF_mpms]
 temperature = 2
 magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
@@ -760,12 +780,14 @@ magnetization20K = np.array([MyErObj.magnetization(ion, temperature, f) for f in
 magnetization20K = magnetization20K[1]
 magnetization20K = [m*-1 for m in magnetization20K] # make the magnetization the correct sign
 
+testJperp = -1e-3
 MFTField_mpms = np.linspace(-8,8,10000)
-MFT2K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization2K, Jperp)
-MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, Jperp)
-MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, Jperp)
+MFT2K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization2K, testJperp)
+MFT6K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization6K, testJperp)
+MFT20K = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization20K, testJperp)
 
 plt.figure()
+plt.grid(True)
 plt.plot(Mdata20K[0], Mdata20K[1]/1.35, 'o', label = '20K MPMS data')
 plt.plot(Mdata6K[0], Mdata6K[1]/1.35, 'o', label = '6K MPMS data')
 plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
@@ -777,11 +799,12 @@ plt.plot(magF_mpms, magnetization2K, '--', label = '2K, no MFT')
 plt.plot(magF_mpms, magnetization6K, '--', label = '6K, no MFT')
 plt.plot(magF_mpms, magnetization20K, '--', label = '20K, no MFT')
 plt.xlim(0,8)
-# plt.ylim(0,10)
+plt.ylim(0,7)
 plt.legend()
-plt.title('AB plane magnetization')
+# plt.title('AB magnetization \n B20 ='+str(MyErObj.B[0])+ 'B40 = '+str(MyErObj.B[1])+'B43 =' +str(MyErObj.B[2])+'B60 =' +str(MyErObj.B[3]) + 'B63 = '+str(MyErObj.B[4])+ 'B66 = '+str(MyErObj.B[5]) +'\n Jperp = '+ str(Jperp)+' JperpAllen = '+ str(JperpAllen)+'\n Jz = '+ str(Jz)+' JzAllen = '+ str(JzAllen))
+plt.title('AB magnetization, test Jperp = '+str(testJperp))
 plt.xlabel('Field (T)')
-plt.ylabel('Magnetization (uB/Er)')
+plt.ylabel('Magnetization ab plane(uB/Er)')
 plt.show()
 
 

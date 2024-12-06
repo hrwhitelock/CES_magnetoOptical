@@ -326,7 +326,7 @@ for i = 1:n
     
     % Plot data
     plot(x, intMag + i * 0.5, 'DisplayName', labels{i}, 'Color', colors(i, :));
-    plot(magF, tempMag(i) / max(tempMag(i)) + i * 0.5, '--', 'Color', colors(i, :));
+    plot(magF, tempMag(:, i) / max(tempMag(:,i)) + i * 0.5, '--', 'Color', colors(i, :));
 end
 
 % Add labels, title, and legend

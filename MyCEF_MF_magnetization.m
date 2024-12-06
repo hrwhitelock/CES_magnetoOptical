@@ -80,8 +80,7 @@ HMF = @(HCEFm, JJm, hv, mv) HCEFm - (z/2)*(mv*JJm*mv')*ID...
     t = 2; HCEF = HCEFf(Bnm);    
     JJ =JJf([-0.0002 0.0024]); %JJx = 5K, JJz = 1K; 
     B =  1./(kB*t);
-    field = 0:0.1:8 
-    fieldl = length(field)
+    field = 0:0.1:8;
     dh = 0.1;
     
    
@@ -107,7 +106,7 @@ HMF = @(HCEFm, JJm, hv, mv) HCEFm - (z/2)*(mv*JJm*mv')*ID...
         gyy0 = 2*gJ*abs(ev1'*Jy*ev2);
 
 
-    for i=1:fieldl
+    for i=1:length(field)
         hv1 = [field(i) 0 0];
         hv3= [0,0,field(i)];
         f1 = @(mx,my,mz) trace( Jx*expm(-B*(HMF(HCEF, JJ, hv1, [mx,my,mz]) - E0*ID)) )/trace( expm(-B*(HMF(HCEF, JJ, hv1, [mx,my,mz]) - E0*ID)) ) - mx;
@@ -122,7 +121,7 @@ HMF = @(HCEFm, JJm, hv, mv) HCEFm - (z/2)*(mv*JJm*mv')*ID...
           
             f4 = @(x) real(f1(x,my_g,mz_g)); mx_g = fzero(f4,mx_g);
             %f5 = @(x) real(f2(mx_g,  x ,mz_g)); my_g = fzero(f5,my_g);
-            f6 = @(x) real(f3(mx_g,my_g,  x )); mz_g = fzero(f6,mz_g)
+            f6 = @(x) real(f3(mx_g,my_g,  x )); mz_g = fzero(f6,mz_g); 
             
         end
         mxarr(i)= mx_g; 
