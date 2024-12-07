@@ -136,11 +136,11 @@ n = length(temps);
 colors = jet(n);
 
 % Create the plot
-figure; grid on; box on; 
+% figure; grid on; box on; 
 hold on;
 
 for i = 1:n
-    plot(MFTField, dmdH(:, i), 'DisplayName', sprintf('%.3f K', temps(i)), 'Color', colors(i, :));
+    plot(MFTField, dmdH(:, i), 'DisplayName', sprintf('a %.3f K', temps(i)), 'Color', colors(i, :));
 end
 
 legend show;
@@ -152,7 +152,7 @@ title({'C axis dM/dH', 'calculated from Raman fit B params'});
 % xlim([0 7]); % Set x-axis limits
 % ylim([-1 12]); % Set y-axis limits
 
-hold off;
+% hold off;
 
 %% dmdh with data
 
@@ -219,10 +219,10 @@ for i = 1:n
     % dm = dm / max(dm);
     
     % Plot experimental data
-    plot(xArrs{i}, y , 'DisplayName', labels{i}, 'Color', colors(i, :));
+    plot(xArrs{i}, y , 'DisplayName', ['data ', labels{i}], 'Color', colors(i, :));
     
-    % Plot calculated data
-    plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
+    % % Plot calculated data
+    % plot(MFTField, dm, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
 end
 
 title('dM/dH from SCM1 \n calculated dM/dH in dotted line');
@@ -592,4 +592,151 @@ title({'B axis dMdH MFT', ...
        'Above 1K due to convergence issue'});
 xlabel('Field (T)');
 ylabel('Magnetization');
+hold off;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% plot the new mft code
+% Load data from HDF5 file
+filename = 'hopes_MFT_c_axis_calculation.h5';
+
+% Read datasets
+MFTField = h5read(filename, '/MFTField');
+magnetization2K = h5read(filename, '/magnetization2K');
+magnetization6K = h5read(filename, '/magnetization6K');
+magnetization20K = h5read(filename, '/magnetization20K');
+allenMFTCaxis = h5read(filename, '/allenMFTCaxis');
+CESMHdata = h5read(filename, '/CESMHdata');
+tempMagC = h5read(filename, '/tempMagC');
+labels = h5read(filename, '/labels');
+H = h5read(filename, '/calculationH'); 
+
+% Read attributes
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+Jz = h5readatt(filename, '/', 'Jz');
+JzAllen = h5readatt(filename, '/', 'JzAllen');
+
+% Prepare colors for plotting
+nColors = size(tempMagC, 2); % Number of temperature magnetizations
+colors = parula(nColors); % MATLAB colormap
+
+% Create figure
+% figure;
+hold on;
+% grid on;
+
+% % Plot MPMS data
+% plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+% plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+% plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+% 
+% % Plot CES MH data
+% plot(CESMHdata( :, 7) / 1e4, CESMHdata( :, 8), 'b.', 'DisplayName', 'from Allens paper');
+% 
+% % Plot Allen's 2K MFT calculation
+% plot(MFTField, allenMFTCaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
+
+% Plot temperature-dependent magnetizations
+for i = 1:nColors
+    plot(H, gradient(tempMagC(:, i), H(2)-H(1)), '-', 'Color', colors(i, :), 'DisplayName', labels(i));
+end
+
+% Set plot limits
+xlim([0, 7]);
+ylim([0, 8]);
+
+% Add legend
+legend('Location', 'best');
+
+% Add title and labels
+title(sprintf('C magnetization\n B20 = %.7f B40 = %.7f B43 = %.7f\n B60 = %.7f B63 = %.7f B66 = %.7f\n Jz = %.7f JzAllen = %.7f', ...
+    B20, B40, B43, B60, B63, B66, Jz, JzAllen));
+xlabel('Field (T)');
+ylabel('Magnetization (\mu_B/Er)');
+
+hold off;
+
+%% plot the new mft code
+% Load data from HDF5 file
+filename = 'hopes_MFT_b_axis_calculation.h5';
+
+% Read datasets
+MFTField = h5read(filename, '/MFTField');
+magnetization2K = h5read(filename, '/magnetization2K');
+magnetization6K = h5read(filename, '/magnetization6K');
+magnetization20K = h5read(filename, '/magnetization20K');
+allenMFTBaxis = h5read(filename, '/allenMFTBaxis');
+CESMHdata = h5read(filename, '/CESMHdata');
+tempMagB = h5read(filename, '/tempMagB');
+labels = h5read(filename, '/labels');
+H = h5read(filename, '/calculationH'); 
+
+% Read attributes
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+Jperp = h5readatt(filename, '/', 'Jperp');
+JperpAllen = h5readatt(filename, '/', 'JperpAllen');
+
+% Prepare colors for plotting
+nColors = size(tempMagB, 2); % Number of temperature magnetizations
+colors = parula(nColors); % MATLAB colormap
+
+% Create figure
+figure;
+hold on;
+grid on;
+
+% % Plot MPMS data
+% plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+% plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+% plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+% 
+% % Plot CES MH data
+% plot(CESMHdata( :, 1) / 1e4, CESMHdata( :, 2), 'b.', 'DisplayName', 'from Allens paper');
+% 
+% % Plot Allen's 2K MFT calculation
+% plot(MFTField, allenMFTBaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
+
+% Plot temperature-dependent magnetizations
+for i = 1:nColors
+    plot(H, gradient(tempMagB(:, i), H(2)-H(1)), '-', 'Color', colors(i, :), 'DisplayName', labels(i));
+end
+
+% Set plot limits
+xlim([0, 7]);
+ylim([0, 8]);
+
+% Add legend
+legend('Location', 'best');
+
+% Add title and labels
+title(sprintf('B magnetization\n B20 = %.7f B40 = %.7f B43 = %.7f\n B60 = %.7f B63 = %.7f B66 = %.7f\n Jperp = %.7f JperpAllen = %.7f', ...
+    B20, B40, B43, B60, B63, B66, Jperp, JperpAllen));
+xlabel('Field (T)');
+ylabel('dM_{ab}/dH');
+
+% add allen's calculation data
+filename = 'M_vs_H_temperature_dependence_AB_plane_low_temp.h5';
+
+% Read datasets
+temps = h5read(filename, '/temps');
+MFTField = h5read(filename, '/MFTField');
+tempMag = h5read(filename, '/tempMag'); 
+
+nColors = size(tempMag, 2); % Number of temperature magnetizations
+colors = parula(nColors);
+
+for i=1:length(tempMag)
+    plot(MFTField, gradient(tempMag(:,i), MFTField(200)-MFTField(199)), 'Color', colors(i, :), 'DisplayName',['a', num2str(temps(i))])
+end
+
 hold off;
