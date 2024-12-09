@@ -280,7 +280,7 @@ result 11/11 -> trying maybe one more thing
 # lets plot this bitch
 field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
-waveArr= wavenums #np.linspace(0,500, 1000)
+waveArr= wavenum #np.linspace(0,500, 1000)
 fieldArr = field #np.linspace(0,14, 100)
 
 # Allen's params
@@ -317,7 +317,7 @@ fieldArr = field #np.linspace(0,14, 100)
 
 ampC, arrC = zeemanSplitLinesC(fieldArr,result.params['B20'], result.params['B40'], 
                    result.params['B43'], result.params['B60'], 
-                   result.params['B63'], result.params['B66'])
+                   result.params['B63'], result.params['B66'], result.params['Jz'])
 
 # ampC, arrC = zeemanSplitLinesC(fieldArr, .01, .001, .0001, .00001, .001, .0001)
 

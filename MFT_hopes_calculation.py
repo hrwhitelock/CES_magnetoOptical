@@ -292,7 +292,7 @@ def susceptibility(fieldVal, temps):
     chi = []
     for temp in temps: 
         # f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
-        f = np.arange(fieldVal-0.5, fieldVal+0.5, .0012)
+        f = np.arange(fieldVal-0.2, fieldVal+0.2, .012)
         m = MFTmagB(MyErObj, f, Jz, temperature)
         m = np.array(m).T
         x = np.gradient(m, f) 
