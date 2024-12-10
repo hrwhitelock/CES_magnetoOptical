@@ -36,16 +36,9 @@ class CES_obj():
         magnetization = [tempMagA, tempMagB, tempMagC]
         return magnetization
 
-    def MolecularFieldTheory(H, Hth, Mth, lamb): 
-            '''Use mean field theory to correct magnetization
-        for an exchange strength lamb. H is the number of fields to calculate,
-        Hth and Mth are the theoretical single-ion magnetization curves to correct.'''
-        n = 10
-        newM = np.interp(H, Hth, Mth)
-        for i in range(n):
-            newH = H + 6*lamb*newM/muB/(gJ)**2
-            newM = np.interp(newH,Hth,Mth)
-        return newM
+    def MFTmagnetization(temps, field): 
+
+        return magnetization
     
     def PCFsusceptibility(): 
         #

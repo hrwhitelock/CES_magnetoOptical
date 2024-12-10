@@ -278,7 +278,7 @@ for temperature in temps:
     tempMag.append(temp) # what the actual fuck is this naming holy shit
 
 # Save data to an HDF5 file
-with h5py.File('M_vs_H_temperature_dependence.h5', 'w') as hdf:
+with h5py.File('M_vs_H_temperature_dependence_myParams_allensCode.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('MFTField', data=MFTField)
     hdf.create_dataset('tempMag', data=np.array(tempMag))
@@ -288,6 +288,40 @@ plt.grid(True)
 
 for i in range(0, len(tempMag)): 
     plt.plot(MFTField, tempMag[i], label = str(temps[i])+'K', color = colors[i])
+
+plt.legend()
+# plt.ylim(0,3)
+plt.xlim(0,9)
+plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization')
+
+# do the same for Allen's params
+
+temps = [0.005, 0.01,0.15, 0.02,  0.025, 0.05,0.075, 0.1,.125, 0.15, 0.171, .25, .35, .45, .543, .827, 1, 2, 6, 20]
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+
+
+field = [[0,0,b] for b in magF]
+tempMagAllen =[]
+
+for temperature in temps: 
+    magAllen = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
+    temp = MolecularFieldTheory(MFTField, magF, -1*magAllen[2], Jz)
+    tempMagAllen.append(temp) # what the actual fuck is this naming holy shit
+
+# Save data to an HDF5 file
+with h5py.File('M_vs_H_temperature_dependence_allens_code_allens_params.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('tempMagAllen', data=np.array(tempMagAllen))
+
+plt.figure()
+plt.grid(True)
+
+for i in range(0, len(tempMagAllen)): 
+    plt.plot(MFTField, tempMagAllen[i], label = str(temps[i])+'K', color = colors[i])
 
 plt.legend()
 # plt.ylim(0,3)
