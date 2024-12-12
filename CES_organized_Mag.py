@@ -59,7 +59,7 @@ AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B
 AllenErObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 ## first, calc c axis mag
-magF = np.linspace(0,10,1000)
+magF = np.linspace(0,10,100)
 MFTField = np.linspace(0,8,10000)
 temperature = 2
 # magF = np.concatenate((np.linspace(0,1,100000), np.linspace(1,4.8,1000), np.linspace(4.8,5.8, 10000), np.linspace(5.8,12, 1000)))
@@ -229,7 +229,61 @@ print("Data saved to 'magnetization_data.h5'.")
 ###################################################################################
 ###################################################################################
 ###################################################################################
+# lets show a couple values of Jz
 
+fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_2K.txt'
+
+Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
+
+testJz = [.48e-3, -.48e-3, 1e-3, -1e-3, -2e-3, 2e-3]
+
+# let's make some temperature dependent data
+magF_mpms = np.linspace(0,8,100)
+field = [[0,0,b] for b in magF_mpms]
+temperature = 2
+magnetization2K = np.array([MyErObj.magnetization(ion, temperature, f) for f in field]).T
+magnetization2K = magnetization2K[2]
+magnetization2K = [m*-1 for m in magnetization2K] # make the magnetization the correct sign
+
+MFTField_mpms = np.linspace(0,8,10000)
+plt.figure()
+mftArr = []
+for j in testJz: 
+    mft = MolecularFieldTheory(MFTField_mpms, magF_mpms, magnetization2K, j)
+    plt.plot(MFTField_mpms, mft, '--', label = 'Jz = ' + str(j))
+    mftArr.append(mft)
+
+plt.grid(True)
+plt.plot(magF_mpms, magnetization2K, label = 'no mft calculation')
+plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
+plt.plot(CESMHdata[6]/1e4,CESMHdata[7],'b.', label='from Allens paper')
+
+plt.xlim(0,7)
+plt.ylim(0,8)
+plt.legend()
+plt.title('C magnetization \n B20 ='+str(MyErObj.B[0])+ 'B40 = '+str(MyErObj.B[1])+'B43 =' +str(MyErObj.B[2])+'B60 =' +str(MyErObj.B[3]) + 'B63 = '+str(MyErObj.B[4])+ 'B66 = '+str(MyErObj.B[5]) +'\n Jperp = '+ str(Jperp)+'\n JperpAllen = '+ str(JperpAllen)+'\n Jz = '+ str(Jz)+'\n JzAllen = '+ str(JzAllen))
+# plt.title('c-axis magnetization with test Jz = ' + str(testJz))
+
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization (uB/Er)')
+plt.show()
+with h5py.File('checking_J_B60_3079.h5', 'w') as f:
+    f.create_dataset('testJz', data=testJz)
+    f.create_dataset('mftArr', data=mftArr)
+    f.create_dataset('MFTField', data=MFTField_mpms)
+    f.create_dataset('magF_mpms', data=magF_mpms)
+    f.create_dataset('magnetization2K', data=magnetization2K)
+    f.create_dataset('MData2K', data = Mdata2K)
+    f.attrs['B60'] = MyErObj.B[3]
+
+
+
+
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
 # Now let's nail down B60
 # init objects
 B20 = -0.03265325 # init = -0.03559)
@@ -264,7 +318,7 @@ plt.ylabel('dM/dH')
 
 # okay, so now we plot some temp dependance
 
-temps = [0.005, 0.01,0.15, 0.02,  0.025, 0.05,0.075, 0.1,.125, 0.15, 0.171, .25, .35, .45, .543, .827, 1, 2, 6, 20]
+temps = [2,2.5,3,3.5,4,5, 6]#[0.005, 0.01,0.15, 0.02,  0.025, 0.05,0.075, 0.1,.125, 0.15, 0.171, .25, .35, .45, .543, .827, 1, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 
@@ -292,9 +346,10 @@ for i in range(0, len(tempMag)):
 plt.legend()
 # plt.ylim(0,3)
 plt.xlim(0,9)
-plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
-plt.xlabel('Field (T)')
-plt.ylabel('Magnetization')
+# plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
+plt.title('C-axi magnetization \n high temp to see when mag curvature turns off')
+plt.xlabel('H [T]')
+plt.ylabel('M \mu_B/Er')
 
 # do the same for Allen's params
 
@@ -308,7 +363,9 @@ tempMagAllen =[]
 
 for temperature in temps: 
     magAllen = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
-    temp = MolecularFieldTheory(MFTField, magF, -1*magAllen[2], Jz)
+    magAllen = magAllen[2]
+    magAllen = [m*-1 for m in magAllen]
+    temp = MolecularFieldTheory(MFTField, magF, magAllen, JzAllen)
     tempMagAllen.append(temp) # what the actual fuck is this naming holy shit
 
 # Save data to an HDF5 file
@@ -863,7 +920,7 @@ with h5py.File('magnetization_data_caluclation_mpms_data_AB_plane.h5', 'w') as f
 ###################################################################################
 # okay, so now let's do M vs H for the AB plane
 
-temps = np.arange(1, 20, .5) #[0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 magF = np.linspace(-1,10,100)
@@ -880,7 +937,7 @@ for temperature in temps:
 
 
 # Save data to an HDF5 file
-with h5py.File('M_vs_H_temperature_dependence_AB_plane.h5', 'w') as hdf:
+with h5py.File('M_vs_H_temperature_dependence_AB_plane_myParams_Allens_code.h5', 'w') as hdf:
     hdf.create_dataset('temps', data=temps)
     hdf.create_dataset('MFTField', data=MFTField)
     hdf.create_dataset('tempMag', data=np.array(tempMagB))
@@ -894,6 +951,44 @@ plt.legend()
 plt.xlim(0,8)
 plt.ylim(0,7)
 plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(MyErObj.B[3]))
+plt.xlabel('Field (T)')
+plt.ylabel('Magnetization')
+plt.grid(True)
+
+########
+# do again w allen's params
+
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 2, 6, 20]
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+magF = np.linspace(0,10,100)
+MFTField = np.linspace(0,8, 1000)
+field = [[0,b,0] for b in magF]
+tempMagB =[]
+nomftB = []
+
+for temperature in temps: 
+    magAllen = np.array([AllenErObj.magnetization(ion, temperature, f) for f in field]).T
+    nomftB.append(-1*magAllen[1])
+    tempB = MolecularFieldTheory(MFTField, magF, -1*magAllen[1], JperpAllen) 
+    tempMagB.append(tempB)
+
+
+# Save data to an HDF5 file
+with h5py.File('M_vs_H_temperature_dependence_AB_plane_allenParams_Allens_code.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('tempMag', data=np.array(tempMagB))
+
+plt.figure()
+
+for i in range(0, len(tempMagB)): 
+    plt.plot(MFTField, tempMagB[i], label = str(temps[i])+'K', color = colors[i])
+
+plt.legend()
+plt.xlim(0,8)
+plt.ylim(0,7)
+plt.title('B axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(AllenErObj.B[3]))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
 plt.grid(True)
@@ -954,3 +1049,51 @@ plt.xlim(0,9)
 plt.title('C axis magnetization MFT \n calculated from Raman fit B params \n test B60 = '+str(B60))
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization')
+
+
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
+# okay, so now we're going to scan through a bunch of B60 vals, try a bunch of J vals
+# for each B60, and plot the dm/dh to just like see whats going on
+
+
+# init objects
+B20 = -0.03265325 # init = -0.03559)
+B40 = -0.0003849 # fixed)
+B43 = -0.01393 # fixed)
+# B60 =  3.079e-6# fixed)
+B63 = -8.4011e-07 # init = -4.695e-06)
+B66 =  3.3815e-05 # fixed)
+
+B60Arr = [3.05e-6, 3.03e-6]#[3.25e-6, 3.2e-6, 3.154e-6, 3.1e-6, 3.08e-6, 3.06e-6, 3.05e-6, 3.03e-6]
+testJz = [.48e-3, -.48e-3, 1e-3, -1e-3, -2e-3, 2e-3, -4e-3, 4e-3]
+H = np.linspace(3,8, 50)
+for B60 in B60Arr: 
+    g = cef.LandeGFactor(ion)
+    myBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+    MyErObj = cef.CFLevels.Bdict(ion,myBparams)
+    plt.figure()
+    plt.grid(True)
+    temperature = 0.1 # I know this is where we'll see a defined peak
+    # temp is low enought that we need to use my mft code
+    dmdhArr = []
+    for Jz in testJz: 
+        m = MFTmagC(MyErObj, H, Jz, temperature)
+        dmdh = np.gradient(m, H)
+        dmdhArr.append(dmdh)
+        
+        plt.plot(H, dmdh, label = 'Jz = '+str(Jz))
+        plt.vlines(x = 5.4, ymin=0, ymax = 300)
+        plt.xlabel('Field (T)')
+        plt.ylabel('dM/dH')
+        plt.legend()
+    plt.title('dmdh for test B60 = '+str(B60))
+    fname = 'dmdh_B60_test'+str(B60)+'.h5'
+    with h5py.File(fname, 'w') as hdf:
+        hdf.create_dataset('testJz', data=testJz)
+        hdf.create_dataset('H', data=H)
+        hdf.create_dataset('dmdhArr', data=np.array(dmdhArr))
+        hdf.attrs['B60'] = B60

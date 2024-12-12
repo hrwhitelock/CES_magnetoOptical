@@ -204,7 +204,7 @@ ylabel('Energy (cm^{-1})');
 title('Simulated Data');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% next do IR c axis
+% next do IR b axis
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% load from hdf5
 filename = 'CsErSe2_IR_b_axis_line_calculation.h5';
@@ -305,3 +305,191 @@ colorbar;
 xlabel('Field (T)');
 ylabel('Energy (cm^{-1})');
 title('Simulated Data');
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% let's make the six panelled figure 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% let's go AB plane IR, C-axis IR, c-axis Raman
+filename = 'CsErSe2_IR_b_axis_simulation.h5';
+
+data = h5read(filename, '/data');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+simulatedIR = h5read(filename, '/simulatedData'); 
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+
+fig = figure;
+ax1 = subplot(2,3,1);
+contourf(fields, wavenums, data', 100, 'LineStyle', 'none')
+ylim([0 120])
+clim([0 1])
+colormap(ax1, flipud(parula))
+ax4 = subplot(2,3,4);
+hold on; 
+contourf(fieldArr, waveArr, simulatedIR, 100, 'LineStyle', 'none');
+colormap(ax4, flipud(parula))
+clim([0 1])
+% add calculated lines
+
+filename = 'CsErSe2_IR_b_axis_line_calculation.h5';
+
+data = h5read(filename, '/data');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+ampAB = h5read(filename, '/ampAB');
+arrAB = h5read(filename, '/arrAB');
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+for i = 1:17%size(arrC, 2)
+    plot(fieldArr, arrAB(:, i),  'r:', 'LineWidth', 0.5);
+end
+% for i = 17:size(arrAB,2)
+%     plot( fieldArr,arrAB(:, i), 'r--', 'LineWidth', 0.7);
+% end
+ylim([0,100])
+filename = 'CsErSe2_IR_c_axis_simulation.h5';
+
+data = h5read(filename, '/data');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+simulatedIR = h5read(filename, '/simulatedData'); 
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+
+% fig = figure;
+ax2 = subplot(2,3,2);
+contourf(fields, wavenums, data', 100, 'LineStyle', 'none')
+colormap(ax2, flipud(parula))
+ylim([0 120])
+clim([0 1])
+
+ax5 = subplot(2,3,5);
+hold on; 
+contourf(fieldArr, waveArr, simulatedIR, 100, 'LineStyle', 'none');
+colormap(ax5, flipud(parula))
+clim([0 1])
+% add lines 
+filename = 'CsErSe2_IR_c_axis_line_calculation.h5';
+
+data = h5read(filename, '/data');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+ampC = h5read(filename, '/ampC');
+arrC = h5read(filename, '/arrC');
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+
+for i = 1:17%size(arrC, 2)
+    plot(fieldArr, arrC(:, i),  'r:', 'LineWidth', 0.5);
+end
+
+
+filename = 'CsErSe2_raman_simulation.h5';
+
+ramanData = h5read(filename, '/ramanData');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+simulatedRaman = h5read(filename, '/simulatedData'); 
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+
+% fig = figure;
+ax3 = subplot(2,3,3);
+contourf(fields, wavenums, ramanData', 100, 'LineStyle', 'none')
+ylim([0 120])
+xlim([0 17.5])
+colormap(ax3, 'cool')
+
+ax6 = subplot(2,3,6);
+hold on; 
+contourf(fieldArr, waveArr, simulatedRaman, 100, 'LineStyle', 'none');
+colormap(ax6, 'cool')
+% let's add some lines
+clim([0 1])
+
+xlim([0 17.5])
+ylim([0 100])
+
+filename = 'CsErSe2_IR_c_axis_line_calculation.h5';
+
+data = h5read(filename, '/data');
+wavenums = h5read(filename, '/wavenums');
+fields = str2double(h5read(filename, '/fields'));
+waveArr = h5read(filename, '/waveArr');
+fieldArr = h5read(filename, '/fieldArr');
+ampC = h5read(filename, '/ampC');
+arrC = h5read(filename, '/arrC');
+
+B20 = h5readatt(filename, '/', 'B20');
+B40 = h5readatt(filename, '/', 'B40');
+B43 = h5readatt(filename, '/', 'B43');
+B60 = h5readatt(filename, '/', 'B60');
+B63 = h5readatt(filename, '/', 'B63');
+B66 = h5readatt(filename, '/', 'B66');
+
+for i = 1:17%size(arrC, 2)
+    plot(fieldArr, arrC(:, i),  'k:', 'LineWidth', 0.5);
+end
+
+ax3.Position(2)=ax6.Position(2)+ax6.Position(4);
+ax1.Position(2)=ax4.Position(2)+ax4.Position(4);
+% 
+% ax4.Position(2)=ax6.Position(2)+ax6.Position(4);
+ax2.Position(2)=ax5.Position(2)+ax5.Position(4);
+% 
+% 
+% ax4.Position(1)=ax3.Position(1)+ax3.Position(3);
+ax2.Position(1)=ax1.Position(1)+ax1.Position(3);
+ax5.Position(1)=ax4.Position(1)+ax4.Position(3);
+linkaxes([ax1, ax2, ax3, ax4, ax5, ax6], 'xy')
+% ylabel('Energy [cm^{-1}]')
+% xlabel('H [t]')
+set(ax2,'Yticklabel',[]) 
+set(ax1,'Xticklabel',[])
+set(ax2,'Xticklabel',[])
+
+set(ax5,'Yticklabel',[]) 
+% set(ax5,'Xticklabel',[])
+
+
+set(ax3,'Xticklabel',[])
+% set(ax3,'Yticklabel',[])
+
+% set(ax6,'Yticklabel',[])

@@ -626,24 +626,24 @@ nColors = size(tempMagC, 2); % Number of temperature magnetizations
 colors = parula(nColors); % MATLAB colormap
 
 % Create figure
-% figure;
+figure;
 hold on;
-% grid on;
+grid on;
 
 % % Plot MPMS data
-% plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
-% plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
-% plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
-% 
-% % Plot CES MH data
-% plot(CESMHdata( :, 7) / 1e4, CESMHdata( :, 8), 'b.', 'DisplayName', 'from Allens paper');
-% 
-% % Plot Allen's 2K MFT calculation
-% plot(MFTField, allenMFTCaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
+plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+
+% Plot CES MH data
+plot(CESMHdata( :, 7) / 1e4, CESMHdata( :, 8), 'b.', 'DisplayName', 'from Allens paper');
+
+% Plot Allen's 2K MFT calculation
+plot(MFTField, allenMFTCaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
 
 % Plot temperature-dependent magnetizations
 for i = 1:nColors
-    plot(H, gradient(tempMagC(:, i), H(2)-H(1)), '-', 'Color', colors(i, :), 'DisplayName', labels(i));
+    plot(H, tempMagC(:, i), '-', 'Color', colors(i, :), 'DisplayName', strcat('My params my code', labels(i)));
 end
 
 % Set plot limits
@@ -667,7 +667,27 @@ temps = h5read(filename, '/temps');
 tempMag = h5read(filename, '/tempMag');
 MFTField = h5read(filename, '/MFTField');
 
+nColors = size(tempMag, 2); % Number of temperature magnetizations
+colors = parula(nColors); 
 
+for i = 1:nColors
+    plot(MFTField, tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['my B params allens code', num2str(temps(i)), 'K']);
+end
+
+% now load my params allens code
+filename = 'M_vs_H_temperature_dependence_allens_code_allens_params.h5';
+
+% Read datasets
+temps = h5read(filename, '/temps');
+tempMag = h5read(filename, '/tempMagAllen');
+MFTField = h5read(filename, '/MFTField');
+
+nColors = size(tempMag, 2); % Number of temperature magnetizations
+colors = parula(nColors); 
+
+for i = 1:nColors
+    plot(MFTField,tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['Allens B params allens code', num2str(temps(i)), 'K']);
+end
 %% plot the new mft code
 % Load data from HDF5 file
 filename = 'hopes_MFT_b_axis_calculation.h5';
@@ -702,20 +722,20 @@ figure;
 hold on;
 grid on;
 
-% % Plot MPMS data
-% plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
-% plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
-% plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
-% 
-% % Plot CES MH data
-% plot(CESMHdata( :, 1) / 1e4, CESMHdata( :, 2), 'b.', 'DisplayName', 'from Allens paper');
-% 
-% % Plot Allen's 2K MFT calculation
-% plot(MFTField, allenMFTBaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
+% Plot MPMS data
+plot(magnetization20K(:, 1), magnetization20K(:, 2) / 1.35, 'o', 'DisplayName', '20K MPMS data');
+plot(magnetization6K(:, 1), magnetization6K(:, 2) / 1.35, 'o', 'DisplayName', '6K MPMS data');
+plot(magnetization2K(:, 1), magnetization2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+
+% Plot CES MH data
+plot(CESMHdata( :, 1) / 1e4, CESMHdata( :, 2), 'b.', 'DisplayName', 'from Allens paper');
+
+% Plot Allen's 2K MFT calculation
+plot(MFTField, allenMFTBaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation');
 
 % Plot temperature-dependent magnetizations
 for i = 1:nColors
-    plot(H, gradient(tempMagB(:, i), H(2)-H(1)), '-', 'Color', colors(i, :), 'DisplayName', labels(i));
+    plot(H, tempMagB(:, i), '-', 'Color', colors(i, :), 'DisplayName', strcat('my params my code', labels(i)));
 end
 
 % Set plot limits
@@ -728,22 +748,239 @@ legend('Location', 'best');
 % Add title and labels
 title(sprintf('B magnetization\n B20 = %.7f B40 = %.7f B43 = %.7f\n B60 = %.7f B63 = %.7f B66 = %.7f\n Jperp = %.7f JperpAllen = %.7f', ...
     B20, B40, B43, B60, B63, B66, Jperp, JperpAllen));
-xlabel('Field (T)');
-ylabel('dM_{ab}/dH');
+xlabel('H [T]');
+ylabel('Magnetization [\mu_B/Er]');
 
-% add allen's calculation data
-filename = 'M_vs_H_temperature_dependence_AB_plane_low_temp.h5';
+% now load my params allens code
+filename = 'M_vs_H_temperature_dependence_AB_plane_myParams_Allens_code.h5';
 
 % Read datasets
 temps = h5read(filename, '/temps');
+tempMag = h5read(filename, '/tempMag');
 MFTField = h5read(filename, '/MFTField');
-tempMag = h5read(filename, '/tempMag'); 
 
 nColors = size(tempMag, 2); % Number of temperature magnetizations
-colors = parula(nColors);
+colors = parula(nColors); 
 
-for i=1:length(tempMag)
-    plot(MFTField, gradient(tempMag(:,i), MFTField(200)-MFTField(199)), 'Color', colors(i, :), 'DisplayName',['a', num2str(temps(i))])
+for i = 1:nColors
+    plot(MFTField, tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['my B params allens code', num2str(temps(i)), 'K']);
 end
 
+% now load allens params allens code
+filename = 'M_vs_H_temperature_dependence_AB_plane_allenParams_Allens_code.h5';
+
+% Read datasets
+temps = h5read(filename, '/temps');
+tempMag = h5read(filename, '/tempMag');
+MFTField = h5read(filename, '/MFTField');
+
+nColors = size(tempMag, 2); % Number of temperature magnetizations
+colors = parula(nColors); 
+
+for i = 1:nColors
+    plot(MFTField, tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['Allens B params allens code', num2str(temps(i)), 'K']);
+end
+
+%% looking at J because the c axis 2K magnetization is so bad
+% Load data from the HDF5 file
+filename = 'checking_J_B60_3079.h5';
+
+% Read datasets
+testJz = h5read(filename, '/testJz');
+mftArr = h5read(filename, '/mftArr');
+MFTField = h5read(filename, '/MFTField');
+magF_mpms = h5read(filename, '/magF_mpms');
+magnetization2K = h5read(filename, '/magnetization2K');
+MData2K = h5read(filename, '/MData2K');
+
+% Read attributes
+B60 = h5readatt(filename, '/', 'B60');
+
+% Create figure
+figure;
+hold on;
+grid on;
+
+% Plot molecular field theory calculations
+for i = 1:length(testJz)
+    plot(MFTField, mftArr(:, i), '--', 'DisplayName', ['Jz = ' num2str(testJz(i))]);
+end
+
+% Plot 2K magnetization data
+plot(magF_mpms, magnetization2K, '-', 'DisplayName', 'No MFT calculation');
+plot(MData2K(:, 1), MData2K(:, 2) / 1.35, 'o', 'DisplayName', '2K MPMS data');
+
+
+% Set plot limits
+xlim([0, 7]);
+ylim([0, 8]);
+
+% Add legend
+legend('Location', 'best');
+
+% Add title and labels
+title(sprintf(['C magnetization\n B60 = %.5f\n Jz Test = [' repmat('%.3e ', 1, length(testJz)) ']'], ...
+    B60, testJz));
+xlabel('Field (T)');
+ylabel('Magnetization (\mu_B/Er)');
+
 hold off;
+
+%% testing Jz with multiple B60
+% Define parameters
+B60Arr = [3.25e-6, 3.2e-6, 3.154e-6, 3.1e-6, 3.08e-6, 3.06e-6, 3.05e-6, 3.03e-6];
+numPlots = length(B60Arr);
+fnames = {'dmdh_B60_test325e-06.h5','dmdh_B60_test32e-06.h5','dmdh_B60_test3154e-06.h5','dmdh_B60_test31e-06.h5', 'dmdh_B60_test308e-06.h5', 'dmdh_B60_test306e-06.h5', 'dmdh_B60_test305e-06.h5', 'dmdh_B60_test303e-06.h5'};
+% Initialize figure
+figure;
+tiledlayout(ceil(numPlots / 2), 2, 'TileSpacing', 'Compact');
+
+% Loop through each B60 value
+for i = 1:numPlots
+    % Construct the filename for the HDF5 file
+    B60 = B60Arr(i);
+    fname = fnames{i}; 
+    
+    % Read data from HDF5 file
+    testJz = h5read(fname, '/testJz');
+    H = h5read(fname, '/H');
+    dmdhArr = h5read(fname, '/dmdhArr');
+    B60_read = h5readatt(fname, '/', 'B60');
+    
+    % Ensure the B60 value matches
+    if abs(B60 - B60_read) > 1e-10
+        error('Mismatch in B60 values for file: %s', fname);
+    end
+    
+    % Create subplot
+    nexttile;
+    hold on;
+    grid on;
+    
+    % Plot dM/dH for each test Jz value
+    for j = 1:length(testJz)
+        plot(H, dmdhArr(:, j), 'DisplayName', sprintf('Jz = %.3e', testJz(j)));
+    end
+    
+    % Add vertical line at 5.4
+    xline(5.4, '--', 'Color', [0.5, 0.5, 0.5], 'LineWidth', 1, 'DisplayName', 'H = 5.4 T');
+    
+    % Add labels, legend, and title
+    xlabel('Field (T)');
+    ylabel('dM/dH');
+    legend('Location', 'best', 'FontSize', 8);
+    title(sprintf('dM/dH for B60 = %.6e', B60), 'FontSize', 10);
+    
+    hold off;
+end
+
+% Add overall title
+sgtitle('dM/dH vs Field (T) for various B60 values', 'FontSize', 12);
+
+
+
+%% testing Jz with multiple B60
+% Define parameters
+fnames = {'dmdh_B60_test325e-06.h5','dmdh_B60_test32e-06.h5','dmdh_B60_test3154e-06.h5','dmdh_B60_test31e-06.h5', 'dmdh_B60_test308e-06.h5', 'dmdh_B60_test306e-06.h5', 'dmdh_B60_test305e-06.h5', 'dmdh_B60_test303e-06.h5'};
+% Initialize figure
+figure;
+tiledlayout(4, 2, 'TileSpacing', 'Compact');
+testJz = {}; 
+dmdhArr = {}; 
+B60 = []; 
+%let's start by looping through the files and getting the data
+for i = 1:length(fnames)
+    fname = fnames{i}; 
+
+    % read data
+    testJz{end+1} = h5read(fname, '/testJz');
+    dmdhArr{end+1} = h5read(fname, '/dmdhArr');
+    B60(end+1) = h5readatt(fname, '/', 'B60');
+    H = h5read(fname, '/H');
+
+end
+
+for i = 1:length(testJz{1,1})
+    % Construct the filename for the HDF5 file
+    
+    % Create subplot
+    nexttile;
+    hold on;
+    grid on;
+    
+    % Plot dM/dH for each B60 value
+    for j = 1:length(B60)
+        plot(H, dmdhArr{1,j}(:,i), 'DisplayName', sprintf('B60 = %.3e', B60(j)));
+    end
+    
+    % Add vertical line at 5.4
+    xline(5.4, '--', 'Color', [0.5, 0.5, 0.5], 'LineWidth', 1, 'DisplayName', 'H = 5.4 T');
+    
+    % Add labels, legend, and title
+    xlabel('Field (T)');
+    ylabel('dM/dH');
+    % legend('Location', 'best', 'FontSize', 8);
+    title(sprintf('dM/dH for J = %.6e', testJz{1,1}(i)), 'FontSize', 10);
+    
+    hold off;
+end
+
+% Add overall title
+sgtitle('dM/dH vs Field (T) for various B60 values', 'FontSize', 12);
+%% new the same for magnetization
+% Define parameters
+B60Arr = [2.75e-6];%[3.4e-6, 3.35e-6, 3.3e-6,3.25e-6, 3.2e-6, 3.154e-6, 3.1e-6, 3.08e-6, 3.06e-6, 3.05e-3, 3.03e-3, 3.0e-6, 2.9e-6, 2.8e-6];
+numPlots = length(B60Arr);
+fnames = {'m_B60_test34e-06.h5','m_B60_test335e-06.h5','m_B60_test33e-06.h5', 'm_B60_test325e-06.h5', 'm_B60_test32e-06.h5', 'm_B60_test3154e-06.h5'...
+    'm_B60_test31e-06.h5', 'm_B60_test308e-06.h5','m_B60_test306e-06.h5'...
+    'm_B60_test305e-06.h5', 'm_B60_test303e-06.h5', 'm_B60_test3e-06.h5', 'm_B60_test29e-06.h5', 'm_B60_test28e-06.h5'};
+% Initialize figure
+fnames = {'m_B60_test3154e-06.h5','m_B60_test31e-06.h5', 'm_B60_test308e-06.h5', 'm_B60_test303e-06.h5','m_B60_test275e-06.h5'};
+figure;
+tiledlayout(ceil(numPlots / 2), 2, 'TileSpacing', 'Compact');
+
+% Loop through each B60 value
+for i = 1:numPlots
+    % Construct the filename for the HDF5 file
+    B60 = B60Arr(i);
+    fname = fnames{i};
+    
+    % Read data from HDF5 file
+    testJz = h5read(fname, '/testJz');
+    H = h5read(fname, '/H');
+    mag = h5read(fname, '/mag');
+    Mdata2K = h5read(fname, '/Mdata2K');
+    B60_read = h5readatt(fname, '/', 'B60');
+    
+    
+    % Extract 2K MPMS data
+    Mdata2K_H = Mdata2K(:, 1); % Field values
+    Mdata2K_M = Mdata2K(:, 2) / 1.35; % Magnetization values, scaled
+    
+    % Create subplot
+    figure;
+    hold on;
+    grid on;
+    
+    % Plot 2K MPMS data
+    plot(Mdata2K_H, Mdata2K_M, 'o', 'DisplayName', '2K MPMS data');
+    
+    % Plot M for each test Jz value
+    for j = 1:length(testJz)
+        plot(H, mag(:, j), 'DisplayName', sprintf('Jz = %.3e', testJz(j)));
+    end
+    
+    % Add vertical line at 5.4
+    % xline(5.4, '--', 'Color', [0.5, 0.5, 0.5], 'LineWidth', 1, 'DisplayName', 'H = 5.4 T');
+    
+    % Add labels, legend, and title
+    xlabel('H (T)');
+    ylabel('M (\mu_B/Er)');
+    legend('Location', 'best', 'FontSize', 8);
+    title(sprintf('Magnetization for B60 = %.6e', B60), 'FontSize', 10);
+    xlim([0 7])
+    hold off;
+end
+
+% Add overall title
+sgtitle('Magnetization vs Field (T) for various B60 values', 'FontSize', 12);
