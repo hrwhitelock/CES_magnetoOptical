@@ -1068,32 +1068,34 @@ B43 = -0.01393 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
-B60Arr = [3.05e-6, 3.03e-6]#[3.25e-6, 3.2e-6, 3.154e-6, 3.1e-6, 3.08e-6, 3.06e-6, 3.05e-6, 3.03e-6]
-testJz = [.48e-3, -.48e-3, 1e-3, -1e-3, -2e-3, 2e-3, -4e-3, 4e-3]
-H = np.linspace(3,8, 50)
+B60Arr = [2.75e-6]#[3.0e-6, 2.9e-6, 2.8e-6]#[3.25e-6, 3.2e-6, 3.154e-6, 3.1e-6, 3.08e-6, 3.06e-6, 3.05e-6, 3.03e-6]
+testJz = [.48e-3, -.48e-3, 1e-3, -1e-3, -2e-3, 2e-3, -4e-3, 4e-3, 5e-3, -5e-3]
+H = np.linspace(0,8, 50)
 for B60 in B60Arr: 
     g = cef.LandeGFactor(ion)
     myBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     MyErObj = cef.CFLevels.Bdict(ion,myBparams)
     plt.figure()
     plt.grid(True)
-    temperature = 0.1 # I know this is where we'll see a defined peak
+    temperature = 2 # I know this is where we'll see a defined peak
     # temp is low enought that we need to use my mft code
+    mArr = []
     dmdhArr = []
+    plt.plot(Mdata2K[0], Mdata2K[1]/1.35, 'o', label = '2K MPMS data')
     for Jz in testJz: 
         m = MFTmagC(MyErObj, H, Jz, temperature)
-        dmdh = np.gradient(m, H)
-        dmdhArr.append(dmdh)
-        
-        plt.plot(H, dmdh, label = 'Jz = '+str(Jz))
+        mArr.append(m)
+        plt.plot(H, m, label = 'Jz = '+str(Jz))
         plt.vlines(x = 5.4, ymin=0, ymax = 300)
-        plt.xlabel('Field (T)')
-        plt.ylabel('dM/dH')
+        plt.xlabel('H [T]')
+        plt.ylabel('M [\mu_B/Er')
         plt.legend()
+        plt.xlim(3,8)
     plt.title('dmdh for test B60 = '+str(B60))
-    fname = 'dmdh_B60_test'+str(B60)+'.h5'
+    fname = 'm_B60_test'+str(B60)+'.h5'
     with h5py.File(fname, 'w') as hdf:
         hdf.create_dataset('testJz', data=testJz)
         hdf.create_dataset('H', data=H)
-        hdf.create_dataset('dmdhArr', data=np.array(dmdhArr))
+        hdf.create_dataset('mag', data=np.array(mArr))
+        hdf.create_dataset('Mdata2K', data=Mdata2K)
         hdf.attrs['B60'] = B60

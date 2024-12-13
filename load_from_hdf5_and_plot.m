@@ -598,7 +598,7 @@ hold off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% plot the new mft code
 % Load data from HDF5 file
-filename = 'hopes_MFT_c_axis_calculation.h5';
+filename = 'hopes_fitted_Jz_MFT_c_axis_calculation.h5';
 
 % Read datasets
 MFTField = h5read(filename, '/MFTField');
@@ -619,7 +619,7 @@ B60 = h5readatt(filename, '/', 'B60');
 B63 = h5readatt(filename, '/', 'B63');
 B66 = h5readatt(filename, '/', 'B66');
 Jz = h5readatt(filename, '/', 'Jz');
-JzAllen = h5readatt(filename, '/', 'JzAllen');
+% JzAllen = h5readatt(filename, '/', 'JzAllen');
 
 % Prepare colors for plotting
 nColors = size(tempMagC, 2); % Number of temperature magnetizations
@@ -643,51 +643,49 @@ plot(MFTField, allenMFTCaxis, 'b--', 'DisplayName', 'Allens 2K MFT calculation')
 
 % Plot temperature-dependent magnetizations
 for i = 1:nColors
-    plot(H, tempMagC(:, i), '-', 'Color', colors(i, :), 'DisplayName', strcat('My params my code', labels(i)));
+    plot(H, tempMagC(:, i), '-', 'Color', colors(i, :), 'DisplayName', strcat('Allens B params, my code, fitted Jz', labels(i)));
 end
 
 % Set plot limits
 xlim([0, 7]);
 ylim([0, 8]);
 
-% Add legend
-legend('Location', 'best');
 
 % Add title and labels
-title(sprintf('C magnetization\n B20 = %.7f B40 = %.7f B43 = %.7f\n B60 = %.7f B63 = %.7f B66 = %.7f\n Jz = %.7f JzAllen = %.7f', ...
-    B20, B40, B43, B60, B63, B66, Jz, JzAllen));
+title(sprintf('C magnetization\n B20 = %.7f B40 = %.7f B43 = %.7f\n B60 = %.7f B63 = %.7f B66 = %.7f\n Jz = %.7f', ...
+    B20, B40, B43, B60, B63, B66, Jz));
 xlabel('Field (T)');
 ylabel('Magnetization (\mu_B/Er)');
 
 % now load my params allens code
-filename = 'M_vs_H_temperature_dependence_myParams_allensCode.h5';
-
-% Read datasets
-temps = h5read(filename, '/temps');
-tempMag = h5read(filename, '/tempMag');
-MFTField = h5read(filename, '/MFTField');
-
-nColors = size(tempMag, 2); % Number of temperature magnetizations
-colors = parula(nColors); 
-
-for i = 1:nColors
-    plot(MFTField, tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['my B params allens code', num2str(temps(i)), 'K']);
-end
-
-% now load my params allens code
-filename = 'M_vs_H_temperature_dependence_allens_code_allens_params.h5';
-
-% Read datasets
-temps = h5read(filename, '/temps');
-tempMag = h5read(filename, '/tempMagAllen');
-MFTField = h5read(filename, '/MFTField');
-
-nColors = size(tempMag, 2); % Number of temperature magnetizations
-colors = parula(nColors); 
-
-for i = 1:nColors
-    plot(MFTField,tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['Allens B params allens code', num2str(temps(i)), 'K']);
-end
+% filename = 'M_vs_H_temperature_dependence_myParams_allensCode.h5';
+% 
+% % Read datasets
+% temps = h5read(filename, '/temps');
+% tempMag = h5read(filename, '/tempMag');
+% MFTField = h5read(filename, '/MFTField');
+% 
+% nColors = size(tempMag, 2); % Number of temperature magnetizations
+% colors = parula(nColors); 
+% 
+% for i = 1:nColors
+%     plot(MFTField, tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['my B params allens code', num2str(temps(i)), 'K']);
+% end
+% 
+% % now load my params allens code
+% filename = 'M_vs_H_temperature_dependence_allens_code_allens_params.h5';
+% 
+% % Read datasets
+% temps = h5read(filename, '/temps');
+% tempMag = h5read(filename, '/tempMagAllen');
+% MFTField = h5read(filename, '/MFTField');
+% 
+% nColors = size(tempMag, 2); % Number of temperature magnetizations
+% colors = parula(nColors); 
+% 
+% for i = 1:nColors
+%     plot(MFTField,tempMag(:, i), '-', 'Color', colors(i, :), 'DisplayName', ['Allens B params allens code', num2str(temps(i)), 'K']);
+% end
 %% plot the new mft code
 % Load data from HDF5 file
 filename = 'hopes_MFT_b_axis_calculation.h5';

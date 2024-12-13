@@ -8,7 +8,7 @@ def bmag(mag, J,  h, temperature):
 
 def cmag(mag, J,  h, temperature):
     newh = h +q*J*mag/muB/1.2/1.2
-    mag = -1*MyErObj.magnetization(ion, temperature, [0,0, newh]).T[2]-mag
+    mag = -1*AllenErObj.magnetization(ion, temperature, [0,0, newh]).T[2]-mag
     return mag
 
 def MFTmagC(ionObj, H, J, temperature): 
@@ -50,15 +50,23 @@ colors = plt.cm.jet(np.linspace(0,1,n))
 tempMagB = []
 tempMagC = []
 H = np.linspace(0,10, 100)
-Jz = 0.48e-3
+Jz = -2.53e-3#0.48e-3
 Jperp = -0.9e-3
 
 tempMagB =[]
 for temperature in temps: 
-    temp = MFTmagB(MyErObj, H, Jperp, temperature)
-    tempMagB.append(temp)
-    # temp = MFTmagC(MyErObj, H, Jz, temperature)
-    # tempMagC.append(temp)
+    # temp = MFTmagB(MyErObj, H, Jperp, temperature)
+    # tempMagB.append(temp)
+    temp = MFTmagC(AllenErObj, H, Jz, temperature)
+    tempMagC.append(temp)
+
+B20 = -3.559e-2
+B40 = -3.849e-4
+B43 = -1.393e-2
+B60 =  3.154e-6
+B63 = -4.695e-6
+B66 =  3.3815e-5
+Jz = -2.53e-3
 
 
 plt.figure()
@@ -139,7 +147,7 @@ plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
 plt.show()
 
-with h5py.File('hopes_MFT_c_axis_calculation.h5', 'w') as f:
+with h5py.File('hopes_fitted_Jz_MFT_c_axis_calculation.h5', 'w') as f:
     f.create_dataset('MFTField', data=MFTField)
     f.create_dataset('magnetization2K', data=Mdata2K)
     f.create_dataset('magnetization6K', data=Mdata6K)
