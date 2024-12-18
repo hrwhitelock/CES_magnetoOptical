@@ -1,5 +1,4 @@
 ## scratch MFT  code
-# rlly annoyed that all of my concerns were like real lol
 
 def bmag(mag, J,  h, temperature):
     newh = h +q*J*mag/muB/1.2/1.2
