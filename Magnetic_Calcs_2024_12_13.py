@@ -176,3 +176,111 @@ plt.title('B magnetization \n B20 ='+str(MyErObj.B[0])+ 'B40 = '+str(MyErObj.B[1
 plt.xlabel('Field (T)')
 plt.ylabel('Magnetization (uB/Er)')
 plt.show()
+
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+# let's calculate dmdh
+temps = [0.025, 0.1, 0.174, .25, .35, .422, .543, .658, .827, 1.008]
+# recalculatign to match data perfectly :'(
+labels = [str(T)+ 'K' for T in temps]
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+tempMagC_Allen = []
+tempMagC_me = []
+
+# temps = [0.0001]
+
+H = np.concatenate((np.linspace(0,1,30), np.linspace(1.01,10, 100)))
+# H = np.linspace(0,1,100)
+
+for temperature in temps: 
+    # temp = MFTmagC(MyErObj, H, Jz, temperature)
+    # tempMagC_me.append(temp)
+    temp = MFTmagC(AllenErObj, H, JzAllen, temperature)
+    tempMagC_Allen.append(temp)
+
+
+dmdhArr_me = []
+dmdhArr_Allen = []
+
+for mag_me, mag_Allen in zip(tempMagC_me,tempMagC_Allen): 
+    # dmdhArr_me.append(np.gradient(mag_me, H))
+    dmdhArr_Allen.append(np.gradient(mag_Allen, H))
+
+# load dmdh data
+fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/25mKdn022.txt', # '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/45mKdn035.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/100mKUp021.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/174mKDn020.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/249mKUp019.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/345mKDn018.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/422mKUp017.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/543mKDn016.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/658mKUp015.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/827mKDn013-14.txt', 
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/1008mKdn033.txt']
+labels = ['25mK', '100mK', '174mK', '249mK', '345mK', '422mK', '543mK', '658mK', '827mK', '1008mK']
+xArrs = []
+yArrs =[]
+
+for fname in fnames: 
+    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+    xArrs.append(temp[0])
+    yArrs.append(temp[1])
+
+n = len(labels)
+colors = plt.cm.inferno(np.linspace(0,0.8,n))
+
+sm = plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1))
+
+plt.figure()
+plt.grid(True)
+# cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1),ax=plt.gca()))
+i = 0
+for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdhArr_me ): 
+    y = np.log(y)
+    y = y + min(y)*-1
+    y = y/max(y)
+    dm = np.log(dm)
+    dm = dm+min(dm)*-1
+    dm = dm/max(dm)
+    plt.plot(x,y+i*.4, label = label, color = color)
+    plt.annotate(labels[i], xy = (11, i*.4 +.1), fontsize = 9)
+    plt.plot(H, dm +i*.4, '--', label = label, color = color)
+    i+=1
+plt.title('dM/dH from SCM1 \n my calculated dM/dH in dotted line')
+plt.ylabel('dM/dH (arb)')
+plt.xlabel('Field (T)')
+
+plt.figure()
+plt.grid(True)
+# cbar = plt.colorbar(plt.cm.ScalarMappable(cmap='inferno', norm=plt.Normalize(vmin=0.025, vmax=1),ax=plt.gca()))
+i = 0
+for x,y,label, color, dm in zip(xArrs, yArrs, labels, colors,dmdhArr_me ): 
+    y = np.log(y)
+    y = y + min(y)*-1
+    y = y/max(y)
+    dm = np.log(dm)
+    dm = dm+min(dm)*-1
+    dm = dm/max(dm)
+    plt.plot(x,y+i*.4, label = label, color = color)
+    plt.annotate(labels[i], xy = (11, i*.4 +.1), fontsize = 9)
+    plt.plot(H, dm +i*.4, '--', label = label, color = color)
+    i+=1
+plt.title('dM/dH from SCM1 \n Allens calculated dM/dH in dotted line')
+plt.ylabel('dM/dH (arb)')
+plt.xlabel('Field (T)')
+
+
+# save data
+with h5py.File('dmdh_with_scm1_data.h5', 'w') as hdf:
+    hdf.create_dataset('temps', data=temps)
+    hdf.create_dataset('MFTField', data=MFTField)
+    hdf.create_dataset('magF', data=magF)
+    hdf.create_dataset('tempMagC_me', data=np.array(tempMagC_me))
+    hdf.create_dataset('tempMagC_Allen', data=np.array(tempMagC_Allen))
+    hdf.create_dataset('dmdH', data=np.array(dmdH))
+    hdf.create_dataset('xArrs', data=np.array(xArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('yArrs', data=np.array(yArrs, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('labels', data=np.array(labels, dtype='S'))
