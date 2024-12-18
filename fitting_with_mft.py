@@ -2,172 +2,6 @@
 # I know it's fine, but I also know that I can do better
 
 
-# first step is to make a custom cost function to minimize
-# this should take AB plane IR, c axis raman, and 100mK dm/dh
-# I really think fitting the dm/dh will work idk i believe
-# the ir and raman need a huge penatly 
-
-def costfn(params): 
-    B20 = params[0] 
-    B40 = params[1]
-    B43 = params[2]
-    B60 = params[3]
-    B63 = params[4]
-    B66 = params[5]
-    Jz = params[6]
-    
-    ion = 'Er3+'
-
-    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
-    ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    evals = diagonalizeC(ionObj, ion, 0)
-    if evals[8]*meVToCm >200: 
-        cost = 1e12
-    else:
-        calcC = zeemanSplitC(fieldC, wavenumsC, ionObj)
-        calcB = zeemanSplitAB(fieldB, wavenumsB,ionObj)
-        calcdmdh = dmdhfn(arr, ionObj, Jz)
-        costC = np.sum((dataC - calcC)**2/calcC) # make amp set val, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10,width)
-        costB = np.sum((dataB - calcB)**2/calcB)
-        costdmdh = np.sum((dmdhData - calcdmdh)**2/calcdmdh)
-    
-    
-    cost = costC+costB+costdmdh
-    # check if line 8 > 200cm^-1 
-    # picking this line, because both c and b data show this much lower
-    
-    return cost
-
-def lorentzian( wave, amp, cen, wid ):
-    return np.array([amp * wid**2 / ( wid**2 + ( x - cen )**2) for x in wave])
-
-
-def diagonalizeC(ionObj, ion, Jz, H, temperature): 
-    # first calc effective h
-    H = MFTmagC(ionObj, H, Jz, temperature)
-    JdotB = muB*(H*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
-    H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
-    ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
-    return ionObj.eigenvalues 
-
-def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):    
-    # assuming that x is an array
-    # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
-    dEphonon = 49.3
-    phononAmp = 0.499
-    phononSig = 0.95
-    fun = []
-    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
-    ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    temperature = 10
-    for b in field: 
-        diagonalizeC(ionObj, ion, Jz, b, temperature)
-        dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-        tempAmp = amp
-        Z = [np.exp(-Ei/kBT) for Ei in dE]
-        Z = sum(Z)
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
-        numLines = len(dE)
-        for i in range(1,numLines): 
-            for j in range(i+1, numLines):
-                temp = dE[j]-dE[i]
-                dE.append(temp)
-                tempAmp.append(p[i]*amp[j])
-        wid = 0.6
-        centers = dE
-        tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
-        for i in range(len(centers)):
-            a = tempAmp[i]
-            tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
-        fun.append(tempfun)
-    return fun
-def diagonalizeAB(ionObj, ion, field): 
-    JdotB = muB*(field*cef.Operator.Jy(ionObj.J))*cef.LandeGFactor(ion)
-    H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
-    ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
-    evals = ionObj.eigenvalues
-    return evals
-def zeemanSplitAB(field, wavenum, ionObj):     
-    amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
-    fun = []
-    wid = 0.7
-    for b in field: 
-        evals = diagonalizeAB(ionObj, ion, b)
-        dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-        tempAmp = amp
-        Z = [np.exp(-Ei/kBT) for Ei in dE]
-        Z = sum(Z)
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
-        numLines = len(dE)
-        for i in range(1,numLines): 
-            for j in range(i+1, numLines):
-                temp = dE[j]-dE[i]
-                dE.append(temp)
-                tempAmp.append(p[i]*amp[j])
-        centers = dE
-        tempfun = np.zeros(len(wavenum)).tolist()
-        for i in range(len(centers)):
-            a = tempAmp[i]
-            tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
-        fun.append(tempfun)
-    return np.array(fun)
-
-def dmdhfn(field, ionObj, J): 
-    #first calc mag
-    mag = MFTmagC(ionObj, field, J)
-    dmdh = np.gradient(mag, field)*1e-6
-    return dmdh
-def cmag(mag, J,  h):
-    newh = h +q*J*mag/muB/1.2/1.2
-    mag = -1*MyErObj.magnetization(ion, 0.1, [0,0, newh]).T[2]-mag
-    return mag
-def MFTmagC(ionObj, H, J): 
-    # okay so let's start by defining the MF ham
-    # only doing c direction rn because that is faster
-    q = 6
-    ion = 'Er3+' # hard coded for now dont' @ me
-    n = 3 # iterations
-    # first step, call the pcf mag because that's a good place to start
-    magArr = []
-    for h in H: 
-        mag = 0
-        for i in range(n): 
-            mag = fsolve(cmag, mag, args = (J, h))[0] # fsolve spits out an array - this time its one val
-        magArr.append(mag) # fso
-    return magArr
-
-fieldC = [float(b) for b in dataC.columns.values]
-wavenumsC = [float(i) for i in dataC.index.values]
-
-fieldB = [float(b) for b in dataB.columns.values]
-wavenumsB = [float(i) for i in dataB.index.values]
-
-
-# load the 100mK data
-dmdhData = np.genfromtxt('/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CES_dmdh_100mK.txt', 
-                       delimiter='\t', unpack=True, skip_header=1)
-# let's interpolate this to save on computation time
-arr = np.linspace(0,7,100)
-dmdhData = np.interp(arr.flatten(), dmdhData[0].flatten(),dmdhData[1].flatten()) 
-dmdhData[0] = arr
-
-import scipy
-
-B20 = -0.03265325 # init = -0.03559)
-B40 = -0.0003849 # fixed)
-B43 = -0.01393 # fixed)
-B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
-B63 = -8.4011e-07 # init = -4.695e-06)
-B66 =  3.3815e-05 # fixed)
-Jz=0.48e-3
-
-result = scipy.optimize(costfn, [B20,B40,B43,B60,B63,B66,Jz])
-\
-
-
 ## let me just add mft to the c axis zeeman and see what that does
 def cmag(mag, J,  h, temperature, ionObj):
     newh = h +q*J*mag/muB/1.2/1.2
@@ -333,14 +167,6 @@ def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):
     return amp, dE
 
 
-B20 = -0.03689049 #/- 1.2695e-04 (0.34%) (init = -0.03559)
-B40 = -0.0003849
-B43 = -0.01393
-B60 =  3.1631e-06 #/- 4.1188e-09 (0.13%) (init = 3.154e-06)
-B63 = -3.3295e-06 #/- 1.1926e-07 (3.58%) (init = -4.695e-06)
-B66 =  3.3815e-05
-Jz =  -0.00256847 #/- 1.6205e-05 (0.63%) (init = -0.001)
-
 # params from full fit
 B20 = -0.03721092 # 3.3632e-04 (0.90%) (init = -0.03559)
 B40 = -3.8796e-04 # 8.4839e-07 (0.22%) (init = -0.0003849)
@@ -352,9 +178,8 @@ Jz =  -0.00263253 # 1.7886e-05 (0.68%) (init = -0.003)
 
 waveArr= np.linspace(0,120, 480)
 fieldArr = np.linspace(0,18, 100)
- # field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,width, phononCen, phononAmp, phononWid, amp9, amp10)
 
-#field, wavenum, B20, B40, B43, B60, B63, B66, amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8,amp9, amp10,width
+# make simulated data
 arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66, Jz)
 
 arrC = np.array(arrC)
@@ -363,9 +188,7 @@ arrC = np.array(arrC)
 
 plt.figure()
 plt.contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'Reds')
-# plt.xlim(0,17.5)
-# plt.ylim(20,100)
-# plt.clim(.1,2.5)
+
 plt.title('simulated fitted CES H||c data \n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66) + 'Jz = -2.53ueV')
 plt.xlabel('Field (T)')
 plt.ylabel('Wavenumber (cm$^{-1}$)')
@@ -449,8 +272,7 @@ plt.figure()
 plt.contourf(field, wavenums, ramanData,50)
 plt.xlim(0,17.5)
 plt.ylim(0,120)
-# plt.clim(0, 1)
-# plt.colorbar()
+
 plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i<16: 
