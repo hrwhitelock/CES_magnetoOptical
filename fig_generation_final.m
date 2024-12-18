@@ -34,101 +34,122 @@ fig = figure;
 ax1 = subplot(2,1,1);
 title('B-axis IR')
 hold on; 
-contourf(my_spec_data.IR_B_field, my_spec_data.IR_B_wavenums, my_spec_data.IR_dataB', 100, 'LineStyle', 'none')
+% imagesc('XData', my_spec_data.IR_B_field, 'YData',  my_spec_data.IR_B_wavenums, 'CData', my_spec_data.IR_dataB')
+pcolor(my_spec_data.IR_B_field,my_spec_data.IR_B_wavenums,my_spec_data.IR_dataB')
+% axis xy;
+shading flat
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
 end
+set(ax1,'Xticklabel',[])
+
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
-colormap(ax1, flipud(parula))
+colormap(ax1, jet)
+
 ax2 = subplot(2,1,2);
 hold on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none', 'EdgeSmoothing', 'none');
-colormap(ax4, flipud(parula))
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
+colormap(ax2, jet)
 clim([0 1])
 
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
 end
 
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
+
+ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
+
+ax2.Position(1)=ax1.Position(1);
+linkaxes([ax1, ax2], 'xy')
 
 %%
-ax2 = subplot(2,3,2);hold on; box on; 
-contourf(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC', 100, 'LineStyle', 'none')
+ax1 = subplot(2,1,1);hold on; box on; 
+pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
+shading flat
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth',1);
 end
 title('C-axis IR')
-colormap(ax2, flipud(parula))
+colormap(jet)
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
 
-ax5 = subplot(2,3,5);
+ax2 = subplot(2,1,2);
 hold on; box on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
-colormap(ax5, flipud(parula))
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
+colormap(jet)
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
 end
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
 
+ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
+ax2.Position(1)=ax1.Position(1);
+linkaxes([ax1, ax2], 'xy')
+set(ax1,'Xticklabel',[])
 
+%%
 
-
-% fig = figure;
-ax3 = subplot(2,3,3);box on; hold on; 
-contourf(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData', 100, 'LineStyle', 'none')
+fig = figure;
+ax1 = subplot(2,1,1);box on; hold on; 
+pcolor(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData'); 
+shading flat; 
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
 end
 ylim([0 100])
 xlim([0 17.5])
-colormap(ax3, 'cool')
+colormap('cool')
 title ('C-axis Raman')
-ax6 = subplot(2,3,6);
+
+ax2 = subplot(2,3,6);
 hold on; box on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_raman, 100, 'LineStyle', 'none');
-colormap(ax6, 'cool')
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_raman, 100, 'LineStyle', 'none');
+colormap('cool')
 % let's add some lines
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r:', 'LineWidth', 0.5);
+    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
 end
 clim([0 1])
 xlim([0 17.5])
 ylim([0 100])
 
-
-
-
-ax3.Position(2)=ax6.Position(2)+ax6.Position(4)+.02;
-ax1.Position(2)=ax4.Position(2)+ax4.Position(4)+.02;
-% 
-% ax4.Position(2)=ax6.Position(2)+ax6.Position(4);
-ax2.Position(2)=ax5.Position(2)+ax5.Position(4)+.02;
-% 
-% 
-% ax4.Position(1)=ax3.Position(1)+ax3.Position(3);
-ax2.Position(1)=ax1.Position(1)+ax1.Position(3);
-ax5.Position(1)=ax4.Position(1)+ax4.Position(3);
-linkaxes([ax1, ax2, ax3, ax4, ax5, ax6], 'xy')
-% ylabel('Energy [cm^{-1}]')
-% xlabel('H [t]')
-set(ax2,'Yticklabel',[]) 
+ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
+ax2.Position(1)=ax1.Position(1);
+linkaxes([ax1, ax2], 'xy')
 set(ax1,'Xticklabel',[])
-set(ax2,'Xticklabel',[])
 
-set(ax5,'Yticklabel',[]) 
-% set(ax5,'Xticklabel',[])
-
-
-set(ax3,'Xticklabel',[])
+% 
+% ax3.Position(2)=ax6.Position(2)+ax6.Position(4)+.02;
+% ax1.Position(2)=ax4.Position(2)+ax4.Position(4)+.02;
+% % 
+% % ax4.Position(2)=ax6.Position(2)+ax6.Position(4);
+% ax2.Position(2)=ax5.Position(2)+ax5.Position(4)+.02;
+% % 
+% % 
+% % ax4.Position(1)=ax3.Position(1)+ax3.Position(3);
+% ax2.Position(1)=ax1.Position(1)+ax1.Position(3);
+% ax5.Position(1)=ax4.Position(1)+ax4.Position(3);
+% linkaxes([ax1, ax2, ax3, ax4, ax5, ax6], 'xy')
+% % ylabel('Energy [cm^{-1}]')
+% % xlabel('H [t]')
+% set(ax2,'Yticklabel',[]) 
+% set(ax1,'Xticklabel',[])
+% set(ax2,'Xticklabel',[])
+% 
+% set(ax5,'Yticklabel',[]) 
+% % set(ax5,'Xticklabel',[])
+% 
+% 
+% set(ax3,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
@@ -539,3 +560,60 @@ legend()
 xlabel('H[T]')
 ylabel('M \mu_B/Er')
 title('My params')
+
+%% make fig 1
+% Load data from HDF5
+fileName = 'lines_noNorm.h5';
+ZFevals = h5read(fileName, '/ZFevals');
+ABevals = h5read(fileName, '/ABevals');
+Cevals = h5read(fileName, '/Cevals');
+field = h5read(fileName, '/field');
+B20 = h5readatt(fileName, '/', 'B20');
+B40 = h5readatt(fileName, '/', 'B40');
+B43 = h5readatt(fileName, '/', 'B43');
+B60 = h5readatt(fileName, '/', 'B60');
+B63 = h5readatt(fileName, '/', 'B63');
+B66 = h5readatt(fileName, '/', 'B66');
+
+% Create the figure with subplots
+figure;
+hold on;
+tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+% Plot ZFevals (H = 0)
+nexttile;hold on;
+for i = 1:size(ZFevals, 2)
+    yline(ZFevals(1, i), 'LineWidth', 1.2);
+end
+title('H = 0');
+xlabel('Field (T)');
+ylabel('Energy');
+
+% Plot ABevals (H || b)
+nexttile;hold on;
+hold on;
+for i = 1:size(ABevals, 2)
+    plot(field, ABevals(:, i), 'LineWidth', 1.2);
+end
+title('H || b');
+xlabel('Field (T)');
+
+% Plot Cevals (H || c)
+nexttile;
+hold on;
+for i = 1:size(Cevals, 2)
+    plot(field, Cevals(:, i), 'LineWidth', 1.2);
+end
+title('H || c');
+xlabel('Field (T)');
+
+% Set shared properties
+for ax = 1:3
+    nexttile(ax);
+    xlim([0, 10]);
+    ylim([-15, 15]);
+end
+
+% Add overall title
+sgtitle(sprintf('Eigenvalue Splitting\nB20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
+    B20, B40, B43, B60, B63, B66), 'FontSize', 14);
