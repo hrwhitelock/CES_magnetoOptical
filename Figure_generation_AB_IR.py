@@ -45,6 +45,17 @@ dataB = dataB.drop(labels='0.001', axis=1) # drop this column because we used it
 
 dataB = dataB/dataB.max(axis=None)
 
+for index in dataB.index:
+    if index<20: 
+        dataB = dataB.drop(labels=index , axis = 0)
+    if index>110:
+        dataB = dataB.drop(labels=index , axis = 0)
+
+for col in dataB.columns: 
+    for idx in dataB.index: 
+        if dataB.loc[idx,col] <0: 
+            dataB.loc[idx,col] = 0
+
 
 
 ################################################################

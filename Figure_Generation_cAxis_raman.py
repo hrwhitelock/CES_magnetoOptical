@@ -118,7 +118,7 @@ fieldArr = np.linspace(0,20, 100)
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
+B60 =  2.75e-6#3.079e-6 #3.054e-06 # fixed) # this B60 param determined from field induced transition
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
@@ -331,15 +331,16 @@ simulatedRaman = arrC
 B20 = -0.03265325 # init = -0.03559)
 B40 = -0.0003849 # fixed)
 B43 = -0.01393 # fixed)
-B60 =  3.079e-6 # fixed)
+B60 =  2.75e-6#3.079e-6 # fixed)
 B63 = -8.4011e-07 # init = -4.695e-06)
 B66 =  3.3815e-05 # fixed)
 
-field = [float(b) for b in ramanData.columns.values]
-wavenums = [float(i) for i in ramanData.index.values]
-waveArr= wavenums
-fieldArr = field 
-
+# field = [float(b) for b in ramanData.columns.values]
+# wavenums = [float(i) for i in ramanData.index.values]
+# waveArr= wavenums
+# fieldArr = field 
+fieldArr = np.linspace(0,18,100)
+wavenums = np.linspace(0,120,200)
 
 ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66)
 arrC = np.array(arrC)
@@ -349,15 +350,15 @@ arrC = arrC.T
 ampC = np.array(ampC)
 ampC = ampC.T
 
-# plt.figure()
+plt.figure()
 plt.xlabel('Field (T)')
 plt.ylabel('Energy (cm$^{-1}$)')
 # plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i ==1: 
-        plt.plot(fieldArr, arrC[i], 'bo', alpha=0.7, label = 'calculated from Raman fit')
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'calculated from Raman fit')
     elif i<16 and i !=1: 
-        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
 
 # now Allen
 B20 =  -0.03559
@@ -376,24 +377,24 @@ ampC = np.array(ampC)
 ampC = ampC.T
 
 
-plt.figure()
-plt.contourf(field, wavenums, ramanData,50)
-plt.xlim(0,14)
-plt.ylim(0,120)
-plt.clim(0, 1)
-plt.colorbar()
+# plt.figure()
+# plt.contourf(field, wavenums, ramanData,50)
+# plt.xlim(0,14)
+# plt.ylim(0,120)
+# plt.clim(0, 1)
+# plt.colorbar()
 
-plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i == 1: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'calculated from Neutron fit')
+        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7, label = 'calculated from Neutron fit')
     elif i<16 and i !=1: 
-        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7)
 plt.legend()
 # plt.title('Calculated CES lines')
 
 
-with h5py.File('CsErSe2_raman_line_calculation.h5', 'w') as hdf:
+with h5py.File('CsErSe2_test_B60_lines.h5', 'w') as hdf:
     hdf.create_dataset('ramanData', data=ramanData.values)
     hdf.create_dataset('fields', data=np.array(field, dtype='S'))
     hdf.create_dataset('wavenums', data=wavenums)
@@ -407,3 +408,74 @@ with h5py.File('CsErSe2_raman_line_calculation.h5', 'w') as hdf:
     hdf.attrs['B60'] = B60
     hdf.attrs['B63'] = B63
     hdf.attrs['B66'] = B66
+
+
+
+############################################################
+# without the data, just a plot of my lines in red, Allen's in blue
+# No Jz first
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.154e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
+Jz = 0
+
+# field = [float(b) for b in ramanData.columns.values]
+# wavenums = [float(i) for i in ramanData.index.values]
+# waveArr= wavenums
+# fieldArr = field 
+fieldArr = np.linspace(0,18,100)
+wavenums = np.linspace(0,120,200)
+
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66, Jz)
+arrC = np.array(arrC)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(ampC)
+ampC = ampC.T
+
+plt.figure()
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i ==1: 
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7, label = 'Jz = 0')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
+
+# now Allen
+B20 =  -0.03559
+B40 =  -0.0003849 
+B43 =  -0.01393
+B60 =   3.154e-06
+B63 =  -4.695e-06
+B66 =   3.3815e-05
+J = -2.53e-3
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66, Jz)
+arrC = np.array(arrC)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(ampC)
+ampC = ampC.T
+
+
+# plt.figure()
+# plt.contourf(field, wavenums, ramanData,50)
+# plt.xlim(0,14)
+# plt.ylim(0,120)
+# plt.clim(0, 1)
+# plt.colorbar()
+
+# plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+for i in range(40):
+    if i == 1: 
+        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7, label = 'Jz = 2.53\mu eV')
+    elif i<16 and i !=1: 
+        plt.plot(fieldArr, arrC[i], 'b', alpha=0.7)
+plt.legend()
+# plt.title('Calculated CES lines')

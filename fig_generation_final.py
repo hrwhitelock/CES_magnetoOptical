@@ -361,24 +361,25 @@ with h5py.File(sus_calc_fname, 'w') as hdf:
 # grab 2k data
 fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_2K.txt'
 Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
-temperature = 1.8
+temperature = 2.1
 # J vals
-Jvals = np.linspace(0, 2, 5)*Jz
-# tempMagC = []
-plt.figure()
+Jvals = np.linspace(0.75, 1.25, 5)*Jz
+tempMagC = []
+
 for j in Jvals: 
     temp = MFTmagC(ionObj, H, j, temperature)
     tempMagC.append(temp)
-    plt.plot(H, temp, label = 'JJz =' + str(j))
+
 
 
 plt.figure()
 for j, temp in zip(Jvals, tempMagC): 
     plt.plot(H, temp, label = 'JJz =' + str(j))
 
-plt.plot(Mdata2K[0], Mdata2K[1]/1.37, 'bo')
+plt.plot(Mdata2K[0], Mdata2K[1]/1.42, 'bo')
 plt.grid(True)
 plt.xlim(0,8)
+plt.ylim(0,8)
 
 with h5py.File('jjz_test.h5', 'w') as hdf:
     hdf.create_dataset('H', data=H)

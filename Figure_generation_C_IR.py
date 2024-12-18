@@ -29,7 +29,7 @@ dataC = dataC.dropna(axis = 0)
 dataC = dataC.dropna(axis=1)
 dataC = dataC.drop(labels = '-1.1', axis=1)
 rawData = dataC
-rawData = rawData.drop(labels = '-1.1', axis=1)
+
 
 normSpec = dataC['0.001']/max(dataC['0.001'])*-1
 avgSpec = normSpec
