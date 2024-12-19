@@ -575,6 +575,12 @@ B60 = h5readatt(fileName, '/', 'B60');
 B63 = h5readatt(fileName, '/', 'B63');
 B66 = h5readatt(fileName, '/', 'B66');
 
+
+fileName = 'lines_noNorm_nomft.h5';
+ZFevals_nomft = h5read(fileName, '/ZFevals');
+ABevals_nomft = h5read(fileName, '/ABevals');
+Cevals_nomft = h5read(fileName, '/Cevals');
+
 % Create the figure with subplots
 figure;
 hold on;
@@ -582,8 +588,8 @@ tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 
 % Plot ZFevals (H = 0)
 nexttile;hold on;
-for i = 1:size(ZFevals, 2)
-    yline(ZFevals(1, i), 'LineWidth', 1.2);
+for i = 1:size(ZFevals)
+    yline(ZFevals(i)+abs(ZFevals(1)), 'LineWidth', 1.2);
 end
 title('H = 0');
 xlabel('Field (T)');
@@ -593,7 +599,8 @@ ylabel('Energy');
 nexttile;hold on;
 hold on;
 for i = 1:size(ABevals, 2)
-    plot(field, ABevals(:, i), 'LineWidth', 1.2);
+    plot(field, ABevals(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2);
+    plot(field, ABevals_nomft(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2, 'LineStyle', '--');
 end
 title('H || b');
 xlabel('Field (T)');
@@ -602,7 +609,8 @@ xlabel('Field (T)');
 nexttile;
 hold on;
 for i = 1:size(Cevals, 2)
-    plot(field, Cevals(:, i), 'LineWidth', 1.2);
+    plot(field, Cevals(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2);
+    plot(field, Cevals_nomft(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2, 'LineStyle', '--');
 end
 title('H || c');
 xlabel('Field (T)');
@@ -611,9 +619,9 @@ xlabel('Field (T)');
 for ax = 1:3
     nexttile(ax);
     xlim([0, 10]);
-    ylim([-15, 15]);
+    ylim([-5, 30]);
 end
 
 % Add overall title
-sgtitle(sprintf('Eigenvalue Splitting\nB20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
+sgtitle(sprintf('B20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
     B20, B40, B43, B60, B63, B66), 'FontSize', 14);

@@ -894,15 +894,15 @@ def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jperp):
     return dE
 
 # first let's get the zf vals
-ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, Jz)
+ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0)
 
 # now let's get the AB vals
 field = np.linspace(0,10,50)
-ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
+ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, 0)
 
 # now let's get the Cvals
 field = np.linspace(0,10,50)
-Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
+Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, 0)
 
 ABevals = np.array(ABevals).T
 Cevals = np.array(Cevals).T
@@ -927,7 +927,7 @@ axs[2].set_title('H||c')
 
 
 # Save data to HDF5
-with h5py.File('lines_noNorm.h5', 'w') as hdf:
+with h5py.File('lines_noNorm_nomft.h5', 'w') as hdf:
     hdf.create_dataset('ZFevals', data=ZFevals)
     hdf.create_dataset('ABevals', data=ABevals)
     hdf.create_dataset('Cevals', data=Cevals)
@@ -940,3 +940,37 @@ with h5py.File('lines_noNorm.h5', 'w') as hdf:
     hdf.attrs['B66'] = B66
     hdf.attrs['Jz'] = Jz
     hdf.attrs['Jperp'] = Jperp
+
+#######################################
+#######################################
+#######################################
+#######################################
+#######################################
+#######################################
+#######################################
+#######################################
+# take a sec and calculate a couple temps w J
+# just around 2K, to see how that looks
+fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_2K.txt'
+
+Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
+temps = np.linspace(1.8,2.5,10)
+
+H = np.linspace(0, 8, 30)  # Field values
+J_values = [-2.11e-3, -2.05e-3, -1.9e-3, -2.53e-3]  # J values
+
+# Initialize HDF5 file
+with h5py.File('magnetization_data.h5', 'w') as hdf:
+    hdf.create_dataset('H', data=H)
+    hdf.create_dataset('Mdata2K', data=Mdata2K)
+    hdf.create_dataset('temps', data=temps)
+    
+    for J in J_values:
+        tempMag = []
+        for temp in temps:
+            mag = MFTmagC(ionObj, H, J, temp)  # Replace `None` with the actual ion object if needed
+            tempMag.append(mag)
+        tempMag = np.array(tempMag)
+        group = hdf.create_group(f'J_{J}')
+        group.create_dataset('mag', data=tempMag)
+        group.attrs['J'] = J
