@@ -157,12 +157,12 @@ fitData = tempDF
 # I've defined functions in another file for cleanliness
 
 #model 1 from Allen's paper
-B20 = -3.559e-2
-B40 = -3.849e-4
-B43 = -1.393e-2
-B60 = 3.154e-6
-B63 = -4.695e-6
-B66 = 3.3815e-5
+B20 = -2.773e-2
+B40 = -3.987e-4
+B43 = -1.416e-2
+B60 = 3.152e-6
+B63 = -7.616e-6
+B66 = 3.275e-5
 
 
 field = [float(b) for b in fitData.columns.values]
@@ -172,15 +172,8 @@ plt.figure()
 plt.contourf(field, wavenums, fitData, 100)
 plt.colorbar()
 
-# B20= 0
-# B40= 0
-# B43= 0
-# B60= 0
-# B63= 0
-# B66= 0
 
-
-model = lmfit.Model(zeemanSplitC, independent_vars=['field', 'wavenum'])
+model = lmfit.Model(zeemanSplitC_raman, independent_vars=['field', 'wavenum'])
 params = model.make_params()
 
 params['B20'].set(value= B20, min = -.06, max = 0.06)
@@ -189,32 +182,11 @@ params['B43'].set(value= B43, min = -.06, max = 0.06)
 params['B60'].set(value= B60, min = -.06, max = 0.06)
 params['B63'].set(value= B63, min = -.06, max = 0.06)
 params['B66'].set(value= B66, min = -.06, max = 0.06)
-params['amp1'].set(value = 0.5, vary = False)
-params['amp2'].set(value = 0.3, vary = False)
-params['amp3'].set(value = 0.7, min = 0.2, max = 1)
-params['amp4'].set(value = 0.3, min = 0.15, max = 1)
-params['amp5'].set(value = 0.5, min = 0.2, max = 1)
-params['amp6'].set(value = 0.5, min = 0.2, max = 1)
-params['amp7'].set(value = 0.5, min = 0.2, max = 1)
-params['amp8'].set(value = 0.5, min = 0.2, max = 1)
-params['amp9'].set(value = 0.5, min = 0.05, max = 1)
-params['amp10'].set(value = 0.5, min = 0.05, max = 1)
-params['width'].set(value = 0.5, min = 0.0, max = 2.0)
-# params['phononCen'].set(value = 49.2)
-# params['phononAmp'].set(value = 0.5)
-# params['phononWid'].set(value = 1)
-# params['amp11'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp12'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp13'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp14'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp15'].set(value = 0.5, min = 0.0, max = 1)
-# params['amp16'].set(value = 0.5, min = 0.0, max = 1)
+params['Jz'].set(value = -2.63e-3)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
-
-result = model.fit(z, field=field, wavenum=wavenums, params =params)
-
+result = model.fit(z, field=field, wavenum=wavenums, params =params, method = 'ampgo')
 print(result.fit_report())
 
 '''

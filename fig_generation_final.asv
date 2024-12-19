@@ -2,7 +2,7 @@
 
 % let's start with making the paper figures
 %% load my spectroscopy data
-filename = 'model_2_fit_spec.h5'%spectroscopy_calculation_hopes_params.h5';
+filename = 'spectroscopy_calculation_hopes_params.h5';
 
 info = h5info(filename, '/');
 my_spec_data = struct; 
@@ -50,7 +50,7 @@ colormap(ax1, jet)
 
 ax2 = subplot(2,1,2);
 hold on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
 colormap(ax2, jet)
 clim([0 1])
 
@@ -67,7 +67,7 @@ ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
 ax2.Position(1)=ax1.Position(1);
 linkaxes([ax1, ax2], 'xy')
 
-%% c axis IR
+%%
 ax1 = subplot(2,1,1);hold on; box on; 
 pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
 shading flat
@@ -75,7 +75,6 @@ for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth',1);
 end
 title('C-axis IR')
-ylabel({'Data', 'Energy [cm{^-1}]'})
 colormap(jet)
 clim([0 1])
 ylim([0 100])
@@ -83,7 +82,7 @@ xlim([0 17.5])
 
 ax2 = subplot(2,1,2);
 hold on; box on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
 colormap(jet)
 for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
@@ -91,8 +90,6 @@ end
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
-ylabel({'Data', 'Energy [cm{^-1}]'})
-xlabel('H(T)')
 
 ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
 ax2.Position(1)=ax1.Position(1);
@@ -629,49 +626,4 @@ end
 sgtitle(sprintf('B20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
     B20, B40, B43, B60, B63, B66), 'FontSize', 14);
 
-%% checking J with different temperatures
-
-% Load data from HDF5
-fileName = 'JJz_temperature_test.h5';
-H = h5read(fileName, '/H');
-Mdata2K = h5read(fileName, '/Mdata2K');
-temps = h5read(fileName, '/temps');
-
-% Extract groups for J values
-info = h5info(fileName);
-J_groups = {info.Groups.Name};  % Names of groups (e.g., '/J_-2.11e-3')
-
-% Create one figure with subplots
-figure;
-numPlots = length(J_groups);  % Number of J values
-cols = ceil(sqrt(numPlots));  % Number of columns for subplots
-rows = ceil(numPlots / cols); % Number of rows for subplots
-
-for i = 1:numPlots
-    groupName = J_groups{i};
-    J = h5readatt(fileName, groupName, 'J');
-    mag = h5read(fileName, [groupName '/mag']);
-    
-    % Create subplot
-    subplot(rows, cols, i);
-    hold on;
-    plot(Mdata2K(:, 1), Mdata2K(:, 2) / 1.37, 'bo', 'DisplayName', '2K MPMS Data');
-    for j = 1:size(mag, 2)
-        plot(H, mag(:, j), 'DisplayName', sprintf('Temp = %.1f K', temps(j)));
-    end
-    xlim([0 8])
-    ylim([0 8])
-    hold off;
-    
-    % Add labels, legend, and title
-    xlabel('H [T]');
-    ylabel('M [\mu_B]');
-    title(sprintf('J = %.5f', J));
-    grid on;
-    if i == numPlots  % Add legend to the last subplot
-        legend show;
-    end
-end
-
-% Adjust layout for better spacing
-sgtitle('Magnetization Curves for Different J Values');
+%% checking J with different 

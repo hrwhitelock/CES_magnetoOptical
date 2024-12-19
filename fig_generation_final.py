@@ -12,6 +12,7 @@ from scipy.optimize import fsolve
 import pandas as pd
 import lmfit
 from matplotlib import font_manager
+from matplotlib.collections import LineCollection
 font_manager.fontManager.addfont('/Users/hopeless/Library/Fonts/cmunrm.ttf')
 plt.rcParams['mathtext.fontset'] = 'stix'
 plt.rcParams['font.family'] = 'CMU Serif'
@@ -487,28 +488,34 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
     fun = []
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    for b in field: 
-        evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
-        dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-        tempAmp = amp
-        Z = [np.exp(-Ei/kBT) for Ei in dE]
-        Z = sum(Z)
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
-        numLines = len(dE)
-        for i in range(1,numLines): 
-            for j in range(i+1, numLines):
-                temp = dE[j]-dE[i]
-                dE.append(temp)
-                tempAmp.append(p[i]*amp[j])
-        wid = 0.6
-        centers = dE
-        tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
-        # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
-        for i in range(len(centers)):
-            a = tempAmp[i]
-            tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
-        fun.append(tempfun)
+    evals = diagonalizeC(ionObj, ion, Jz, 0, temperature)
+    dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+    dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+    if dE[-1]*meVTocCmInv > 50: 
+        fun = np.ones((len(field), len(wavenums)))*50 # penalty for high energy B
+    else: 
+        for b in field: 
+            evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
+            dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+            dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+            tempAmp = amp
+            Z = [np.exp(-Ei/kBT) for Ei in dE]
+            Z = sum(Z)
+            p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
+            numLines = len(dE)
+            for i in range(1,numLines): 
+                for j in range(i+1, numLines):
+                    temp = dE[j]-dE[i]
+                    dE.append(temp)
+                    tempAmp.append(p[i]*amp[j])
+            wid = 0.6
+            centers = dE
+            tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
+            # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
+            for i in range(len(centers)):
+                a = tempAmp[i]
+                tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
+            fun.append(tempfun)
     return fun
 
 def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):    
@@ -787,37 +794,51 @@ for idx in fitData.index:
         dropidx.append(idx)
 fitData = fitData.drop(labels = dropidx, axis = 0)
 
-
-B20 = 3.114e-2
-B40 = -4.718e-4
-B43 = 1.259e-2
-B60 =  9.324e-7
-B63 = 4.715e-5
-B66 =  2.011e-5
+fitData = dataB
+# B20 = 3.114e-2
+# B40 = -4.718e-4
+# B43 = 1.259e-2
+# B60 =  9.324e-7
+# B63 = 4.715e-5
+# B66 =  2.011e-5
+# global fit starting from model 2
+B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
+B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
+B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
+B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
+B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
+B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
+Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
 field = [float(b) for b in fitData.columns.values]
 wavenum = [float(i) for i in fitData.index.values]
 # now do fit
-model = lmfit.Model(zeemanSplitC, independent_vars=['field', 'wavenum'])
+model = lmfit.Model(zeemanSplitAB, independent_vars=['field', 'wavenum'])
 params = model.make_params()
 
-params['B20'].set(value= B20, min = -.06, max = 0.06)
-params['B40'].set(value= B40, min = -.06, max = 0.06)
-params['B43'].set(value= B43, min = -.06, max = 0.06)
-params['B60'].set(value= B60, min = -.06, max = 0.06)
-params['B63'].set(value= B63, min = -.06, max = 0.06)
-params['B66'].set(value= B66, min = -.06, max = 0.06)
-params['Jz'].set(value = 0)
+params['B20'].set(value= B20, vary = False)# = -.06, max = 0.06)
+params['B40'].set(value= B40, vary = False)# = -.06, max = 0.06)
+params['B43'].set(value= B43, vary = False)# = -.06, max = 0.06)
+params['B60'].set(value= B60, vary = False)# = -.06, max = 0.06)
+params['B63'].set(value= B63, vary = False)# = -.06, max = 0.06)
+params['B66'].set(value= B66, vary = False)# = -.06, max = 0.06)
+params['Jperp'].set(value = 0)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenum, params =params, method =  'ampgo')
+result = model.fit(z, field=field, wavenum=wavenum, params =params)#, method =  'ampgo')
 
 print(result.fit_report())
 
 ######################################
-
-
+# global fit starting from model 2
+# B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
+# B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
+# B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
+# B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
+# B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
+# B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
+# Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
 
 ampC, arrC = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz)
 arrC = np.array(arrC)
@@ -831,7 +852,7 @@ ampC = ampC.T
 cmap = mcolors.ListedColormap(['cyan'])
 
 fig, ax = plt.subplots()
-plt.contourf(ramanField, ramanWavenums, ramanData,100, cmap = 'gnuplot')
+plt.contourf(ramanField, ramanWavenums, ramanData,100, cmap = 'Oranges')
 plt.xlim(0,14)
 plt.ylim(0,120)
 plt.clim(-0.3, 1)
@@ -974,3 +995,9 @@ with h5py.File('magnetization_data.h5', 'w') as hdf:
         group = hdf.create_group(f'J_{J}')
         group.create_dataset('mag', data=tempMag)
         group.attrs['J'] = J
+
+
+#########################################################################################
+#########################################################################################
+#########################################################################################
+#########################################################################################
