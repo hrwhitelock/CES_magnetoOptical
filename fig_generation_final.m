@@ -2,7 +2,7 @@
 
 % let's start with making the paper figures
 %% load my spectroscopy data
-filename = 'model_2_fit_spec.h5'%spectroscopy_calculation_hopes_params.h5';
+filename = 'spectroscopy_calculation_hopes_params.h5';
 
 info = h5info(filename, '/');
 my_spec_data = struct; 
@@ -28,6 +28,9 @@ for i = 1:length(info.Datasets)
     % Optionally, store the data in a struct (to make it easy to access)
     allens_spec_data.(datasetName) = datasetData;
 end
+%% make colormap
+yellowMap = [linspace(0, 255, 256)', linspace(0, 255, 256)', zeros(256, 1)];
+colormap(yellowMap);
 
 %% 
 fig = figure;
@@ -42,7 +45,7 @@ for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
 end
 set(ax1,'Xticklabel',[])
-
+ylabel({'data', 'Energy [cm{^-1}]'})
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
@@ -50,9 +53,11 @@ colormap(ax1, jet)
 
 ax2 = subplot(2,1,2);
 hold on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
-colormap(ax2, jet)
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
+colormap(ax2, rust)
 clim([0 1])
+ylabel({'calculation', 'Energy [cm{^-1}]'})
+xlabel('H(T)')
 
 for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
@@ -76,15 +81,15 @@ for i = 2:16%size(arrC, 2)
 end
 title('C-axis IR')
 ylabel({'Data', 'Energy [cm{^-1}]'})
-colormap(jet)
+colormap(ax1, jet)
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
 
 ax2 = subplot(2,1,2);
 hold on; box on; 
-contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
-colormap(jet)
+contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
+colormap(ax2, blues)
 for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
 end
@@ -112,11 +117,12 @@ ylim([0 100])
 xlim([0 17.5])
 colormap('cool')
 title ('C-axis Raman')
+ylabel({'Data', 'Energy [cm{^-1}]'})
 
-ax2 = subplot(2,3,6);
+ax2 = subplot(2,1,2);
 hold on; box on; 
 contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_raman, 100, 'LineStyle', 'none');
-colormap('cool')
+colormap(ax2, pink)
 % let's add some lines
 for i = 2:16%size(arrC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
@@ -124,6 +130,8 @@ end
 clim([0 1])
 xlim([0 17.5])
 ylim([0 100])
+ylabel({'Calculation', 'Energy [cm{^-1}]'})
+xlabel('H(T)')
 
 ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
 ax2.Position(1)=ax1.Position(1);
@@ -244,7 +252,7 @@ hold off;
 % Plot settings
 labels = my_mag_data.dmdhLabels;
 n = length(labels);
-colors = cool(n); % wanted inferno, can't find it :(
+colors = copper(n); % wanted inferno, can't find it :(
 
 subplot(1,3,2); grid on; box on; 
 hold on;
@@ -291,11 +299,11 @@ end
 
 % Plotting
 n = length(labels);
-colors = cool(n+1);
+colors = copper(n);
 
 subplot(1,3,3); grid on; box on; 
 hold on;
-for i = [1, 6, 9]
+for i = [1, 9]
     % Sort and normalize x and y data
     x = my_mag_data.dmdhField{i}; 
     y = my_mag_data.dmdhData{i};
@@ -305,7 +313,7 @@ for i = [1, 6, 9]
     
     % Plot data
     plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(H, my_mag_data.tempMagC(:, i) / max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i+1, :));
+    plot(H, my_mag_data.tempMagC(:, i) / max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
 end
 
 % Add labels, title, and legend

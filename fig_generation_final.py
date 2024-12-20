@@ -492,7 +492,7 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
     dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
     dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
     if dE[-1]*meVTocCmInv > 50: 
-        fun = np.ones((len(field), len(wavenums)))*50 # penalty for high energy B
+        fun = np.ones((len(field), len(wavenum)))*50 # penalty for high energy B
     else: 
         for b in field: 
             evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
@@ -508,7 +508,7 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
                     temp = dE[j]-dE[i]
                     dE.append(temp)
                     tempAmp.append(p[i]*amp[j])
-            wid = 0.6
+            wid = 1
             centers = dE
             tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
             # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
@@ -542,7 +542,7 @@ def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
                 temp = dE[j]-dE[i]
                 dE.append(temp)
                 tempAmp.append(p[i]*amp[j])
-        wid = 0.6
+        wid = 1
         centers = dE
         tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
         for i in range(len(centers)):
@@ -575,7 +575,7 @@ def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp):
                 temp = dE[j]-dE[i]
                 dE.append(temp)
                 tempAmp.append(p[i]*amp[j])
-        wid = 0.6
+        wid = 1
         centers = dE
         tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
         for i in range(len(centers)):
@@ -794,39 +794,39 @@ for idx in fitData.index:
         dropidx.append(idx)
 fitData = fitData.drop(labels = dropidx, axis = 0)
 
-fitData = dataB
-# B20 = 3.114e-2
-# B40 = -4.718e-4
-# B43 = 1.259e-2
-# B60 =  9.324e-7
-# B63 = 4.715e-5
-# B66 =  2.011e-5
+# fitData = dataB
+B20 = 3.114e-2
+B40 = -4.718e-4
+B43 = 1.259e-2
+B60 =  9.324e-7
+B63 = 4.715e-5
+B66 =  2.011e-5
 # global fit starting from model 2
-B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
-B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
-B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
-B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
-B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
-B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
-Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
+# B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
+# B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
+# B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
+# B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
+# B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
+# B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
+# Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
 field = [float(b) for b in fitData.columns.values]
 wavenum = [float(i) for i in fitData.index.values]
 # now do fit
-model = lmfit.Model(zeemanSplitAB, independent_vars=['field', 'wavenum'])
+model = lmfit.Model(zeemanSplitC_raman, independent_vars=['field', 'wavenum'])
 params = model.make_params()
 
-params['B20'].set(value= B20, vary = False)# = -.06, max = 0.06)
-params['B40'].set(value= B40, vary = False)# = -.06, max = 0.06)
-params['B43'].set(value= B43, vary = False)# = -.06, max = 0.06)
-params['B60'].set(value= B60, vary = False)# = -.06, max = 0.06)
-params['B63'].set(value= B63, vary = False)# = -.06, max = 0.06)
-params['B66'].set(value= B66, vary = False)# = -.06, max = 0.06)
-params['Jperp'].set(value = 0)
+params['B20'].set(value= B20, min = -.06, max = 0.06)
+params['B40'].set(value= B40, min = -.06, max = 0.06)
+params['B43'].set(value= B43, min = -.06, max = 0.06)
+params['B60'].set(value= B60, min = -.06, max = 0.06)
+params['B63'].set(value= B63, min = -.06, max = 0.06)
+params['B66'].set(value= B66, min = -.06, max = 0.06)
+params['Jz'].set(value = 0)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenum, params =params)#, method =  'ampgo')
+result = model.fit(z, field=field, wavenum=wavenum, params =params, method =  'basinhopping')
 
 print(result.fit_report())
 
@@ -1001,3 +1001,41 @@ with h5py.File('magnetization_data.h5', 'w') as hdf:
 #########################################################################################
 #########################################################################################
 #########################################################################################
+
+# now I want to check the eigenvectors before and after the sero energy crossing - is it
+# a crossing? or is it an avoided crossing
+
+# ass B, J are already loaded into a terminal
+
+# write a function to spit out eigenvectors (in latex form) at a given field
+
+def printLaTexEigenvectors(ionObj, field, precision = 4):
+    '''prints eigenvectors and eigenvalues in the output that Latex can read'''
+    h = newH(ionObj, field, Jz, temperature)
+    JdotB = muB*(h*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
+    H_cef = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
+    ionObj.diagonalize(H_cef + JdotB.O) # this is just H = Hcef + Hmag
+    evals = ionObj.eigenvalues 
+    
+    print('\\begin{table*}\n\\caption{Eigenvectors and Eigenvalues...}')
+    print('\\begin{ruledtabular}')
+    numev = len(ionObj.eigenvalues)
+    print('\\begin{tabular}{c|'+'c'*numev+'}')
+    if numev % 2 == 1:
+        print('E (meV) &'+' & '.join(['$|'+str(int(kk))+'\\rangle$' for kk in 
+                    np.arange(-(numev-1)/2,numev/2)])
+            +' \\tabularnewline\n \\hline ')
+    else:
+        print('E (meV) &'+
+            ' & '.join(['$| -\\frac{'+str(abs(kk))+'}{2}\\rangle$' if kk <0
+                        else '$| \\frac{'+str(abs(kk))+'}{2}\\rangle$'
+                        for kk in np.arange(-(numev-1),numev,2)])
+            +' \\tabularnewline\n \\hline ')
+    sortinds = ionObj.eigenvalues.argsort()
+    sortEVal= np.around(ionObj.eigenvalues[sortinds],3)
+    sortEVec= np.around(ionObj.eigenvectors[sortinds],precision)
+    for i in range(len(sortinds)):
+        print(format(ionObj._Re(sortEVal[i]), '.3f'),'&', 
+            ' & '.join([str(eevv) for eevv in ionObj._Re(sortEVec[i])]), '\\tabularnewline')
+    print('\\end{tabular}\\end{ruledtabular}')
+    print('\\label{flo:Eigenvectors}\n\\end{table*}')
