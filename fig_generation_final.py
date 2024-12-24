@@ -193,6 +193,7 @@ for fname in fnames:
     dmdhField.append(temp[0])
     dmdhData.append(temp[1])
 
+calc_fname = 'mag_calculation_dec20_model.h5'
 
 # fname should be defined in terminal
 # data is saved in file -> this is redundant, but very easy to deal with
@@ -251,7 +252,7 @@ def susceptibilityC(ionObj, fieldVal, temps):
         chi.append(x[1]) 
     return chi
 
-temps = np.arange(1,300, 1)
+temps = np.concatenate((np.arange(0.025, 25, .025),np.arange(1,300, 1)))
 fieldVals = [0, 0.1, 1, 3, -6]
 susB = []
 susC = []
@@ -290,7 +291,7 @@ for fname in fnames:
 
 # now we calculate low temp sus on the c axis
 
-lowTempFields = [0.358, .116, .37, 5.4, .64]
+lowTempFields = [0.358, .116, .37, .64,1, 2, 3, 5.4]
 lowTempSusC =[]
 lowTempSusB = []
 lowTemps = np.linspace(0,1,100)
@@ -306,10 +307,10 @@ fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt',
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0cool27.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0warm28.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0cool29.txt',
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt', 
             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0warm30.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt']
-labels = ['.0358T', '.0358T', '.116T', '.116T','.37T', '.37T','5.4T', '0.64T', '0.64T']
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt',
+            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt']
+labels = ['.0358T', '.0358T', '.116T', '.116T','.37T', '.37T', '0.64T', '0.64T', '5.4T']
 data_lowTemps = []
 data_lowTempSusC =[]
 
@@ -326,6 +327,7 @@ SCF = 1/(1.07828221e24/Na)
 # data is saved in file -> this is redundant, but very easy to deal with
 # save data
 # fname = 'susceptibility_calculated_whos_parmas.h5'
+
 with h5py.File(sus_calc_fname, 'w') as hdf:
     hdf.create_dataset('temps', data = temps)
     # hdf.create_dataset('lowTemps', data = lowTemps)
@@ -338,12 +340,12 @@ with h5py.File(sus_calc_fname, 'w') as hdf:
     hdf.create_dataset('clabels', data = clabels)
     hdf.create_dataset('blabels', data = blabels)
     hdf.create_dataset('fieldVals', data = fieldVals)
-    # hdf.create_dataset('lowTempField', data = lowTempFields)
-    # hdf.create_dataset('lowTempSusB', data = lowTempSusB)
-    # hdf.create_dataset('lowTempSusC', data = lowTempSusC)
-    # hdf.create_dataset('lowTempLabels', data = labels)
-    # hdf.create_dataset('data_lowTemps', data = np.array(data_lowTemps, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.create_dataset('data_lowTempSus', data = np.array(data_lowTempSusC, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('lowTempField', data = lowTempFields)
+    hdf.create_dataset('lowTempSusB', data = lowTempSusB)
+    hdf.create_dataset('lowTempSusC', data = lowTempSusC)
+    hdf.create_dataset('lowTempLabels', data = labels)
+    hdf.create_dataset('data_lowTemps', data = np.array(data_lowTemps, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('data_lowTempSus', data = np.array(data_lowTempSusC, dtype=object), dtype=h5py.vlen_dtype(float))
     hdf.attrs['B20'] = B20
     hdf.attrs['B40'] = B40
     hdf.attrs['B43'] = B43
@@ -355,6 +357,7 @@ with h5py.File(sus_calc_fname, 'w') as hdf:
     hdf.attrs['Na'] = Na
     hdf.attrs['SCF'] = SCF
 
+
 #########################################################################################
 # now we scan through some Js
 # just for a checkeroni
@@ -364,7 +367,7 @@ fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2
 Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
 temperature = 2.1
 # J vals
-Jvals = np.linspace(0.75, 1.25, 5)*Jz
+Jvals = np.linspace(0.75, 1, 1.25, 1.5)*Jz
 tempMagC = []
 
 for j in Jvals: 
@@ -382,7 +385,7 @@ plt.grid(True)
 plt.xlim(0,8)
 plt.ylim(0,8)
 
-with h5py.File('jjz_test.h5', 'w') as hdf:
+with h5py.File('jjz_test_dec20_model.h5', 'w') as hdf:
     hdf.create_dataset('H', data=H)
     hdf.create_dataset('Jvals', data=Jvals)
     hdf.create_dataset('tempMagC', data=np.array(tempMagC))
@@ -794,26 +797,14 @@ for idx in fitData.index:
         dropidx.append(idx)
 fitData = fitData.drop(labels = dropidx, axis = 0)
 
-# fitData = dataB
-B20 = 3.114e-2
-B40 = -4.718e-4
-B43 = 1.259e-2
-B60 =  9.324e-7
-B63 = 4.715e-5
-B66 =  2.011e-5
-# global fit starting from model 2
-# B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
-# B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
-# B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
-# B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
-# B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
-# B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
-# Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
 field = [float(b) for b in fitData.columns.values]
 wavenum = [float(i) for i in fitData.index.values]
 # now do fit
+temperature = 7
 model = lmfit.Model(zeemanSplitC_raman, independent_vars=['field', 'wavenum'])
 params = model.make_params()
+
+
 
 params['B20'].set(value= B20, min = -.06, max = 0.06)
 params['B40'].set(value= B40, min = -.06, max = 0.06)
@@ -821,12 +812,12 @@ params['B43'].set(value= B43, min = -.06, max = 0.06)
 params['B60'].set(value= B60, min = -.06, max = 0.06)
 params['B63'].set(value= B63, min = -.06, max = 0.06)
 params['B66'].set(value= B66, min = -.06, max = 0.06)
-params['Jz'].set(value = 0)
+params['Jz'].set(value = Jz)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenum, params =params, method =  'basinhopping')
+result = model.fit(z, field=field, wavenum=wavenum, params =params)#, method =  'basinhopping')
 
 print(result.fit_report())
 
@@ -975,13 +966,13 @@ with h5py.File('lines_noNorm_nomft.h5', 'w') as hdf:
 fname2K = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/MPMS/CsErSe2/CsErSe2_HParC_MvsH_2K.txt'
 
 Mdata2K = np.genfromtxt(fname2K, delimiter=',',  unpack=True, skip_header=1)
-temps = np.linspace(1.8,2.5,10)
+temps = [1.8,1.9,2.0,2.1,2.1]
 
 H = np.linspace(0, 8, 30)  # Field values
-J_values = [-2.11e-3, -2.05e-3, -1.9e-3, -2.53e-3]  # J values
+J_values = [-2.11e-3, -2.05e-3, -1.9e-3, -2.53e-3, -2.63e-3]  # J values
 
 # Initialize HDF5 file
-with h5py.File('magnetization_data.h5', 'w') as hdf:
+with h5py.File('jjz_temperature_test_dec_19_model.h5', 'w') as hdf:
     hdf.create_dataset('H', data=H)
     hdf.create_dataset('Mdata2K', data=Mdata2K)
     hdf.create_dataset('temps', data=temps)

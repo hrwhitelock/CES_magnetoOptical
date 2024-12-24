@@ -24,12 +24,12 @@ figure;
 hold on;
 colors = flipud(cool(length(fields)));
 j= 0;
-for i = length(fields):-1:1
+for i = length(fields):-5:1
     plot(wavenums, ramanData(i, :) + j/3, 'Color', colors(i, :));
     if i == length(fields)
         text(90, j/3 + 0.15, 'H = 0T', 'FontSize', 9);
     elseif i == 1
-        text(90, j/3 + 0.15, ['H = ', num2str(field(i)), 'T'], 'FontSize', 9);
+        text(90, j/3 + 0.15, 'H = 14T', 'FontSize', 9);
     end
     j = j+1; 
 end
@@ -38,6 +38,16 @@ ylabel('Intensity (arb)');
 title('Raman Data, full range');
 % xlim([0, 100]);
 hold off;
+% add raman lines
+xline(46.1, 'g--') %E2g
+xline(56.1, 'r--') %E2g
+xline(91.1, 'r--') %E2g
+xline(119.1, 'r--') %E2g
+xline(125.9, 'g--') %E2g
+xline(127.3, 'g--') %E2g
+xline(164.8, 'g--') %E2g
+xline(168.8, 'r--') %E2g
+
 
 %% Plot 2: Zeeman Splitting Lines Overlaid on waterfall plot
 figure;

@@ -2,7 +2,7 @@
 
 % let's start with making the paper figures
 %% load my spectroscopy data
-filename = 'spectroscopy_calculation_hopes_params.h5';
+filename = 'spectroscopy_calculation_dec19_params_Jz_-211.h5';
 
 info = h5info(filename, '/');
 my_spec_data = struct; 
@@ -53,8 +53,8 @@ colormap(ax1, jet)
 
 ax2 = subplot(2,1,2);
 hold on; 
-contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
-colormap(ax2, rust)
+contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
+colormap(ax2, blues)
 clim([0 1])
 ylabel({'calculation', 'Energy [cm{^-1}]'})
 xlabel('H(T)')
@@ -73,10 +73,11 @@ ax2.Position(1)=ax1.Position(1);
 linkaxes([ax1, ax2], 'xy')
 
 %% c axis IR
-ax1 = subplot(2,1,1);hold on; box on; 
-pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
+figure; hold on; 
+% ax1 = subplot(2,1,1);hold on; box on; 
+% pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
 shading flat
-for i = 2:16%size(arrC, 2)
+for i = 2:16 %size(my_spec_data.linesC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth',1);
 end
 title('C-axis IR')
@@ -85,32 +86,35 @@ colormap(ax1, jet)
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
+% 
+% ax2 = subplot(2,1,2);
+% hold on; box on; 
+% contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
+% colormap(ax2, blues)
+% for i = 2:16%size(arrC, 2)
+%     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
+% end
+% clim([0 1])
+% ylim([0 100])
+% xlim([0 17.5])
+% ylabel({'Data', 'Energy [cm{^-1}]'})
+% xlabel('H(T)')
+% 
+% ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
+% ax2.Position(1)=ax1.Position(1);
+% linkaxes([ax1, ax2], 'xy')
+% set(ax1,'Xticklabel',[])
 
-ax2 = subplot(2,1,2);
-hold on; box on; 
-contourf(linspace(0,18,90), my_spec_data.calc_wavenums, my_spec_data.simulated_IR_C, 100, 'LineStyle', 'none');
-colormap(ax2, blues)
-for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
-end
-clim([0 1])
-ylim([0 100])
-xlim([0 17.5])
-ylabel({'Data', 'Energy [cm{^-1}]'})
-xlabel('H(T)')
-
-ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
-ax2.Position(1)=ax1.Position(1);
-linkaxes([ax1, ax2], 'xy')
-set(ax1,'Xticklabel',[])
-
-%%
+%% c axis raman
 
 fig = figure;
 ax1 = subplot(2,1,1);box on; hold on; 
 pcolor(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData'); 
 shading flat; 
 for i = 2:16%size(arrC, 2)
+    plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r-', 'LineWidth', 1);
+end
+for i = 17:50%size(arrC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
 end
 ylim([0 100])
@@ -164,7 +168,7 @@ set(ax1,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
-filename = 'magnetic_calculation_hopes_params.h5';
+filename = 'magnetization_calculation_dec_19_params_with_jz_211.h5';
 
 info = h5info(filename, '/');
 allens_spec_data = struct; 
@@ -192,7 +196,7 @@ end
 %%
 % Plot data
 figure;
-subplot(2,3,1)
+% subplot(2,3,1)
 hold on; grid on; box on; 
 % Plot experimental data
 plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
@@ -202,9 +206,9 @@ plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'Display
 
 % Plot MFT data
 H = horzcat(linspace(0,1,100), linspace(1.01,10, 100));
-plot(H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
+plot(H, my_mag_data.tempMagC(:,1), '-', 'DisplayName', 'MFT 2K');
+plot(H, my_mag_data.tempMagC(:,2), '-', 'DisplayName', 'MFT 6K');
+plot(H, my_mag_data.tempMagC(:,3), '-', 'DisplayName', 'MFT 20K');
 
 % Set axis limits (optional)
 xlim([0, 6]);
@@ -458,7 +462,7 @@ legend()
 
 %% okay, so now let's make a susceptibility fig
 % load my magnetic data
-filename = 'susceptibility_calculation_hopes_params.h5';
+filename = 'susceptibility_calculated_hopes_params.h5';
 
 info = h5info(filename, '/');
 for i = 1:length(info.Datasets)
@@ -640,7 +644,7 @@ sgtitle(sprintf('B20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2
 %% checking J with different temperatures
 
 % Load data from HDF5
-fileName = 'JJz_temperature_test.h5';
+fileName = 'jjz_temperature_test_dec_20_model.h5';
 H = h5read(fileName, '/H');
 Mdata2K = h5read(fileName, '/Mdata2K');
 temps = h5read(fileName, '/temps');
@@ -683,3 +687,58 @@ end
 
 % Adjust layout for better spacing
 sgtitle('Magnetization Curves for Different J Values');
+
+%% plot by temperature instead of J
+fileName = 'jjz_temperature_test_dec_20_model.h5';
+H = h5read(fileName, '/H');
+Mdata2K = h5read(fileName, '/Mdata2K');
+temps = h5read(fileName, '/temps');
+
+% Extract groups for J values
+info = h5info(fileName);
+J_groups = {info.Groups.Name};  % Names of groups (e.g., '/J_-2.11e-3')
+
+% Preallocate for all J data
+numTemps = length(temps);
+numJ = length(J_groups);
+allMag = zeros(numTemps, length(H), numJ);  % [Temperature x Field x J]
+
+% Loop through each J group to read data
+for jIdx = 1:numJ
+    groupName = J_groups{jIdx};
+    mag = h5read(fileName, [groupName '/mag']);  % [Temperature x Field]
+    allMag(:, :, jIdx) = mag';
+end
+
+% Create one figure with subplots organized by temperature
+figure;
+cols = ceil(sqrt(numTemps));  % Number of columns for subplots
+rows = ceil(numTemps / cols); % Number of rows for subplots
+
+for tIdx = 1:numTemps
+    % Create subplot for each temperature
+    subplot(rows, cols, tIdx);
+    hold on;
+    plot(Mdata2K(:, 1), Mdata2K(:, 2) / 1.37, 'bo', 'DisplayName', '2K MPMS Data');
+    
+    % Plot magnetization for each J value
+    for jIdx = 1:numJ
+        groupName = J_groups{jIdx};
+        J = h5readatt(fileName, groupName, 'J');
+        plot(H, squeeze(allMag(tIdx, :, jIdx)), ...
+             'DisplayName', sprintf('J = %.5f', J));
+    end
+    hold off;
+    
+    % Add labels, legend, and title
+    xlabel('H [T]');
+    ylabel('M [\mu_B]');
+    title(sprintf('Temp = %.1f K', temps(tIdx)));
+    grid on;
+    if tIdx == numTemps  % Add legend to the last subplot
+        legend show;
+    end
+end
+
+% Adjust layout for better spacing
+sgtitle('Magnetization Curves for dec 20 model');
