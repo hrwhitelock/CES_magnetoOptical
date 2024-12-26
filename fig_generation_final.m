@@ -168,7 +168,7 @@ set(ax1,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
-filename = 'magnetization_calculation_dec_19_params_with_jz_211.h5';
+filename = 'magnetic_calculation_hopes_params.h5';
 
 info = h5info(filename, '/');
 allens_spec_data = struct; 
@@ -196,7 +196,7 @@ end
 %%
 % Plot data
 figure;
-% subplot(2,3,1)
+subplot(2,3,1)
 hold on; grid on; box on; 
 % Plot experimental data
 plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
@@ -206,9 +206,9 @@ plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'Display
 
 % Plot MFT data
 H = horzcat(linspace(0,1,100), linspace(1.01,10, 100));
-plot(H, my_mag_data.tempMagC(:,1), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagC(:,2), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagC(:,3), '-', 'DisplayName', 'MFT 20K');
+plot(H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
+plot(H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
+plot(H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
 
 % Set axis limits (optional)
 xlim([0, 6]);
@@ -258,7 +258,9 @@ labels = my_mag_data.dmdhLabels;
 n = length(labels);
 colors = copper(n); % wanted inferno, can't find it :(
 
-subplot(1,3,2); grid on; box on; 
+% subplot(1,3,2); 
+figure; 
+grid on; box on; 
 hold on;
 dmdh = my_mag_data.dmdhC(:, [1,3:11]);
 for i = 1:n
@@ -270,14 +272,14 @@ for i = 1:n
     dm = dm / max(dm);
 
     % Offset for better visualization
-    offset = (i - 1) * 0.5;
+    offset = 0; %(i - 1) * 0.5;
 
     % Plot experimental data
-    plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
+    % plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
 
     % Plot calculated data
     plot(H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
-    text(9, offset+0.2, labels{i}, 'FontSize', 9);
+    % text(9, offset+0.2, labels{i}, 'FontSize', 9);
 end
 
 title('dM/dH ');

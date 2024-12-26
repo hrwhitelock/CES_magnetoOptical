@@ -42,7 +42,7 @@ def diagonalizeC(ionObj, ion, Jz, h, temperature):
     ionObj.diagonalize(H_cef + JdotB.O) # this is just H = Hcef + Hmag
     return ionObj.eigenvalues 
 
-def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):    
+def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
     amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
@@ -52,7 +52,6 @@ def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
     fun = []
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    temperature = 10
     for b in field: 
         evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
         dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
@@ -67,9 +66,9 @@ def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
                 temp = dE[j]-dE[i]
                 dE.append(temp)
                 tempAmp.append(p[i]*amp[j])
-        wid = 0.6
+        wid = 1
         centers = dE
-        tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
+        tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
         for i in range(len(centers)):
             a = tempAmp[i]
             tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)

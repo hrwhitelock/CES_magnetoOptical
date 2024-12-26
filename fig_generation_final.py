@@ -193,7 +193,7 @@ for fname in fnames:
     dmdhField.append(temp[0])
     dmdhData.append(temp[1])
 
-calc_fname = 'mag_calculation_dec20_model.h5'
+# calc_fname = 'mag_calculation_dec20_model.h5'
 
 # fname should be defined in terminal
 # data is saved in file -> this is redundant, but very easy to deal with
@@ -759,9 +759,9 @@ with h5py.File(spec_calc_fname, 'w') as hdf:
     hdf.create_dataset('ampB_nomft', data = ampB_nomft)
     hdf.create_dataset('calc_field', data = calc_field)
     hdf.create_dataset('calc_wavenums', data= calc_wavenums)
-    hdf.create_dataset('simulated_raman', data = simulated_spec_Raman_C)
-    hdf.create_dataset('simulated_IR_B', data = simulated_spec_IR_B)
-    hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
+    # hdf.create_dataset('simulated_raman', data = simulated_spec_Raman_C)
+    # hdf.create_dataset('simulated_IR_B', data = simulated_spec_IR_B)
+    # hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
     hdf.create_dataset('ramanData', data=ramanData.values)
     hdf.create_dataset('IR_dataB', data=dataB.values)
     hdf.create_dataset('IR_dataC', data=dataC.values)
