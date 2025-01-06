@@ -12,6 +12,7 @@ from scipy.optimize import fsolve
 import pandas as pd
 import lmfit
 from matplotlib import font_manager
+import matplotlib.colors as  mcolors
 from matplotlib.collections import LineCollection
 font_manager.fontManager.addfont('/Users/hopeless/Library/Fonts/cmunrm.ttf')
 plt.rcParams['mathtext.fontset'] = 'stix'
@@ -20,9 +21,6 @@ plt.rcParams['axes.unicode_minus'] = False
 plt.rcParams.update({'font.size': 16})
 
 plt.ion()
-
-# define constants
-plt.ion() 
 
 # define some constants
 temperature = 2 # in K
@@ -108,7 +106,7 @@ B60 =    3.1865e-06
 B63 =   -3.593e-06
 B66 =    3.4913e-05
 Jperp = -.53070e-03 # +/- 2.6332e-06 (0.50%) (init = 0)
-Jz =    -2.63253e-03
+Jz =    -2.63253e-03*2
 
 # make my er obj
 g = cef.LandeGFactor(ion)
@@ -449,7 +447,7 @@ def diagonalizeAB(ionObj, ion, J, h, temperature):
     return evals
 
 
-def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):     
+def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):     
     # assuming only H||B rn
     # assuming that x is an array
     amp = []#[1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]#[0, .15, .15, .2, 0.15,0.15,0.15,0.15,0.07,0.07, .1,.1,.1,.1,.1]
@@ -481,10 +479,10 @@ def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):
         amp.append(p)
     return amp, dE
 
-def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):    
+def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
+    amp = [0.1,0.3,0.3,0.15,0.3,0.3,0.3, 0.3, 0.3, 0.3]
     dEphonon = 49.3
     phononAmp = 0.499
     phononSig = 0.95
@@ -521,7 +519,7 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
             fun.append(tempfun)
     return fun
 
-def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):    
+def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
     amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
@@ -554,7 +552,7 @@ def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz):
         fun.append(tempfun)
     return fun
 
-def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp):    
+def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
     amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
@@ -587,7 +585,7 @@ def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp):
         fun.append(tempfun)
     return fun
 
-def zeemanSplitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp):     
+def zeemanSplitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp, temperature):     
     # assuming only H||B rn
     # assuming that x is an array
     amp = []#[1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]#[0, .15, .15, .2, 0.15,0.15,0.15,0.15,0.07,0.07, .1,.1,.1,.1,.1]
@@ -702,7 +700,7 @@ calc_wavenums = np.arange(0,120, 0.1)
 temperature = 5
 kBT = kB*temperature
 
-ampC,arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz)
+ampC,arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz, temperature)
 arrC = np.array(arrC)
 arrC = arrC*meVToCm
 arrC = arrC.T
@@ -710,7 +708,7 @@ arrC = arrC.T
 ampC = np.array(ampC)
 ampC = ampC.T
 
-ampB,arrB = zeemanSplitLinesAB(calc_field, B20, B40, B43, B60, B63, B66, Jperp)
+ampB,arrB = zeemanSplitLinesAB(calc_field, B20, B40, B43, B60, B63, B66, Jperp, temperature)
 arrB = np.array(arrB)
 arrB = arrB*meVToCm
 arrB = arrB.T
@@ -813,25 +811,29 @@ params['B60'].set(value= B60, min = -.06, max = 0.06)
 params['B63'].set(value= B63, min = -.06, max = 0.06)
 params['B66'].set(value= B66, min = -.06, max = 0.06)
 params['Jz'].set(value = Jz)
+params['temperature'].set(value = 20)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenum, params =params)#, method =  'basinhopping')
+result = model.fit(z, field=field, wavenum=wavenum, params =params)
 
 print(result.fit_report())
 
 ######################################
-# global fit starting from model 2
-# B20 = -0.02773009 # +/- 6.2607e-05 (0.23%) (init = -0.02773)
-# B40 = -4.0794e-04 # +/- 5.3780e-07 (0.13%) (init = -0.0003987)
-# B43 = -0.01415847 # +/- 7.5909e-06 (0.05%) (init = -0.01416)
-# B60 =  3.3071e-06 # +/- 2.1989e-10 (0.01%) (init = 3.152e-06)
-# B63 = -1.3696e-05 # +/- 1.7123e-07 (1.25%) (init = -7.616e-06)
-# B66 =  3.0245e-05 # +/- 3.1097e-10 (0.00%) (init = 3.275e-05)
-# Jz =  -0.00253421 # +/- 2.1365e-05 (0.84%) (init = -0.00263)
+temperature = 1
 
-ampC, arrC = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz)
+B20 = -0.03977412 # +/- 2.4288e-04 (0.61%) (init = -0.03721092)
+B40 = -3.8202e-04 # +/- 6.0731e-07 (0.16%) (init = -0.00038796)
+B43 = -0.01408198 # +/- 1.7138e-05 (0.12%) (init = -0.01406804)
+B60 =  3.1790e-06 # +/- 3.8215e-09 (0.12%) (init = 3.1865e-06)
+B63 = -1.8239e-06 # +/- 1.7113e-07 (9.38%) (init = -3.593e-06)
+B66 =  3.6357e-05 # +/- 2.1954e-07 (0.60%) (init = 3.4913e-05)
+Jz =  -0.00303273 # +/- 2.0745e-05 (0.68%) (init = -0.00263253)
+temperature =  23.3697875 # +/- 0.49120345 (2.10%) (init = 20)
+
+calc_field = np.linspace(0,15,100)
+ampC, arrC = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
 arrC = np.array(arrC)
 arrC = arrC*meVToCm
 arrC = arrC.T
@@ -850,21 +852,82 @@ plt.clim(-0.3, 1)
 plt.xlabel('Field (T)')
 plt.ylabel('Energy (cm$^{-1}$)')
 plt.colorbar()
-plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
+plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
 for i in range(len(arrC)):
     if i<16: 
-        plt.plot(np.linspace(0,15,100), arrC[i], 'c', alpha=1, linewidth= .7)
+        plt.plot(calc_field, arrC[i], 'c', alpha=1, linewidth= .7)
     if i>=16:  
         alphas = ampC[i]
         # Create a LineCollection
-        points = np.array([np.linspace(0,15,100), arrC[i]]).T.reshape(-1, 1, 2)
+        points = np.array([calc_field, arrC[i]]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
         lc = LineCollection(segments, cmap=cmap, alpha=alphas)
         ax.add_collection(lc)
         ax.autoscale()
 plt.show()
 
+# temp test
 
+temperature = .1
+calc_field = np.linspace(0,15,100)
+ampC_1, arrC_1 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
+arrC_1 = np.array(arrC_1)
+arrC_1 = arrC_1*meVToCm
+arrC_1 = arrC_1.T
+
+ampC_1 = np.array(ampC_1)
+ampC_1 = ampC_1.T
+
+temperature = 5
+calc_field = np.linspace(0,15,100)
+ampC_5, arrC_5 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
+arrC_5 = np.array(arrC_5)
+arrC_5 = arrC_5*meVToCm
+arrC_5 = arrC_5.T
+
+ampC_5 = np.array(ampC_5)
+ampC_5 = ampC_5.T
+
+temperature = 10
+calc_field = np.linspace(0,15,100)
+ampC_10, arrC_10 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
+arrC_10 = np.array(arrC_10)
+arrC_10 = arrC_10*meVToCm
+arrC_10 = arrC_10.T
+
+ampC_10 = np.array(ampC_10)
+ampC_10 = ampC_10.T
+
+temperature = 20
+calc_field = np.linspace(0,15,100)
+ampC_20, arrC_20 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
+arrC_20 = np.array(arrC_20)
+arrC_20 = arrC_20*meVToCm
+arrC_20 = arrC_20.T
+
+ampC_20 = np.array(ampC_20)
+ampC_20 = ampC_20.T
+
+plt.figure()
+plt.contourf(ramanField, ramanWavenums, ramanData,100, cmap = 'Oranges')
+for i in range(len(arrC_1)):
+    if i<16: 
+        if i ==0: 
+            # plt.plot(calc_field, arrC_1[i], 'c', label = '.1K')
+            # plt.plot(calc_field, arrC_5[i], 'm', label = '5K')
+            # plt.plot(calc_field, arrC_10[i], 'b', label = '10K')
+            plt.plot(calc_field, arrC_20[i], 'g', label = '20K')
+        # plt.plot(calc_field, arrC_1[i], 'c')
+        # plt.plot(calc_field, arrC_5[i], 'm')
+        # plt.plot(calc_field, arrC_10[i], 'b')
+        plt.plot(calc_field, arrC_20[i], 'g')
+    elif i>= 16 and i<64: 
+        # plt.plot(calc_field, arrC_1[i], 'c')
+        # plt.plot(calc_field, arrC_5[i], 'm')
+        # plt.plot(calc_field, arrC_10[i], 'b')
+        plt.plot(calc_field, arrC_20[i], 'g--')
+plt.show()
+plt.legend()
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################

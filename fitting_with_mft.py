@@ -131,14 +131,14 @@ print(result.fit_report())
     C(B60, Jz)  = +0.1684
 '''
 
-def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):     
+def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):     
     # assuming only H||B rn
     # assuming that x is an array
     amp = []#[1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]#[0, .15, .15, .2, 0.15,0.15,0.15,0.15,0.07,0.07, .1,.1,.1,.1,.1]
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     # kBT = 10*kB
-    temperature = 10
+    # temperature = 10
     amp = []
     dE = []
     for b in field: 
