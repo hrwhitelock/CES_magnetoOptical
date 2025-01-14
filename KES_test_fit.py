@@ -19,11 +19,14 @@ with h5py.File(file_path, 'r') as f:
     data = f['avgData0field']
     data = data[:]
 
+
 # now we invert and normalize
 data = (data-np.max(data))*-1
 data = data/np.max(data)
 data = np.delete(data, [0], axis = 1) # drop zero field (this is easier in a dataframe)
+fields = np.delete(fields, [0], axis = 0)
 
+# lets drop anything th
 # now we have our data, do the fit as usual
 # assume we've loaded the functions (god i need to build a class)
 # call the class Magneto Optical Object (MOO)
@@ -35,7 +38,7 @@ B43 = -1.416e-2
 B60 = 3.152e-6
 B63 = -7.616e-6
 B66 =  3.275e-5
-Jz =  -1.8e-3
+Jz =  -1.8e-3*2
 
 # now do fit
 model = lmfit.Model(zeemanSplitC_IR, independent_vars=['field', 'wavenum'])
@@ -48,7 +51,7 @@ params['B60'].set(value= B60, min = -.06, max = 0.06)
 params['B63'].set(value= B63, min = -.06, max = 0.06)
 params['B66'].set(value= B66, min = -.06, max = 0.06)
 params['Jz'].set(value = Jz)
-params['temperature'].set(value= 10)
+params['temperature'].set(value= 5, vary = False)
 
 
 result = model.fit(data.T, field=fields, wavenum=wavenums, params =params)
@@ -56,16 +59,23 @@ result = model.fit(data.T, field=fields, wavenum=wavenums, params =params)
 print(result.fit_report())
 
 # let's plot 
+B20 = -0.02341326 # +/- 3.8435e-04 (1.64%) (init = -0.02773)
+B40 = -4.1396e-04 # +/- 9.3228e-07 (0.23%) (init = -0.0003987)
+B43 = -0.01422081 # +/- 2.8180e-05 (0.20%) (init = -0.01416)
+B60 =  3.1573e-06 # +/- 6.3770e-09 (0.20%) (init = 3.152e-06)
+B63 = -1.1273e-05 # +/- 2.9517e-07 (2.62%) (init = -7.616e-06)
+B66 =  3.1026e-05 # +/- 3.3434e-07 (1.08%) (init = 3.275e-05)
+Jz =  -0.00390730 # +/- 2.1525e-05 (0.55%) (init = -0.0036)
+temperature =  5 #(fixed)
 
-B20 = -0.01862609 # +/- 3.4541e-04 (1.85%) (init = -0.02773)
-B40 = -3.8540e-04 # +/- 9.4059e-07 (0.24%) (init = -0.0003987)
-B43 = -0.01393870 # +/- 2.1657e-05 (0.16%) (init = -0.01416)
-B60 =  2.3970e-06 # +/- 7.7610e-09 (0.32%) (init = 3.152e-06)
-B63 = -1.9099e-05 # +/- 2.2960e-07 (1.20%) (init = -7.616e-06)
-B66 =  4.0453e-05 # +/- 2.5762e-07 (0.64%) (init = 3.275e-05)
-Jz =  -0.00154047 # +/- 4.4559e-05 (2.89%) (init = -0.0018)
-temperature = -5.07020722 # +/- 3.64083830 (71.81%) (init = 10)
-
+B20 =-0.02773027 # init = -0.02773)
+B40 =-4.6467e-04 # init = -0.0003987)
+B43 =-0.01415711 # init = -0.01416)
+B60 =-1.1925e-06 # init = 3.152e-06)
+B63 =-1.8048e-05 # init = -7.616e-06)
+B66 = 3.8798e-05 # init = 3.275e-05)
+Jz = -0.00707328 # init = -0.0018)
+temperature =  5 # fixed)
 
 
 waveArr= wavenums

@@ -53,9 +53,8 @@ colormap(ax1, jet)
 
 ax2 = subplot(2,1,2);
 hold on; 
-[X,Y] = meshgrid(my_spec_data.calc_wavenums, linspace(0,18,90));
-X = linspace(0,18,90); 
-Vq = interp2(X, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B,linspace(0,18.5, 1000),linspace(0, 100, 10000));
+[X,Y] = meshgrid(linspace(0,18,90));
+Vq = interp2(X,Y,my_spec_data.simulated_IR_B,linspace(0,18.5, 1000),linspace(0, 100, 10000));
 % contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100,'LineStyle', 'none');
 contourf(np.linspace(0,18.5),np.linspace(0, 100, 10000), Vq)
 colormap(ax2, blues)
@@ -79,7 +78,7 @@ linkaxes([ax1, ax2], 'xy')
 %% c axis IR
 figure; hold on; 
 % ax1 = subplot(2,1,1);hold on; box on; 
-pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
+% pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
 shading flat
 for i = 2:16 %size(my_spec_data.linesC, 2)
     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth',1);

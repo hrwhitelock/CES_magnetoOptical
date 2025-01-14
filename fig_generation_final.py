@@ -85,18 +85,18 @@ def MFTmagB(ionObj, H, J, temperature):
 # B params, Jz, Jperp in a terminal
 # init cf levels obj, call it ionObj, then run this code for that obj to keep things seperate
 
-# # to init allen's terminal: 
-# B20 = -3.559e-2
-# B40 = -3.849e-4
-# B43 = -1.393e-2
-# B60 = 3.154e-6
-# B63 = -4.695e-6
-# B66 = 3.3815e-5
-# Jperp = -0.2e-3
-# Jz = -2.4e-3
-# g = cef.LandeGFactor(ion)
-# AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
-# ionObj = cef.CFLevels.Bdict(ion,AllenBparams)
+# to init allen's terminal: 
+B20 = -3.559e-2
+B40 = -3.849e-4
+B43 = -1.393e-2
+B60 = 3.154e-6
+B63 = -4.695e-6
+B66 = 3.3815e-5
+Jperp = -0.2e-3
+Jz = -2.4e-3
+g = cef.LandeGFactor(ion)
+AllenBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+ionObj = cef.CFLevels.Bdict(ion,AllenBparams)
 
 # # to init my terminal
 B20 =   -0.03721092
@@ -106,7 +106,7 @@ B60 =    3.1865e-06
 B63 =   -3.593e-06
 B66 =    3.4913e-05
 Jperp = -.53070e-03 # +/- 2.6332e-06 (0.50%) (init = 0)
-Jz =    -2.63253e-03*2
+Jz =    -2.63253e-03
 
 # make my er obj
 g = cef.LandeGFactor(ion)
@@ -122,7 +122,7 @@ n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 tempMagB = []
 tempMagC = []
-H = np.concatenate((np.linspace(0,1,100), np.linspace(1.01,10, 100)))
+H = np.concatenate((np.linspace(0,1,50), np.linspace(1.01,10, 50)))
 
 
 
@@ -191,7 +191,7 @@ for fname in fnames:
     dmdhField.append(temp[0])
     dmdhData.append(temp[1])
 
-# calc_fname = 'mag_calculation_dec20_model.h5'
+calc_fname = 'mag_calculation_high_temp.h5'
 
 # fname should be defined in terminal
 # data is saved in file -> this is redundant, but very easy to deal with
@@ -294,8 +294,8 @@ lowTempSusC =[]
 lowTempSusB = []
 lowTemps = np.linspace(0,1,100)
 for field in lowTempFields: 
-    lowTempSusB.append(susceptibilityB(ionObj, fieldVal, lowTemps))
-    lowTempSusC.append(susceptibilityC(ionObj, fieldVal, lowTemps))
+    lowTempSusB.append(susceptibilityB(ionObj, field, lowTemps))
+    lowTempSusC.append(susceptibilityC(ionObj, field, lowTemps))
 
 # load low temp susceptibility data
 
@@ -326,34 +326,34 @@ SCF = 1/(1.07828221e24/Na)
 # save data
 # fname = 'susceptibility_calculated_whos_parmas.h5'
 
-with h5py.File(sus_calc_fname, 'w') as hdf:
+with h5py.File(sus_calc_fname, 'a') as hdf:
     hdf.create_dataset('temps', data = temps)
-    # hdf.create_dataset('lowTemps', data = lowTemps)
-    hdf.create_dataset('susB', data = susB)
-    hdf.create_dataset('susC', data = susC)
-    hdf.create_dataset('data_temps_C', data = np.array(data_temps_C, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.create_dataset('data_temps_AB', data = np.array(data_temps_AB, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.create_dataset('data_sus_C', data = np.array(data_sus_C, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.create_dataset('data_sus_AB', data = np.array(data_sus_AB, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.create_dataset('clabels', data = clabels)
-    hdf.create_dataset('blabels', data = blabels)
-    hdf.create_dataset('fieldVals', data = fieldVals)
+    # hdf.create_dataset('susB', data = susB)
+    # hdf.create_dataset('susC', data = susC)
+    # hdf.create_dataset('data_temps_C', data = np.array(data_temps_C, dtype=object), dtype=h5py.vlen_dtype(float))
+    # hdf.create_dataset('data_temps_AB', data = np.array(data_temps_AB, dtype=object), dtype=h5py.vlen_dtype(float))
+    # hdf.create_dataset('data_sus_C', data = np.array(data_sus_C, dtype=object), dtype=h5py.vlen_dtype(float))
+    # hdf.create_dataset('data_sus_AB', data = np.array(data_sus_AB, dtype=object), dtype=h5py.vlen_dtype(float))
+    # hdf.create_dataset('clabels', data = clabels)
+    # hdf.create_dataset('blabels', data = blabels)
+    # hdf.create_dataset('fieldVals', data = fieldVals)
     hdf.create_dataset('lowTempField', data = lowTempFields)
     hdf.create_dataset('lowTempSusB', data = lowTempSusB)
     hdf.create_dataset('lowTempSusC', data = lowTempSusC)
+    hdf.create_dataset('lowTemps', data = lowTemps)
     hdf.create_dataset('lowTempLabels', data = labels)
     hdf.create_dataset('data_lowTemps', data = np.array(data_lowTemps, dtype=object), dtype=h5py.vlen_dtype(float))
     hdf.create_dataset('data_lowTempSus', data = np.array(data_lowTempSusC, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.attrs['B20'] = B20
-    hdf.attrs['B40'] = B40
-    hdf.attrs['B43'] = B43
-    hdf.attrs['B60'] = B60
-    hdf.attrs['B63'] = B63
-    hdf.attrs['B66'] = B66
-    hdf.attrs['Jz'] = Jz
-    hdf.attrs['Jperp'] = Jperp
-    hdf.attrs['Na'] = Na
-    hdf.attrs['SCF'] = SCF
+    # hdf.attrs['B20'] = B20
+    # hdf.attrs['B40'] = B40
+    # hdf.attrs['B43'] = B43
+    # hdf.attrs['B60'] = B60
+    # hdf.attrs['B63'] = B63
+    # hdf.attrs['B66'] = B66
+    # hdf.attrs['Jz'] = Jz
+    # hdf.attrs['Jperp'] = Jperp
+    # hdf.attrs['Na'] = Na
+    # hdf.attrs['SCF'] = SCF
 
 
 #########################################################################################
@@ -973,11 +973,11 @@ ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0)
 
 # now let's get the AB vals
 field = np.linspace(0,10,50)
-ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, 0)
+ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
 
 # now let's get the Cvals
 field = np.linspace(0,10,50)
-Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, 0)
+Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
 
 ABevals = np.array(ABevals).T
 Cevals = np.array(Cevals).T
@@ -1002,7 +1002,7 @@ axs[2].set_title('H||c')
 
 
 # Save data to HDF5
-with h5py.File('lines_noNorm_nomft.h5', 'w') as hdf:
+with h5py.File('lines_noNorm_allen.h5', 'w') as hdf:
     hdf.create_dataset('ZFevals', data=ZFevals)
     hdf.create_dataset('ABevals', data=ABevals)
     hdf.create_dataset('Cevals', data=Cevals)
