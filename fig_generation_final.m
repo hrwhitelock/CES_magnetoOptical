@@ -76,7 +76,7 @@ ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
 ax2.Position(1)=ax1.Position(1);
 linkaxes([ax1, ax2], 'xy')
 
-%% c axis IR
+% %% c axis IR
 figure; hold on; 
 % ax1 = subplot(2,1,1);hold on; box on; 
 pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
@@ -172,7 +172,7 @@ set(ax1,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
-filename = 'mag_calculation_dec_20_model_jz_211.h5';
+filename = 'mag_calculation_up_to_15_T.h5';
 
 info = h5info(filename, '/');
 allens_spec_data = struct; 
@@ -209,7 +209,7 @@ plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2)/1.37, 'o
 plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'DisplayName', 'From Allens paper');
 
 % Plot MFT data
-H = horzcat(linspace(0,1,50), linspace(1.01,10, 50));
+H = horzcat(linspace(0,1,50), linspace(1.01,15, 150));
 plot(H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
 plot(H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
 plot(H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
@@ -283,7 +283,7 @@ for i = 1:n
 
     % Plot calculated data
     plot(H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
-    % text(9, offset+0.2, labels{i}, 'FontSize', 9);
+    text(9, offset+0.2, labels{i}, 'FontSize', 9);
 end
 
 title('dM/dH ');
@@ -599,10 +599,12 @@ title('My params')
 
 %% make fig 1
 % Load data from HDF5
-fileName = 'lines_noNorm.h5';
+fileName = 'EvsH_noNorm_hopes_params_2025Jan14.h5';
 ZFevals = h5read(fileName, '/ZFevals');
 ABevals = h5read(fileName, '/ABevals');
 Cevals = h5read(fileName, '/Cevals');
+ABevals_nomft = h5read(fileName, '/ABevals_nomft');
+Cevals_nomft = h5read(fileName, '/Cevals_nomft');
 field = h5read(fileName, '/field');
 B20 = h5readatt(fileName, '/', 'B20');
 B40 = h5readatt(fileName, '/', 'B40');
@@ -612,11 +614,14 @@ B63 = h5readatt(fileName, '/', 'B63');
 B66 = h5readatt(fileName, '/', 'B66');
 
 
-fileName = 'lines_noNorm_allen.h5';
+fileName = 'EvsH_noNorm_allens_params_2025Jan14.h5';
 ZFevals_allen = h5read(fileName, '/ZFevals');
 ABevals_allen = h5read(fileName, '/ABevals');
 Cevals_allen = h5read(fileName, '/Cevals');
-
+ABevals_allen_nomft = h5read(fileName, '/ABevals_nomft');
+Cevals_allen_nomft = h5read(fileName, '/Cevals_nomft');
+field = h5read(fileName, '/field');
+B20_allen = h5readatt(fileName, '/', 'B20');
 % Create the figure with subplots
 figure;
 hold on;
@@ -636,8 +641,10 @@ ylabel('Energy');
 nexttile;hold on;
 hold on;
 for i = 1:size(ABevals, 2)
-    plot(field, ABevals(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2);
-    plot(field, ABevals_allen(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--');
+    plot(field, ABevals(:, i)+abs(ZFevals(1)), 'color', 'black','LineWidth', 1.2, 'DisplayName', 'my params mft');
+    plot(field, ABevals_nomft(:, i)+abs(ZFevals(1)), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    plot(field, ABevals_allen(:, i)+abs(ZFevals_allen(1)),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    % plot(field, ABevals_allen_nomft(:, i)+abs(ZFevals_allen(1)),'color', 'blue', 'LineWidth', 1.2, 'LineStyle', '-.', 'DisplayName', 'allen params no mft');
 end
 title('H || b');
 xlabel('Field (T)');
@@ -646,8 +653,10 @@ xlabel('Field (T)');
 nexttile;
 hold on;
 for i = 1:size(Cevals, 2)
-    plot(field, Cevals(:, i)+abs(ZFevals(1)), 'LineWidth', 1.2);
-    plot(field, Cevals_allen(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--');
+    plot(field, Cevals(:, i)+abs(ZFevals(1)), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
+    plot(field, Cevals_nomft(:, i)+abs(ZFevals(1)), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    plot(field, Cevals_allen(:, i)+abs(ZFevals_allen(1)), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    % plot(field, Cevals_allen_nomft(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--', 'DisplayName', 'allen params mft');
 end
 title('H || c');
 xlabel('Field (T)');
@@ -659,9 +668,9 @@ for ax = 1:3
     ylim([-5, 30]);
 end
 
-% Add overall title
-sgtitle(sprintf('B20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
-    B20, B40, B43, B60, B63, B66), 'FontSize', 14);
+% % Add overall title
+% sgtitle(sprintf('B20: %.2f, B40: %.2f, B43: %.2f, B60: %.2f, B63: %.2f, B66: %.2f', ...
+%     B20, B40, B43, B60, B63, B66), 'FontSize', 14);
 
 %% checking J with different temperatures
 

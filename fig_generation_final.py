@@ -122,7 +122,7 @@ n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 tempMagB = []
 tempMagC = []
-H = np.concatenate((np.linspace(0,1,50), np.linspace(1.01,10, 50)))
+H = np.concatenate((np.linspace(0,1,50), np.linspace(1.01,15, 150)))
 
 
 
@@ -191,7 +191,7 @@ for fname in fnames:
     dmdhField.append(temp[0])
     dmdhData.append(temp[1])
 
-calc_fname = 'mag_calculation_high_temp.h5'
+calc_fname = 'mag_calculation_up_to_15_T.h5'
 
 # fname should be defined in terminal
 # data is saved in file -> this is redundant, but very easy to deal with
@@ -937,7 +937,7 @@ plt.legend()
 # panel 2, ab plane
 # panel 3, c axis
 # need new fn that returns no norm
-temperature = 1
+temperature = 10
 def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jz):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
@@ -972,15 +972,20 @@ def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jperp):
 ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0)
 
 # now let's get the AB vals
-field = np.linspace(0,10,50)
+field = np.linspace(0,100,1000)
 ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
+ABevals_nomft = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
 
 # now let's get the Cvals
-field = np.linspace(0,10,50)
+field = np.linspace(0,100,1000)
 Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
+Cevals_nomft = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
 
 ABevals = np.array(ABevals).T
 Cevals = np.array(Cevals).T
+
+ABevals_nomft = np.array(ABevals_nomft).T
+Cevals_nomft = np.array(Cevals_nomft).T
 
 # then plot
 
@@ -1002,10 +1007,12 @@ axs[2].set_title('H||c')
 
 
 # Save data to HDF5
-with h5py.File('lines_noNorm_allen.h5', 'w') as hdf:
+with h5py.File('EvsH_noNorm_allens_params_2025Jan14.h5', 'w') as hdf:
     hdf.create_dataset('ZFevals', data=ZFevals)
     hdf.create_dataset('ABevals', data=ABevals)
     hdf.create_dataset('Cevals', data=Cevals)
+    hdf.create_dataset('ABevals_nomft', data=ABevals_nomft)
+    hdf.create_dataset('Cevals_nomft', data=Cevals_nomft)
     hdf.create_dataset('field', data=field)
     hdf.attrs['B20'] = B20
     hdf.attrs['B40'] = B40
