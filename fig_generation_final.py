@@ -108,6 +108,8 @@ B66 =    3.4913e-05
 Jperp = -.53070e-03 # +/- 2.6332e-06 (0.50%) (init = 0)
 Jz =    -2.63253e-03
 
+
+
 # make my er obj
 g = cef.LandeGFactor(ion)
 myBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
@@ -489,11 +491,12 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, tempera
     fun = []
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    evals = diagonalizeC(ionObj, ion, Jz, 0, temperature)
+    h=0
+    evals = diagonalizeC(ionObj, ion, Jz, h, temperature)
     dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
     dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
     if dE[-1]*meVTocCmInv > 50: 
-        fun = np.ones((len(field), len(wavenum)))*50 # penalty for high energy B
+        fun = np.ones((len(field), len(wavenum)))*100 # penalty for high energy B
     else: 
         for b in field: 
             evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
@@ -804,36 +807,37 @@ params = model.make_params()
 
 
 
-params['B20'].set(value= B20, min = -.06, max = 0.06)
-params['B40'].set(value= B40, min = -.06, max = 0.06)
-params['B43'].set(value= B43, min = -.06, max = 0.06)
-params['B60'].set(value= B60, min = -.06, max = 0.06)
-params['B63'].set(value= B63, min = -.06, max = 0.06)
-params['B66'].set(value= B66, min = -.06, max = 0.06)
-params['Jz'].set(value = Jz)
-params['temperature'].set(value = 20)
+params['B20'].set(value= 1e-6, min = -.06, max = 0.06)
+params['B40'].set(value= 1e-6, min = -.06, max = 0.06)
+params['B43'].set(value= 1e-6, min = -.06, max = 0.06)
+params['B60'].set(value= 1e-6, min = -.06, max = 0.06)
+params['B63'].set(value= 1e-6, min = -.06, max = 0.06)
+params['B66'].set(value= 1e-6, min = -.06, max = 0.06)
+params['Jz'].set(value = 0, vary=False)
+params['temperature'].set(value = 7, vary = False)
 
 z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
 z = z.T
 
-result = model.fit(z, field=field, wavenum=wavenum, params =params)
+result = model.fit(z, field=field, wavenum=wavenum, params =params, method='basin_hopping')
 
 print(result.fit_report())
 
 ######################################
-temperature = 1
+# plot the fuck around fits
 
-B20 = -0.03977412 # +/- 2.4288e-04 (0.61%) (init = -0.03721092)
-B40 = -3.8202e-04 # +/- 6.0731e-07 (0.16%) (init = -0.00038796)
-B43 = -0.01408198 # +/- 1.7138e-05 (0.12%) (init = -0.01406804)
-B60 =  3.1790e-06 # +/- 3.8215e-09 (0.12%) (init = 3.1865e-06)
-B63 = -1.8239e-06 # +/- 1.7113e-07 (9.38%) (init = -3.593e-06)
-B66 =  3.6357e-05 # +/- 2.1954e-07 (0.60%) (init = 3.4913e-05)
-Jz =  -0.00303273 # +/- 2.0745e-05 (0.68%) (init = -0.00263253)
-temperature =  23.3697875 # +/- 0.49120345 (2.10%) (init = 20)
+B20 = 3.6660e-06 # init = 1e-06)
+B40 =-1.4155e-05 # init = 1e-06)
+B43 =-5.0859e-08 # init = 1e-06)
+B60 = 4.7441e-06 # init = 1e-06)
+B63 = 1.8543e-05 # init = 1e-06)
+B66 = 6.6564e-06 # init = 1e-06)
+Jz =  0.0#1639090 # init = -0.001)
+temperature =  7 # fixed)
 
-calc_field = np.linspace(0,15,100)
-ampC, arrC = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
+
+calc_field = np.linspace(0,15,30)
+ampC, arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz, temperature)
 arrC = np.array(arrC)
 arrC = arrC*meVToCm
 arrC = arrC.T
@@ -974,12 +978,12 @@ ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0)
 # now let's get the AB vals
 field = np.linspace(0,100,1000)
 ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
-ABevals_nomft = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
+ABevals_nomft = splitLinesAB(field, B20, B40, B43, B60, B63, B66, 0)
 
 # now let's get the Cvals
 field = np.linspace(0,100,1000)
 Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
-Cevals_nomft = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
+Cevals_nomft = splitLinesC(field, B20, B40, B43, B60, B63, B66, 0)
 
 ABevals = np.array(ABevals).T
 Cevals = np.array(Cevals).T
@@ -1007,7 +1011,7 @@ axs[2].set_title('H||c')
 
 
 # Save data to HDF5
-with h5py.File('EvsH_noNorm_allens_params_2025Jan14.h5', 'w') as hdf:
+with h5py.File('EvsH_noNorm_hopes_params_2025Jan14.h5', 'w') as hdf:
     hdf.create_dataset('ZFevals', data=ZFevals)
     hdf.create_dataset('ABevals', data=ABevals)
     hdf.create_dataset('Cevals', data=Cevals)
