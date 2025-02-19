@@ -116,7 +116,6 @@ def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):
 def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [1,1,1,1,1,1,0.3, 0.3, 0.3, 0.3]
     dEphonon = 49.3
     phononAmp = 0.499
     phononSig = 0.95
@@ -128,7 +127,7 @@ def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, tempera
     dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
     # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
     amp = [1 for e in dE]
-    if dE[2]*meVTocCmInv > 60: 
+    if dE[2]*meVTocCmInv > 10: 
         fun = np.ones((len(field), len(wavenum)))*dE[2]*meVTocCmInv # penalty for high energy B, this is only used for global fit fun!!
     else: 
         for b in field: 

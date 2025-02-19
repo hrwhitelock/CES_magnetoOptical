@@ -23,7 +23,7 @@ plt.rcParams.update({'font.size': 16})
 plt.ion()
 
 # define some constants
-temperature = 2 # in K
+temperature = 10# in K
 
 muB = 5.7883818012e-2  # meV/T
 mu0 = np.pi*4e-7       # T*m/A
@@ -698,9 +698,9 @@ IRBfield = [float(b) for b in dataB.columns.values]
 IRBwavenums = [float(i) for i in dataB.index.values]
 
 # now, generate lines for each, simulated spectrum for each
-calc_field = np.arange(0,18, 0.02)
-calc_wavenums = np.arange(0,120, 0.1)
-temperature = 5
+calc_field = np.arange(0,20, 0.08)
+calc_wavenums = np.arange(0,150, .8)
+temperature = 10
 kBT = kB*temperature
 
 ampC,arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz, temperature)
@@ -721,48 +721,49 @@ ampB = ampB.T
 
 # now generate lines with no mean field
 
-ampC_nomft, arrC_nomft = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, 0)
-arrC_nomft = np.array(arrC_nomft)
-arrC_nomft = arrC_nomft*meVToCm
-arrC_nomft = arrC_nomft.T
+# ampC_nomft, arrC_nomft = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, 0, temperature)
+# arrC_nomft = np.array(arrC_nomft)
+# arrC_nomft = arrC_nomft*meVToCm
+# arrC_nomft = arrC_nomft.T
 
-ampC_nomft = np.array(ampC_nomft)
-ampC_nomft = ampC_nomft.T
+# ampC_nomft = np.array(ampC_nomft)
+# ampC_nomft = ampC_nomft.T
 
-ampB_nomft, arrB_nomft = zeemanSplitLinesAB(calc_field, B20, B40, B43, B60, B63, B66, 0)
-arrB_nomft = np.array(arrB_nomft)
-arrB_nomft = arrB_nomft*meVToCm
-arrB_nomft = arrB_nomft.T
+# ampB_nomft, arrB_nomft = zeemanSplitLinesAB(calc_field, B20, B40, B43, B60, B63, B66, 0, temperature)
+# arrB_nomft = np.array(arrB_nomft)
+# arrB_nomft = arrB_nomft*meVToCm
+# arrB_nomft = arrB_nomft.T
 
-ampB_nomft = np.array(ampB_nomft)
-ampB_nomft = ampB_nomft.T
+# ampB_nomft = np.array(ampB_nomft)
+# ampB_nomft = ampB_nomft.T
 
 # now generate simulated IR specs
 
-simulated_spec_Raman_C = zeemanSplitC_raman(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz)
+simulated_spec_Raman_C = zeemanSplitC_raman(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
 simulated_spec_Raman_C  = np.array(simulated_spec_Raman_C)
 
-simulated_spec_IR_B = zeemanSplitAB(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jperp)
+simulated_spec_IR_B = zeemanSplitAB(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jperp, temperature)
 simulated_spec_IR_B  = np.array(simulated_spec_IR_B)
 
-simulated_spec_IR_C = zeemanSplitC_IR(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz)
+simulated_spec_IR_C = zeemanSplitC_IR(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
 simulated_spec_IR_C  = np.array(simulated_spec_IR_C)
 
 # spectroscopy_calc_fname
+spec_calc_fname = 'spectroscopy_calculation_hopes_params_2025Jan30_02.h5'
 with h5py.File(spec_calc_fname, 'w') as hdf:
     hdf.create_dataset('linesC', data = arrC)
     hdf.create_dataset('linesB', data = arrB)
     hdf.create_dataset('ampC', data = ampC)
     hdf.create_dataset('ampB', data = ampB)
-    hdf.create_dataset('linesC_nomft', data = arrC_nomft)
-    hdf.create_dataset('linesB_nomft', data = arrB_nomft)
-    hdf.create_dataset('ampC_nomft', data = ampC_nomft)
-    hdf.create_dataset('ampB_nomft', data = ampB_nomft)
+    # hdf.create_dataset('linesC_nomft', data = arrC_nomft)
+    # hdf.create_dataset('linesB_nomft', data = arrB_nomft)
+    # hdf.create_dataset('ampC_nomft', data = ampC_nomft)
+    # hdf.create_dataset('ampB_nomft', data = ampB_nomft)
     hdf.create_dataset('calc_field', data = calc_field)
     hdf.create_dataset('calc_wavenums', data= calc_wavenums)
-    # hdf.create_dataset('simulated_raman', data = simulated_spec_Raman_C)
-    # hdf.create_dataset('simulated_IR_B', data = simulated_spec_IR_B)
-    # hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
+    hdf.create_dataset('simulated_raman', data = simulated_spec_Raman_C)
+    hdf.create_dataset('simulated_IR_B', data = simulated_spec_IR_B)
+    hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
     hdf.create_dataset('ramanData', data=ramanData.values)
     hdf.create_dataset('IR_dataB', data=dataB.values)
     hdf.create_dataset('IR_dataC', data=dataC.values)
@@ -825,15 +826,16 @@ print(result.fit_report())
 
 ######################################
 # plot the fuck around fits
+B20 = -0.06000000 # 5.0626e-04 (0.84%) (init = -0.03001018)
+B40 = -7.9709e-05 # 8.4488e-07 (1.06%) (init = -0.00011757)
+B43 = -0.00611588 # 6.0049e-05 (0.98%) (init = -0.00384833)
+B60 =  4.5067e-07 # 4.7779e-09 (1.06%) (init = 3.9e-07)
+B63 =  3.6579e-05 # 1.6522e-07 (0.45%) (init = -1.08e-06)
+B66 =  1.1146e-05 # 4.7396e-07 (4.25%) (init = 3.49e-06)
+Jz =  -4.7743e-04 # 7.1455e-06 (1.50%) (init = 0)
 
-B20 = 3.6660e-06 # init = 1e-06)
-B40 =-1.4155e-05 # init = 1e-06)
-B43 =-5.0859e-08 # init = 1e-06)
-B60 = 4.7441e-06 # init = 1e-06)
-B63 = 1.8543e-05 # init = 1e-06)
-B66 = 6.6564e-06 # init = 1e-06)
-Jz =  0.0#1639090 # init = -0.001)
-temperature =  7 # fixed)
+
+
 
 
 calc_field = np.linspace(0,15,30)
@@ -847,18 +849,20 @@ ampC = ampC.T
 
 # import matplotlib.colors as mcolors
 cmap = mcolors.ListedColormap(['cyan'])
-
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
 fig, ax = plt.subplots()
-plt.contourf(ramanField, ramanWavenums, ramanData,100, cmap = 'Oranges')
+plt.contourf(field, wavenums, ramanData,100, cmap = 'Oranges')
 plt.xlim(0,14)
 plt.ylim(0,120)
-plt.clim(-0.3, 1)
+plt.colorbar()
+# plt.clim(-0.3, 1)
 plt.xlabel('Field (T)')
 plt.ylabel('Energy (cm$^{-1}$)')
-plt.colorbar()
+
 plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
 for i in range(len(arrC)):
-    if i<16: 
+    if i<6: 
         plt.plot(calc_field, arrC[i], 'c', alpha=1, linewidth= .7)
     if i>=16:  
         alphas = ampC[i]
@@ -942,14 +946,14 @@ plt.legend()
 # panel 3, c axis
 # need new fn that returns no norm
 temperature = 10
-def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jz):
+def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     kBT = temperature*kB
     dE = []
     for b in field: 
         h = newH(ionObj, b, Jz, temperature)
-        JdotB = muB*(h*cef.Operator.Jy(ionObj.J))*cef.LandeGFactor(ion)
+        JdotB = muB*(h*cef.Operator.JZ(ionObj.J))*cef.LandeGFactor(ion)
         H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
         ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
         evals = ionObj.eigenvaluesNoNorm
@@ -957,14 +961,14 @@ def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jz):
         dE.append(dE_temp)
     return dE
 
-def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jperp):
+def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     kBT = temperature*kB
     dE = []
     for b in field: 
         h = newHAB(ionObj, b, Jperp, temperature)
-        JdotB = muB*(h*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
+        JdotB = muB*(h*cef.Operator.Jy(ionObj.J))*cef.LandeGFactor(ion)
         H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
         ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
         evals = ionObj.eigenvaluesNoNorm
