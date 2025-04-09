@@ -209,7 +209,7 @@ end
 %%
 % Plot data
 figure;
-subplot(2,1,1)
+subplot(1,2,2)
 hold on; grid on; box on; 
 % Plot experimental data
 plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
@@ -220,9 +220,9 @@ plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'Display
 % Plot MFT data
 % H = horzcat(linspace(0,1,50), linspace(1.01,15, 150));
 H = horzcat(linspace(0,1,100), linspace(1.01, 10, 100));
-plot(H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
 
 % Set axis limits (optional)
 xlim([0, 6]);
@@ -239,11 +239,11 @@ hold off;
 % Load data from HDF5 file
 
 % Plot the data
-subplot(2,1,2);  grid on; box on; 
+subplot(1,2,1);  grid on; box on; 
 hold on;
 
 % MPMS data
-plot(my_mag_data.magnetizationAB20K(:,1), my_mag_data.magnetizationAB20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
+plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
 plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data');
 plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data');
 
@@ -251,9 +251,9 @@ plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37
 plot(my_mag_data.CESMHdata(:, 1) / 1e4, my_mag_data.CESMHdata(:, 2), 'b.', 'DisplayName', 'From Allen''s paper');
 
 % MFT and calculated magnetization
-plot(H, my_mag_data.tempMagB(:,11), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagB(:,12), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagB(:,13), '-', 'DisplayName', 'MFT 20K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,11), '-', 'DisplayName', 'MFT 2K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,12), '-', 'DisplayName', 'MFT 6K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,13), '-', 'DisplayName', 'MFT 20K');
 
 xlim([0, 6]);
 ylim([0, 7]);
@@ -266,14 +266,13 @@ hold off;
 
 
 %% dmdh with data
-
+figure; 
 % Plot settings
 labels = my_mag_data.dmdhLabels;
 n = length(labels);
-colors = copper(n); % wanted inferno, can't find it :(
+colors = abyss(n); % wanted inferno, can't find it :(
 
-% subplot(1,3,2); 
-figure; 
+subplot(1,2,1); 
 grid on; box on; 
 hold on;
 dmdh = my_mag_data.dmdhC;
@@ -292,7 +291,7 @@ for i = 1:n
     plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
 
     % Plot calculated data
-    plot(H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
+    plot(my_mag_data.H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
     text(9, offset+0.2, labels{i}, 'FontSize', 9);
 end
 
@@ -301,7 +300,7 @@ ylabel('dM/dH (arb)');
 xlabel('Field (T)');
 hold off;
 
-%% make integrated scm1 data
+% %% make integrated scm1 data
 
 integratedMag = {}; 
 % now we integrate yArrs
@@ -319,9 +318,9 @@ end
 
 % Plotting
 n = length(labels);
-colors = copper(n);
+colors = abyss(n);
 
-subplot(1,3,3); grid on; box on; 
+subplot(1,2,2); grid on; box on; 
 hold on;
 for i = [1, 9]
     % Sort and normalize x and y data
@@ -333,7 +332,7 @@ for i = [1, 9]
     
     % Plot data
     plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(H, my_mag_data.tempMagC(:, i) / max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
+    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
 end
 
 % Add labels, title, and legend
@@ -641,10 +640,10 @@ tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 nexttile;hold on;
 for i = 1:size(ZFevals)
     yline(ZFevals(i)+abs(ZFevals(1)), 'LineWidth', 1.2);
-    yline(ZFevals_allen(i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle','--')
+    % yline(ZFevals_allen(i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle','--')
 end
 title('H = 0');
-xlabel('Field (T)');
+% xlabel('Field (T)');
 ylabel('Energy');
 
 % Plot ABevals (H || b)
@@ -652,8 +651,8 @@ nexttile;hold on;
 hold on;
 for i = 1:size(ABevals, 2)
     plot(field, ABevals(:, i)-ABevals(:, 1), 'color', 'black','LineWidth', 1.2, 'DisplayName', 'my params mft');
-    plot(field, ABevals_nomft(:, i)-ABevals_nomft(:, 1), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
-    plot(field, ABevals_allen(:, i)-ABevals_allen(:, 1),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    % plot(field, ABevals_nomft(:, i)-ABevals_nomft(:, 1), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    % plot(field, ABevals_allen(:, i)-ABevals_allen(:, 1),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, ABevals_allen_nomft(:, i)+abs(ZFevals_allen(1)),'color', 'blue', 'LineWidth', 1.2, 'LineStyle', '-.', 'DisplayName', 'allen params no mft');
 end
 title('H || b');
@@ -663,9 +662,9 @@ xlabel('Field (T)');
 nexttile;
 hold on;
 for i = 1:size(Cevals, 2)
-    plot(field, Cevals(:, i)+abs(Cevals(:,1)), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
-    plot(field, Cevals_nomft(:, i)-Cevals_nomft(:, 1), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
-    plot(field, Cevals_allen(:, i)-Cevals_nomft(:, 1), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    plot(field, Cevals(:, i)-Cevals(:, 1), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
+    % plot(field, Cevals_nomft(:, i)-Cevals_nomft(:, 1), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    % plot(field, Cevals_allen(:, i)-Cevals_nomft(:, 1), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, Cevals_allen_nomft(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--', 'DisplayName', 'allen params mft');
 end
 title('H || c');

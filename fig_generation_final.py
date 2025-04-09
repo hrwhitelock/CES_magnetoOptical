@@ -826,22 +826,21 @@ print(result.fit_report())
 
 ######################################
 # plot the fuck around fits
-B20 = -0.06000000 # 5.0626e-04 (0.84%) (init = -0.03001018)
-B40 = -7.9709e-05 # 8.4488e-07 (1.06%) (init = -0.00011757)
-B43 = -0.00611588 # 6.0049e-05 (0.98%) (init = -0.00384833)
-B60 =  4.5067e-07 # 4.7779e-09 (1.06%) (init = 3.9e-07)
-B63 =  3.6579e-05 # 1.6522e-07 (0.45%) (init = -1.08e-06)
-B66 =  1.1146e-05 # 4.7396e-07 (4.25%) (init = 3.49e-06)
-Jz =  -4.7743e-04 # 7.1455e-06 (1.50%) (init = 0)
+B20 =  0.02876578 # 2.5225e-04 (0.88%) (init = -0.03001018)
+B40 =  5.4242e-05 # 9.5667e-07 (1.76%) (init = -0.00011757)
+B43 = -0.00119712 # 2.7421e-05 (2.29%) (init = -0.00384833)
+B60 =  8.2943e-07 # 7.2025e-09 (0.87%) (init = 3.9e-07)
+B63 = -1.0528e-06 # 1.6958e-07 (16.11%) (init = -1.08e-06)
+B66 =  2.3953e-05 # 7.9272e-08 (0.33%) (init = 3.49e-06)
+Jz =  -0.02026981 # 2.9081e-04 (1.43%) (init = 0)
 
 
 
 
-
-calc_field = np.linspace(0,15,30)
+calc_field = np.linspace(0,5,100)
 ampC, arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz, temperature)
 arrC = np.array(arrC)
-arrC = arrC*meVToCm
+# arrC = arrC*meVToCm
 arrC = arrC.T
 
 ampC = np.array(ampC)
@@ -862,7 +861,7 @@ plt.ylabel('Energy (cm$^{-1}$)')
 
 plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
 for i in range(len(arrC)):
-    if i<6: 
+    if i<16: 
         plt.plot(calc_field, arrC[i], 'c', alpha=1, linewidth= .7)
     if i>=16:  
         alphas = ampC[i]
@@ -875,67 +874,42 @@ for i in range(len(arrC)):
 plt.show()
 
 # temp test
+Tarr = [0.01, 0.025, 0.1, 0.25, 0.4, 0.5, 0.75, 1, 2]
+arrC = []
+arrC_nomft = []
+for temperature in Tarr: 
+    calc_field = np.linspace(0,15,1000)
+    ampC_1, arrC_1 = zeemanSplitLinesC(np.linspace(0,15,1000), B20, B40, B43, B60, B63, B66, Jz, temperature)
+    arrC_1 = np.array(arrC_1)
+    arrC_1 = arrC_1*meVToCm
+    arrC_1 = arrC_1.T
+    arrC.append(arrC_1.tolist())
 
-temperature = .1
-calc_field = np.linspace(0,15,100)
-ampC_1, arrC_1 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
-arrC_1 = np.array(arrC_1)
-arrC_1 = arrC_1*meVToCm
-arrC_1 = arrC_1.T
+    ampC_no_mft, arrC_no_mft = zeemanSplitLinesC(np.linspace(0,15,1000), B20, B40, B43, B60, B63, B66, 0, temperature)
+    arrC_no_mft = np.array(arrC_no_mft)
+    arrC_no_mft = arrC_no_mft*meVToCm
+    arrC_no_mft = arrC_no_mft.T
+    arrC_nomft.append(arrC_no_mft.tolist())
 
-ampC_1 = np.array(ampC_1)
-ampC_1 = ampC_1.T
 
-temperature = 5
-calc_field = np.linspace(0,15,100)
-ampC_5, arrC_5 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
-arrC_5 = np.array(arrC_5)
-arrC_5 = arrC_5*meVToCm
-arrC_5 = arrC_5.T
 
-ampC_5 = np.array(ampC_5)
-ampC_5 = ampC_5.T
-
-temperature = 10
-calc_field = np.linspace(0,15,100)
-ampC_10, arrC_10 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
-arrC_10 = np.array(arrC_10)
-arrC_10 = arrC_10*meVToCm
-arrC_10 = arrC_10.T
-
-ampC_10 = np.array(ampC_10)
-ampC_10 = ampC_10.T
-
-temperature = 20
-calc_field = np.linspace(0,15,100)
-ampC_20, arrC_20 = zeemanSplitLinesC(np.linspace(0,15,100), B20, B40, B43, B60, B63, B66, Jz, temperature)
-arrC_20 = np.array(arrC_20)
-arrC_20 = arrC_20*meVToCm
-arrC_20 = arrC_20.T
-
-ampC_20 = np.array(ampC_20)
-ampC_20 = ampC_20.T
 
 plt.figure()
-plt.contourf(ramanField, ramanWavenums, ramanData,100, cmap = 'Oranges')
-for i in range(len(arrC_1)):
-    if i<16: 
-        if i ==0: 
-            # plt.plot(calc_field, arrC_1[i], 'c', label = '.1K')
-            # plt.plot(calc_field, arrC_5[i], 'm', label = '5K')
-            # plt.plot(calc_field, arrC_10[i], 'b', label = '10K')
-            plt.plot(calc_field, arrC_20[i], 'g', label = '20K')
-        # plt.plot(calc_field, arrC_1[i], 'c')
-        # plt.plot(calc_field, arrC_5[i], 'm')
-        # plt.plot(calc_field, arrC_10[i], 'b')
-        plt.plot(calc_field, arrC_20[i], 'g')
-    elif i>= 16 and i<64: 
-        # plt.plot(calc_field, arrC_1[i], 'c')
-        # plt.plot(calc_field, arrC_5[i], 'm')
-        # plt.plot(calc_field, arrC_10[i], 'b')
-        plt.plot(calc_field, arrC_20[i], 'g--')
+for j in range(len(Tarr)): 
+    arrC_1 = arrC[j]
+    arrC_1_no_mft = arrC_nomft[j]
+    plt.subplot(3, 3, j+1) 
+    plt.title(str(Tarr[j])+'K')
+    for i in range(len(arrC_1)):
+        if i<16: 
+            if i ==0: 
+                plt.plot(calc_field, arrC_1[i], 'b', label = str(Tarr[j]))
+                plt.plot(calc_field, arrC_1_no_mft[i], 'b', label = str(Tarr[j]) +'no mft')
+            plt.plot(calc_field, arrC_1[i], 'b-')
+            plt.plot(calc_field, arrC_1_no_mft[i], 'b--')
+
 plt.show()
-plt.legend()
+# plt.legend()
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
