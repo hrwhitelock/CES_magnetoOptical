@@ -184,8 +184,8 @@ rawData = pd.read_csv(fname, index_col=0, skiprows=0, header=1, delimiter=',')
 ramanData = rawData
 
 # put the global minimum at 0 
-ramanData = np.log(ramanData)
-ramanData = ramanData-ramanData.min(axis=None)
+# ramanData = np.log(ramanData)
+# ramanData = ramanData-ramanData.min(axis=None)
 # normalize - global max 
 # here we don't want to normalize spectrum by spectrum, because the decay of lines
 # carries information 
@@ -239,6 +239,7 @@ z = z.T
 resultC = model.fit(z, field=field, wavenum=wavenum, params =params)
 
 print(resultC.fit_report())
+###
 
 ###########################################################################################
 ###########################################################################################
@@ -291,7 +292,7 @@ B43 = -0.01406804 # +/- 2.5391e-05 (0.18%) (init = -0.01393)
 B60 =  3.1865e-06 # +/- 5.3881e-09 (0.17%) (init = 3.154e-06)
 B63 = -3.5930e-06 # +/- 2.4015e-07 (6.68%) (init = -4.695e-06)
 B66 =  3.4913e-05 # +/- 3.1308e-07 (0.90%) (init = 3.3815e-05)
-Jperp =  0# +/- 1.7886e-05 (0.68%) (init = -0.003)
+Jperp =  0
 field = [float(b) for b in dataB.columns.values]
 wavenum = [float(i) for i in dataB.index.values]
 # now do fit

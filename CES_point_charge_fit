@@ -1,0 +1,203 @@
+# okay lets do some brute force bullllshit on ces
+
+# first, import the cif file 
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import PyCrystalField as cef
+import scipy
+from scipy.optimize import minimize
+from scipy.optimize import leastsq
+from scipy.optimize import fsolve
+import pandas as pd
+import lmfit
+from matplotlib import font_manager
+import matplotlib.colors as  mcolors
+from matplotlib.collections import LineCollection
+font_manager.fontManager.addfont('/Users/hopeless/Library/Fonts/cmunrm.ttf')
+plt.rcParams['mathtext.fontset'] = 'stix'
+plt.rcParams['font.family'] = 'CMU Serif'
+plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams.update({'font.size': 16})
+
+plt.ion()
+
+
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CES_cif.cif'
+CESLig, pcObj = cef.importCIF(fname)
+
+B_20  =  -0.03001018
+B_40  =  -0.00011757
+B_43  =  -0.00384833
+B_60  =  3.9e-07
+B_63  =  -1.08e-06
+B_66  =  3.49e-06
+
+
+# okay, this actually isn't that bad. Let's just use this as a starting pt and 
+# use least squares
+
+B20  =  -0.03001018
+B40  =  -0.00011757
+B43  =  -0.00384833
+B60  =  3.9e-07
+B63  =  -1.08e-06
+B66  =  3.49e-06
+Jperp = 0
+Jz = 0
+
+fitData =ramanData
+
+
+dropidx =[]
+# here I'm cutting out all the phonons I can - the phonon spec is boring and idgaf
+for idx in fitData.index: 
+    if idx>100: 
+        dropidx.append(idx)
+fitData = fitData.drop(labels = dropidx, axis = 0)
+
+field = [float(b) for b in fitData.columns.values]
+wavenum = [float(i) for i in fitData.index.values]
+# now do fit
+temperature = 7
+model = lmfit.Model(zeemanSplitC, independent_vars=['field', 'wavenum'])
+params = model.make_params()
+
+
+params['B20'].set(value= B20, min = -10*np.abs(B20), max = 10*np.abs(B20))
+params['B40'].set(value= B40, min = -10*np.abs(B40), max = 10*np.abs(B40))
+params['B43'].set(value= B43, min = -10*np.abs(B43), max = 10*np.abs(B43))
+params['B60'].set(value= B60, min = -10*np.abs(B60), max = 10*np.abs(B60))
+params['B63'].set(value= B63, min = -10*np.abs(B63), max = 10*np.abs(B63))
+params['B66'].set(value= B66, min = -10*np.abs(B66), max = 10*np.abs(B66))
+params['Jz'].set(value = Jz)
+params['temperature'].set(value = 7, vary = False)
+
+z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
+z = z.T
+
+result = model.fit(z, field=field, wavenum=wavenum, params =params, method = 'ampgo')
+
+print(result.fit_report())
+
+
+
+## rq I want to try adding the IR + Raman together...
+import numpy as np
+from scipy.interpolate import griddata
+from scipy.interpolate import RegularGridInterpolator
+import matplotlib.pyplot as plt
+
+## import data
+# raman data
+fname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/CsErSe2_raman.csv'
+rawData = pd.read_csv(fname, index_col=0, skiprows=0, header=1, delimiter=',')
+ramanData = rawData
+
+# take the log - make sure to do this FIRST
+ramanData = np.log(ramanData)
+ramanData = ramanData-ramanData.min(axis=None)
+# normalize 
+ramanData = ramanData/ramanData.max(axis=None)
+
+ramanField = [float(b) for b in ramanData.columns.values]
+ramanWavenums = [float(i) for i in ramanData.index.values]
+
+
+# next c-axis IR
+cfname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/Maglab_IRMeasurement_June2022/ProcessingCode/Load2_TrimData/P3_CsEr_100_RAWAVG.dat'
+
+# clean up first
+dataC = pd.read_csv(cfname, index_col=0, skiprows=0, header=1)
+dataC = dataC.dropna(axis = 0)
+dataC = dataC.dropna(axis=1)
+dataC = dataC.drop(labels = '-1.1', axis=1)
+rawData = dataC
+
+
+normSpec = dataC['0.001']/max(dataC['0.001'])*-1
+avgSpec = normSpec
+for column in dataC.columns: 
+    dataC[column] = max(dataC[column]) -dataC[column]
+    dataC[column] = dataC[column]/(max(dataC[column])) -normSpec
+    avgSpec = avgSpec + dataC[column]
+
+for column in dataC.columns: 
+    dataC[column] = dataC[column]-avgSpec/len(dataC.columns)
+    dataC[column] = dataC[column]-(sum(dataC[column])/len(dataC[column]))
+
+dataC = dataC.drop(labels='0.001', axis=1) # drop this column because we used it as bg
+
+
+dataC = dataC/dataC.max(axis=None)
+
+dataC[dataC < 0] = 0
+
+# drop everying below 0 
+
+IRCfield = [float(b) for b in dataC.columns.values]
+IRCwavenums = [float(i) for i in dataC.index.values]
+
+
+
+
+
+interp = scipy.interpolate.interp2d(x = IRCfield,  y = IRCwavenums, z = dataC.values, kind = 'cubic')
+interpFieldIR = np.concatenate((np.linspace(0, max(ramanField), 100), np.linspace(max(ramanField), max(IRCfield), 50) ))
+interpWave = np.linspace(10, 100, 1000)
+interpIR = interp(interpFieldIR, interpWave)
+
+plt.figure()
+plt.contourf(interpFieldIR, interpWave, interpIR, 100)
+# now we do the same for the raman data
+interp = scipy.interpolate.interp2d(x = ramanField,  y = ramanWavenums, z = ramanData.values, kind = 'cubic')
+interpFieldRaman = np.linspace(0, max(ramanField), 100)
+interpWave = np.linspace(10, 100, 1000)
+interpRaman = interp(interpField, interpWave)
+
+plt.figure()
+plt.contourf(interpFieldRaman, interpWave, interpRaman, 100)
+
+
+# now let's average them together
+rows1, cols1 = interpRaman.shape
+rows2, cols2 = interpIR.shape
+
+# Ensure both arrays have the same number of rows (y-coordinate)
+assert rows1 == rows2, "The arrays should have the same number of rows."
+
+# Create an output array with the shape of the larger array
+fitData = np.copy(interpIR)
+
+# For each row, average the overlapping columns and keep the larger array's info for non-overlapping columns
+for i in range(rows1):
+    for j in range(min(cols1, cols2)):
+        fitData[i, j] = (interpRaman[i, j] + interpIR[i, j]) / 2
+
+
+plt.figure()
+plt.contourf(interpFieldIR, interpWave, fitData, 100)
+
+
+## okay, so now we have our interpolated data
+# let's try fitting!!
+temperature = 7
+model = lmfit.Model(zeemanSplitC, independent_vars=['field', 'wavenum'])
+params = model.make_params()
+
+
+params['B20'].set(value= B20, min = -10*np.abs(B20), max = 10*np.abs(B20))
+params['B40'].set(value= B40, min = -10*np.abs(B40), max = 10*np.abs(B40))
+params['B43'].set(value= B43, min = -10*np.abs(B43), max = 10*np.abs(B43))
+params['B60'].set(value= B60, min = -10*np.abs(B60), max = 10*np.abs(B60))
+params['B63'].set(value= B63, min = -10*np.abs(B63), max = 10*np.abs(B63))
+params['B66'].set(value= B66, min = -10*np.abs(B66), max = 10*np.abs(B66))
+params['Jz'].set(value = Jz)
+params['temperature'].set(value = 7, vary = False)
+
+# z = np.array(fitData.to_numpy()) # gotta do it twice with tuples :((((
+# z = z.T
+z = fitData.T
+result = model.fit(z, field=interpFieldIR, wavenum=interpWave, params =params)
+
+print(result.fit_report())

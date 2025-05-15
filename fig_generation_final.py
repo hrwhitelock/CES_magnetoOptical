@@ -132,6 +132,12 @@ for temperature in temps:
     tempMagB.append(MFTmagB(ionObj, H, Jperp, temperature))
     tempMagC.append(MFTmagC(ionObj, H, Jz, temperature))
 
+
+# real quick plot the magnetization
+plt.figure()
+for i in range(len(temps)):
+    plt.plot(H, tempMagC[i], label = str(temps[i]))
+
 # now calculate dm/dh
 dmdhB =[]
 dmdhC = []
@@ -434,6 +440,7 @@ def newHAB(ionObj, H, J, temperature):
 
 def diagonalizeC(ionObj, ion, Jz, h, temperature): 
     # first calc effective h
+    ionObj.J = 21/2
     h = newH(ionObj, h, Jz, temperature)
     JdotB = muB*(h*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
     H_cef = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
@@ -909,6 +916,13 @@ for j in range(len(Tarr)):
             plt.plot(calc_field, arrC_1_no_mft[i], 'b--')
 
 plt.show()
+
+
+with h5py.File('zeeman_c_temperature.h5', 'w') as f:
+    f.create_dataset('calc_field', data=calc_field)
+    f.create_dataset('Tarr', data=Tarr)
+    f.create_dataset('arrC', data=np.array(arrC))
+    f.create_dataset('arrC_nomft', data=np.array(arrC_nomft))
 # plt.legend()
 ########################################################################################################################
 ########################################################################################################################
@@ -1082,3 +1096,13 @@ def printLaTexEigenvectors(ionObj, field, precision = 4):
             ' & '.join([str(eevv) for eevv in ionObj._Re(sortEVec[i])]), '\\tabularnewline')
     print('\\end{tabular}\\end{ruledtabular}')
     print('\\label{flo:Eigenvectors}\n\\end{table*}')
+
+
+
+    ######################################################################
+    ## now we do this via partition fn
+    ######################################################################
+
+    # Z = sum(-E/kT)
+    # M = d(ln(Z))/dB
+    # hmmmmmm how to MFT this??

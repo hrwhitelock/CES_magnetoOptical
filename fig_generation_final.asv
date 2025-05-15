@@ -209,20 +209,24 @@ end
 %%
 % Plot data
 figure;
-subplot(1,2,1)
+subplot(2,3,1)
 hold on; grid on; box on; 
 % Plot experimental data
-plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
-plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data');
-plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data');
+plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data scaled by 1.37');
 plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'DisplayName', 'From Allens paper');
+% 
+% plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2), 'x', 'DisplayName', '20K MPMS data');
+% plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2), 'x', 'DisplayName', '6K MPMS data');
+% plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2), 'x', 'DisplayName', '2K MPMS data');
 
 % Plot MFT data
 % H = horzcat(linspace(0,1,50), linspace(1.01,15, 150));
 H = horzcat(linspace(0,1,100), linspace(1.01, 10, 100));
-plot(H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,11), '-', 'DisplayName', 'MFT 2K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,12), '-', 'DisplayName', 'MFT 6K');
+plot(my_mag_data.H, my_mag_data.tempMagC(:,13), '-', 'DisplayName', 'MFT 20K');
 
 % Set axis limits (optional)
 xlim([0, 6]);
@@ -239,21 +243,26 @@ hold off;
 % Load data from HDF5 file
 
 % Plot the data
-subplot(1,2,2);  grid on; box on; 
+subplot(1,2,1);  grid on; box on; 
 hold on;
 
 % MPMS data
-plot(my_mag_data.magnetizationAB20K(:,1), my_mag_data.magnetizationAB20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
-plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data');
-plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data');
+plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data scaled by 1.37');
+
+
+plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2), 'x', 'DisplayName', '20K MPMS data');
+plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2), 'x', 'DisplayName', '6K MPMS data');
+plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2), 'x', 'DisplayName', '2K MPMS data');
 
 % Allen's paper data
 plot(my_mag_data.CESMHdata(:, 1) / 1e4, my_mag_data.CESMHdata(:, 2), 'b.', 'DisplayName', 'From Allen''s paper');
 
 % MFT and calculated magnetization
-plot(H, my_mag_data.tempMagB(:,11), '-', 'DisplayName', 'MFT 2K');
-plot(H, my_mag_data.tempMagB(:,12), '-', 'DisplayName', 'MFT 6K');
-plot(H, my_mag_data.tempMagB(:,13), '-', 'DisplayName', 'MFT 20K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,11), '-', 'DisplayName', 'MFT 2K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,12), '-', 'DisplayName', 'MFT 6K');
+plot(my_mag_data.H, my_mag_data.tempMagB(:,13), '-', 'DisplayName', 'MFT 20K');
 
 xlim([0, 6]);
 ylim([0, 7]);
@@ -265,7 +274,7 @@ legend show;
 hold off;
 
 
-%% dmdh with data
+% dmdh with data
 figure; 
 % Plot settings
 labels = my_mag_data.dmdhLabels;
@@ -299,9 +308,8 @@ title('dM/dH ');
 ylabel('dM/dH (arb)');
 xlabel('Field (T)');
 hold off;
-
-% %% make integrated scm1 data
-
+ %% make integrated scm1 data
+n = length(labels);
 integratedMag = {}; 
 % now we integrate yArrs
 for i = 1:n
@@ -322,7 +330,7 @@ colors = abyss(n);
 
 subplot(1,2,2); grid on; box on; 
 hold on;
-for i = [1, 9]
+for i = 1:len
     % Sort and normalize x and y data
     x = my_mag_data.dmdhField{i}; 
     y = my_mag_data.dmdhData{i};
@@ -332,7 +340,7 @@ for i = [1, 9]
     
     % Plot data
     plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(H, my_mag_data.tempMagC(:, i) / max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
+    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
 end
 
 % Add labels, title, and legend
@@ -477,7 +485,7 @@ legend()
 
 %% okay, so now let's make a susceptibility fig
 % load my magnetic data
-filename = 'susceptibility_calculated_hopes_params.h5';
+filename = 'sus_mft_0p1_step_size_09May25.h5';
 
 info = h5info(filename, '/');
 for i = 1:length(info.Datasets)
@@ -503,11 +511,19 @@ end
 %% plot temp dependent sus
 figure; hold on; box on; grid on; 
 for i = 1: length(my_sus_data.susC(1,:))
-    plot(my_sus_data.temps, my_sus_data.susC(:,i), 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T'])
+    [sortedTemp, idx] = sort(my_sus_data.temps); 
+    sus = my_sus_data.susC(:,i); 
+    sortedSus = sus(idx);
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, no mft'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_C)
-    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}*1.37), 'b.', 'DisplayName', my_sus_data.clabels{i}); 
+    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}.*1.37), 'b.', 'DisplayName', [my_sus_data.clabels{i}, 'scaled by 1.37']); 
+
+end
+
+for i= 1:length(my_sus_data.data_sus_C)
+    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}), 'bx', 'DisplayName', [my_sus_data.clabels{i}, ' no scaling']); 
 
 end
 title('Susceptibility, c-axis, my params')
@@ -517,11 +533,20 @@ ylabel('\chi')
 %% ab plane
 figure; hold on; box on; grid on; 
 for i = 1: length(my_sus_data.susB(1,:))
-    plot(my_sus_data.temps, my_sus_data.susB(:,i), 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T'])
+    [sortedTemp, idx] = sort(my_sus_data.temps); 
+    sus = my_sus_data.susB(:,i); 
+    sortedSus = sus(idx);
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, no mft'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_AB)
-    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}*1.35), 'b.', 'DisplayName', my_sus_data.blabels{i}); 
+    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}*1.35), 'b.', 'DisplayName', [my_sus_data.blabels{i}, 'scaled by 1.37']); 
+
+end
+
+
+for i= 1:length(my_sus_data.data_sus_AB)
+    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}), 'b.', 'DisplayName', [my_sus_data.blabels{i}, 'no scaling']); 
 
 end
 title('Susceptibility, ab plane, my params')
@@ -576,15 +601,32 @@ ylabel('Magnetization (\mu_B/Er)');
 legend('show');
 hold off;
 
+%%
+% load my magnetic data
+filename = 'mag_calc_mft_2025May09.h5';
+
+info = h5info(filename, '/');
+allens_spec_data = struct; 
+for i = 1:length(info.Datasets)
+    % Get the dataset name
+    datasetName = info.Datasets(i).Name;
+    % Load the dataset into a variable
+    datasetData = h5read(filename, ['/', datasetName]);
+    % Optionally, store the data in a struct (to make it easy to access)
+    my_mag_data.(datasetName) = datasetData;
+end
+
 %% make temp dependence for M_c vs H
 figure;
 hold on;
 grid on;
 
+
 % Plot calculated magnetization curves
 numCurves = size(my_mag_data.tempMagC, 2);
+colors = jet(numCurves); % wanted inferno, can't find it :
 for i = 1:numCurves
-    plot(my_mag_data.H, my_mag_data.tempMagC(:, i), 'DisplayName', num2str(my_mag_data.temps(i)));
+    plot(my_mag_data.H, gradient(my_mag_data.tempMagC(:, i), my_mag_data.H), 'DisplayName', num2str(my_mag_data.temps(i)), 'color', colors(i, :));
 end
 legend()
 xlabel('H[T]')
@@ -640,10 +682,10 @@ tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
 nexttile;hold on;
 for i = 1:size(ZFevals)
     yline(ZFevals(i)+abs(ZFevals(1)), 'LineWidth', 1.2);
-    yline(ZFevals_allen(i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle','--')
+    % yline(ZFevals_allen(i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle','--')
 end
 title('H = 0');
-xlabel('Field (T)');
+% xlabel('Field (T)');
 ylabel('Energy');
 
 % Plot ABevals (H || b)
@@ -651,8 +693,8 @@ nexttile;hold on;
 hold on;
 for i = 1:size(ABevals, 2)
     plot(field, ABevals(:, i)-ABevals(:, 1), 'color', 'black','LineWidth', 1.2, 'DisplayName', 'my params mft');
-    plot(field, ABevals_nomft(:, i)-ABevals_nomft(:, 1), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
-    plot(field, ABevals_allen(:, i)-ABevals_allen(:, 1),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    % plot(field, ABevals_nomft(:, i)-ABevals_nomft(:, 1), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    % plot(field, ABevals_allen(:, i)-ABevals_allen(:, 1),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, ABevals_allen_nomft(:, i)+abs(ZFevals_allen(1)),'color', 'blue', 'LineWidth', 1.2, 'LineStyle', '-.', 'DisplayName', 'allen params no mft');
 end
 title('H || b');
@@ -662,9 +704,9 @@ xlabel('Field (T)');
 nexttile;
 hold on;
 for i = 1:size(Cevals, 2)
-    plot(field, Cevals(:, i)+abs(Cevals(:,1)), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
-    plot(field, Cevals_nomft(:, i)-Cevals_nomft(:, 1), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
-    plot(field, Cevals_allen(:, i)-Cevals_nomft(:, 1), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
+    plot(field, Cevals(:, i)-Cevals(:, 1), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
+    % plot(field, Cevals_nomft(:, i)-Cevals_nomft(:, 1), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
+    % plot(field, Cevals_allen(:, i)-Cevals_nomft(:, 1), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, Cevals_allen_nomft(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--', 'DisplayName', 'allen params mft');
 end
 title('H || c');

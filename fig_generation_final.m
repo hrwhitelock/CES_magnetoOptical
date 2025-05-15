@@ -32,6 +32,49 @@ end
 yellowMap = [linspace(0, 255, 256)', linspace(0, 255, 256)', zeros(256, 1)];
 colormap(yellowMap);
 
+%% make spec without thermal lines: 
+% Load data (you probably already have this loaded)
+field_vals = my_spec_data.calc_field;   % e.g., size [Nfield × 1]
+linesB = my_spec_data.linesB;           % e.g., size [Nfield × Nlines]
+
+% Define energy axis
+Emin = 0; Emax = 100;  % cm^-1 range
+dE = 0.05;
+E = Emin:dE:Emax;      % energy grid
+Nfield = length(field_vals);
+Nenergy = length(E);
+Z = zeros(Nenergy, Nfield);
+
+% Gaussian width in cm^-1
+sigma = 0.5;
+
+% Loop through each spectral line
+for i = 2:16
+    for f = 1:Nfield
+        E0 = linesB(f, i);  % Center of the Gaussian
+        if isnan(E0), continue; end  % Skip if missing
+
+        % Gaussian over energy axis
+        G = exp(-((E - E0).^2) / (2*sigma^2));
+
+        % Add to spectrum at field f
+        Z(:, f) = Z(:, f) + G';
+    end
+end
+
+% Normalize (optional)
+Z = Z / max(Z(:));
+
+% Plot
+figure;
+imagesc(field_vals, E, Z);
+axis xy;
+xlabel('Field [T]');
+ylabel('Energy [cm^{-1}]');
+title('Simulated 2D Spectrum from Lines');
+colormap(jet);
+colorbar;
+
 %% 
 fig = figure;
 ax1 = subplot(2,2,1);
@@ -181,7 +224,7 @@ set(ax1,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
-filename = 'mag_calculation_up_to_15_T.h5';
+filename = 'mag_calc_mft_2025May12.h5';
 
 info = h5info(filename, '/');
 allens_spec_data = struct; 
@@ -209,13 +252,17 @@ end
 %%
 % Plot data
 figure;
-subplot(1,2,2)
+subplot(2,3,1)
 hold on; grid on; box on; 
 % Plot experimental data
-plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
-plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data');
-plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data');
+plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data scaled by 1.37');
 plot(my_mag_data.CESMHdata(:,7)./1e4, my_mag_data.CESMHdata(:,8), 'b.', 'DisplayName', 'From Allens paper');
+% 
+% plot(my_mag_data.magnetization20K(:,1), my_mag_data.magnetization20K(:,2), 'x', 'DisplayName', '20K MPMS data');
+% plot(my_mag_data.magnetization6K(:,1), my_mag_data.magnetization6K(:,2), 'x', 'DisplayName', '6K MPMS data');
+% plot(my_mag_data.magnetization2K(:,1), my_mag_data.magnetization2K(:,2), 'x', 'DisplayName', '2K MPMS data');
 
 % Plot MFT data
 % H = horzcat(linspace(0,1,50), linspace(1.01,15, 150));
@@ -243,9 +290,14 @@ subplot(1,2,1);  grid on; box on;
 hold on;
 
 % MPMS data
-plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data');
-plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data');
-plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data');
+plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2)/1.37, 'o', 'DisplayName', '20K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2)/1.37, 'o', 'DisplayName', '6K MPMS data scaled by 1.37');
+plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2)/1.37, 'o', 'DisplayName', '2K MPMS data scaled by 1.37');
+
+
+plot(my_mag_data.magnetizationAb20K(:,1), my_mag_data.magnetizationAb20K(:,2), 'x', 'DisplayName', '20K MPMS data');
+plot(my_mag_data.magnetizationAB6K(:,1), my_mag_data.magnetizationAB6K(:,2), 'x', 'DisplayName', '6K MPMS data');
+plot(my_mag_data.magnetizationAB2K(:,1), my_mag_data.magnetizationAB2K(:,2), 'x', 'DisplayName', '2K MPMS data');
 
 % Allen's paper data
 plot(my_mag_data.CESMHdata(:, 1) / 1e4, my_mag_data.CESMHdata(:, 2), 'b.', 'DisplayName', 'From Allen''s paper');
@@ -270,38 +322,37 @@ figure;
 % Plot settings
 labels = my_mag_data.dmdhLabels;
 n = length(labels);
-colors = abyss(n); % wanted inferno, can't find it :(
+colors = abyss(21); % wanted inferno, can't find it :(
 
-subplot(1,2,1); 
+% subplot(1,2,1); 
 grid on; box on; 
 hold on;
 dmdh = my_mag_data.dmdhC;
-for i = 1:n
+for i = 1:21
     % Normalize yArrs and dmdH for plotting
-    dmData = my_mag_data.dmdhData{i};
-    dmData = dmData / max(dmData);
+    % dmData = my_mag_data.dmdhData{i};
+    % dmData = dmData / max(dmData);
     dm = dmdh(:,i);
     % dm = dm + abs(min(dm));
-    dm = dm / max(dm);
+    % dm = dm / max(dm);
 
     % Offset for better visualization
-    offset = (i - 1) * 0.5;
+    offset = 0; %(i - 1) * 0.5;
 
     % Plot experimental data
-    plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
+    % plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
 
     % Plot calculated data
-    plot(my_mag_data.H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
-    text(9, offset+0.2, labels{i}, 'FontSize', 9);
+    plot(my_mag_data.H, dm + offset, '--', 'DisplayName', [num2str(my_mag_data.temps(i)), ' (calc)'], 'Color', colors(i, :));
+    % text(9, offset+0.2, labels{i}, 'FontSize', 9);
 end
 
 title('dM/dH ');
 ylabel('dM/dH (arb)');
 xlabel('Field (T)');
 hold off;
-
-% %% make integrated scm1 data
-
+ %% make integrated scm1 data
+n = length(labels);
 integratedMag = {}; 
 % now we integrate yArrs
 for i = 1:n
@@ -320,9 +371,10 @@ end
 n = length(labels);
 colors = abyss(n);
 
-subplot(1,2,2); grid on; box on; 
+% subplot(1,2,2); grid on; box on; 
+figure()
 hold on;
-for i = [1, 9]
+for i = 1:n
     % Sort and normalize x and y data
     x = my_mag_data.dmdhField{i}; 
     y = my_mag_data.dmdhData{i};
@@ -332,7 +384,7 @@ for i = [1, 9]
     
     % Plot data
     plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
+    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :), 'DisplayName', labels{i});
 end
 
 % Add labels, title, and legend
@@ -477,7 +529,7 @@ legend()
 
 %% okay, so now let's make a susceptibility fig
 % load my magnetic data
-filename = 'susceptibility_calculated_hopes_params.h5';
+filename = 'sus_mft_0p48ueVJJz_2025May11.h5';
 
 info = h5info(filename, '/');
 for i = 1:length(info.Datasets)
@@ -503,11 +555,19 @@ end
 %% plot temp dependent sus
 figure; hold on; box on; grid on; 
 for i = 1: length(my_sus_data.susC(1,:))
-    plot(my_sus_data.temps, my_sus_data.susC(:,i), 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T'])
+    [sortedTemp, idx] = sort(my_sus_data.temps); 
+    sus = my_sus_data.susC(:,i); 
+    sortedSus = sus(idx);
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, mean field'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_C)
-    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}*1.37), 'b.', 'DisplayName', my_sus_data.clabels{i}); 
+    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}.*1.37), 'b.', 'DisplayName', [my_sus_data.clabels{i}, 'scaled by 1.37']); 
+
+end
+
+for i= 1:length(my_sus_data.data_sus_C)
+    plot(my_sus_data.data_temps_C{i}, 1./(my_sus_data.data_sus_C{i}), 'bx', 'DisplayName', [my_sus_data.clabels{i}, ' no scaling']); 
 
 end
 title('Susceptibility, c-axis, my params')
@@ -517,11 +577,20 @@ ylabel('\chi')
 %% ab plane
 figure; hold on; box on; grid on; 
 for i = 1: length(my_sus_data.susB(1,:))
-    plot(my_sus_data.temps, my_sus_data.susB(:,i), 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T'])
+    [sortedTemp, idx] = sort(my_sus_data.temps); 
+    sus = my_sus_data.susB(:,i); 
+    sortedSus = sus(idx);
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, mean field'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_AB)
-    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}*1.35), 'b.', 'DisplayName', my_sus_data.blabels{i}); 
+    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}*1.35), 'b.', 'DisplayName', [my_sus_data.blabels{i}, 'scaled by 1.37']); 
+
+end
+
+
+for i= 1:length(my_sus_data.data_sus_AB)
+    plot(my_sus_data.data_temps_AB{i}, 1./(my_sus_data.data_sus_AB{i}), 'b.', 'DisplayName', [my_sus_data.blabels{i}, 'no scaling']); 
 
 end
 title('Susceptibility, ab plane, my params')
@@ -576,20 +645,37 @@ ylabel('Magnetization (\mu_B/Er)');
 legend('show');
 hold off;
 
+%%
+% load my magnetic data
+filename = 'mag_calc_mft_2025May09.h5';
+
+info = h5info(filename, '/');
+allens_spec_data = struct; 
+for i = 1:length(info.Datasets)
+    % Get the dataset name
+    datasetName = info.Datasets(i).Name;
+    % Load the dataset into a variable
+    datasetData = h5read(filename, ['/', datasetName]);
+    % Optionally, store the data in a struct (to make it easy to access)
+    my_mag_data.(datasetName) = datasetData;
+end
+
 %% make temp dependence for M_c vs H
 figure;
 hold on;
 grid on;
 
+
 % Plot calculated magnetization curves
-numCurves = size(my_mag_data.tempMagC, 2);
+numCurves = size(my_mag_data.tempMagB, 2);
+colors = jet(numCurves); % wanted inferno, can't find it :
 for i = 1:numCurves
-    plot(my_mag_data.H, my_mag_data.tempMagC(:, i), 'DisplayName', num2str(my_mag_data.temps(i)));
+    plot(my_mag_data.H, my_mag_data.tempMagB(:, i), 'DisplayName', num2str(my_mag_data.temps(i)), 'color', colors(i, :));
 end
 legend()
 xlabel('H[T]')
 ylabel('M \mu_B/Er')
-title('My params')
+title('')
 
 %% same for ab
 figure;
@@ -782,3 +868,60 @@ end
 
 % Adjust layout for better spacing
 sgtitle('Magnetization Curves for dec 20 model');
+
+%% make spec line fig
+% Define the temperatures and corresponding file names
+temps = [1, 2, 4, 6, 10, 20];
+colors = lines(length(temps));  % Distinct colors for each temp
+
+figure;
+tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+% Plot H = 0 ZFevals from the first temperature
+fileName = sprintf('EvsH_mft_T%dK_1015May12.h5', temps(1));
+ZFevals = h5read(fileName, '/ZFevals');
+nexttile;
+hold on;
+for i = 1:numel(ZFevals)
+    yline(ZFevals(i)-ZFevals(1), 'LineWidth', 1.2);
+end
+title('H = 0');
+ylabel('Energy');
+
+% Loop over temps to read and plot ABevals and Cevals
+for ti = 1:length(temps)
+    T = temps(ti);
+    fileName = sprintf('EvsH_mft_T%dK_1015May12.h5', T);
+    field = h5read(fileName, '/field');
+    ABevals = h5read(fileName, '/ABevals');
+    Cevals = h5read(fileName, '/Cevals');
+
+    % H || b
+    nexttile(2);
+    hold on;
+    for i = 1:size(ABevals, 2)
+        plot(field, ABevals(:, i) - ABevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+    end
+    title('H || b');
+    xlabel('Field (T)');
+
+    % H || c
+    nexttile(3);
+    hold on;
+    for i = 1:size(Cevals, 2)
+        plot(field, Cevals(:, i) - Cevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+    end
+    title('H || c');
+    xlabel('Field (T)');
+end
+
+% Set shared plot properties
+for ax = 1:3
+    nexttile(ax);
+    xlim([0 10]);
+    ylim([-5 30]);
+    grid on;
+end
+
+% Add legends only once
+nexttile(2); legend('Location', 'best');

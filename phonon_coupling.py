@@ -95,9 +95,9 @@ hbarvs  = 12.93 # meV A # taken from CYS paper shamelessly
 ## okay, so now as a function of field we want to plot available DOS
 
 hbarvs  = 10
-eta = 10
+eta = 1
 def evk(H):
-    kArr = np.linspace(0, np.pi/10, 1000000)
+    kArr = np.linspace(0, np.pi/10, 1000)
     emArr = []
     epArr = []
     for h in H: 
@@ -118,8 +118,8 @@ def evk(H):
         print(h)
     return emArr, epArr 
 
-H = np.linspace(0,1, 50)
-kArr = np.linspace(0, np.pi/10, 1000000)
+H = np.linspace(0,15, 5000)
+kArr = np.linspace(0, np.pi/10, 1000)
 emArr, epArr = evk(H)
 
 
@@ -127,8 +127,8 @@ plt.figure()
 T = 0.08617328149741*temperature
 
 for h, i in zip(H, np.arange(len(H))): 
-    plt.plot(kArr, emArr[25], label = str(h))
-    plt.plot(kArr, epArr[25], label = str(h))
+    plt.plot(kArr, emArr[45], label = str(h))
+    plt.plot(kArr, epArr[45], label = str(h))
 
 plt.hlines(y = T, xmin = kArr[0], xmax = kArr[-1], colors = 'black')
 
@@ -140,7 +140,7 @@ dos = []
 E = []
 kmArr = []
 kpArr = []
-Ep = np.linspace(0, 2*T, 1000000)
+Ep = np.linspace(0, 2*T, 1000)
 for h, i in zip(H, np.arange(len(H))):
     m = [l[0] for l in emArr[i]]
     p = [l[0] for l in epArr[i]]
@@ -202,3 +202,11 @@ for i in range(len(H)):
 
 plt.figure()
 plt.plot(H, available_states)
+
+
+
+plt.figure()
+idx = [40, 45, 46, 47] 
+for i in idx: 
+    plt.plot( dos[i], Ep[0:len(Ep)-1], label = str(np.round(H[i], decimals=2)))
+plt.legend()

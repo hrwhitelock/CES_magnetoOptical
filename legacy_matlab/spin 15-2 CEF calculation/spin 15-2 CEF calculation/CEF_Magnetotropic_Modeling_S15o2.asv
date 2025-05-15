@@ -61,19 +61,17 @@ HMF = @(HCEFm, JJab, hv, mv) ...
 
 %% Self-consistent magnetization calculation
 % Iteratively solves for magnetization vector m = (mx, my, mz) under MF theory
-% this actually doesn't use HMF at all, so the approach should be identical
-% to what I'm doing
 function out = M(HCEFm, JJab, hv, t)
     B = 1 / (kB * t);   % Inverse temperature in units of 1/meV
 
     % Diagonalize the unperturbed crystal field Hamiltonian
     [P, D] = eig(HCEFm);
     Ev = sort(real(diag(D)));  % Sorted eigenvalues (energy levels)
-    E0 = Ev(1);                % Ground state energy (used to shift spectrum so gs is always 0)
+    E0 = Ev(1);                % Ground state energy (used to shift spectrum)
 
     % Define self-consistent magnetization equations
     f1 = @(mx, my, mz) ...
-        trace(Jx * expm(-B*(HMF(HCEFm, JJab, hv, [mx, my, mz]) - E0*ID))) / ... 
+        trace(Jx * expm(-B*(HMF(HCEFm, JJab, hv, [mx, my, mz]) - E0*ID))) / ...
         trace(expm(-B*(HMF(HCEFm, JJab, hv, [mx, my, mz]) - E0*ID))) - mx;
 
     f3 = @(mx, my, mz) ...

@@ -53,6 +53,7 @@ def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     for b in field: 
+        print('field =' +str(b))
         evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
         dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
         dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
@@ -101,34 +102,45 @@ z = z.T
 result = model.fit(z, field=field, wavenum=wavenum, params =params)
 
 print(result.fit_report())
-
-''' result!!! 
+'''
 [[Model]]
     Model(zeemanSplitC)
 [[Fit Statistics]]
     # fitting method   = leastsq
-    # function evals   = 616
-    # data points      = 95140
-    # variables        = 4
-    chi-square         = 2584.04379
-    reduced chi-square = 0.02716158
-    Akaike info crit   = -343066.265
-    Bayesian info crit = -343028.413
-    R-squared          = -2.98799518
+    # function evals   = 817
+    # data points      = 15265
+    # variables        = 7
+    chi-square         = 138.164406
+    reduced chi-square = 0.00905521
+    Akaike info crit   = -71805.8952
+    Bayesian info crit = -71752.4620
+    R-squared          = -0.98704504
 [[Variables]]
-    B20: -0.03689049 +/- 1.2695e-04 (0.34%) (init = -0.03559)
-    B40: -0.0003849 (fixed)
-    B43: -0.01393 (fixed)
-    B60:  3.1631e-06 +/- 4.1188e-09 (0.13%) (init = 3.154e-06)
-    B63: -3.3295e-06 +/- 1.1926e-07 (3.58%) (init = -4.695e-06)
-    B66:  3.3815e-05 (fixed)
-    Jz:  -0.00256847 +/- 1.6205e-05 (0.63%) (init = -0.001)
+    B20:         -0.03845820 +/- 2.5231e-04 (0.66%) (init = -0.03559)
+    B40:         -3.8386e-04 +/- 6.2896e-07 (0.16%) (init = -0.0003849)
+    B43:         -0.01417369 +/- 1.7909e-05 (0.13%) (init = -0.01393)
+    B60:          3.1447e-06 +/- 3.9564e-09 (0.13%) (init = 3.154e-06)
+    B63:         -1.9859e-06 +/- 1.7473e-07 (8.80%) (init = -4.695e-06)
+    B66:          3.7090e-05 +/- 2.2936e-07 (0.62%) (init = 3.3815e-05)
+    Jz:          -0.00225936 +/- 1.3455e-05 (0.60%) (init = -0.00263253)
+    temperature:  7 (fixed)
 [[Correlations]] (unreported correlations are < 0.100)
-    C(B20, B63) = -0.8695
-    C(B20, B60) = -0.5207
-    C(B20, Jz)  = +0.3671
-    C(B60, B63) = +0.3495
-    C(B60, Jz)  = +0.1684
+    C(B20, B63) = -0.9569
+    C(B43, B66) = -0.9019
+    C(B20, B66) = -0.8762
+    C(B20, B43) = +0.7928
+    C(B63, B66) = +0.7781
+    C(B40, B63) = +0.6830
+    C(B43, B63) = -0.6734
+    C(B20, B40) = -0.6578
+    C(B40, B60) = -0.5374
+    C(B40, B66) = +0.5334
+    C(B43, Jz)  = +0.4114
+    C(B20, Jz)  = +0.3899
+    C(B66, Jz)  = -0.3130
+    C(B40, B43) = -0.2512
+    C(B63, Jz)  = -0.2471
+    C(B43, B60) = -0.1606
 '''
 
 def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):     
@@ -167,19 +179,29 @@ def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):
 
 
 # params from full fit
-B20 = -0.03721092 # 3.3632e-04 (0.90%) (init = -0.03559)
-B40 = -3.8796e-04 # 8.4839e-07 (0.22%) (init = -0.0003849)
-B43 = -0.01406804 # 2.5391e-05 (0.18%) (init = -0.01393)
-B60 =  3.1865e-06 # 5.3881e-09 (0.17%) (init = 3.154e-06)
-B63 = -3.5930e-06 # 2.4015e-07 (6.68%) (init = -4.695e-06)
-B66 =  3.4913e-05 # 3.1308e-07 (0.90%) (init = 3.3815e-05)
-Jz =  -0.00263253 # 1.7886e-05 (0.68%) (init = -0.003)
+# B20 = -0.03721092 # 3.3632e-04 (0.90%) (init = -0.03559)
+# B40 = -3.8796e-04 # 8.4839e-07 (0.22%) (init = -0.0003849)
+# B43 = -0.01406804 # 2.5391e-05 (0.18%) (init = -0.01393)
+# B60 =  3.1865e-06 # 5.3881e-09 (0.17%) (init = 3.154e-06)
+# B63 = -3.5930e-06 # 2.4015e-07 (6.68%) (init = -4.695e-06)
+# B66 =  3.4913e-05 # 3.1308e-07 (0.90%) (init = 3.3815e-05)
+# Jz =  -0.00263253 # 1.7886e-05 (0.68%) (init = -0.003)
+
+B20 = -0.03845820 #2.5231e-04 (0.66%) (init = -0.03559)
+B40 = -3.8386e-04 #6.2896e-07 (0.16%) (init = -0.0003849)
+B43 = -0.01417369 #1.7909e-05 (0.13%) (init = -0.01393)
+B60 =  3.1447e-06 #3.9564e-09 (0.13%) (init = 3.154e-06)
+B63 = -1.9859e-06 #1.7473e-07 (8.80%) (init = -4.695e-06)
+B66 =  3.7090e-05 #2.2936e-07 (0.62%) (init = 3.3815e-05)
+Jz =  -0.00225936 #1.3455e-05 (0.60%) (init = -0.00263253)
+temperature =  7 # (fixed)
+
 
 waveArr= np.linspace(0,120, 480)
 fieldArr = np.linspace(0,18, 100)
 
 # make simulated data
-arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66, Jz)
+arrC = zeemanSplitC(fieldArr, waveArr, B20, B40, B43, B60, B63, B66, Jz, temperature)
 
 arrC = np.array(arrC)
 
@@ -188,7 +210,7 @@ arrC = np.array(arrC)
 plt.figure()
 plt.contourf(fieldArr,waveArr,arrC.T, 100, cmap = 'Reds')
 
-plt.title('simulated fitted CES H||c data \n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66) + 'Jz = -2.53ueV')
+plt.title('simulated fitted CES H||c data \n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66) + 'Jz = '+str(Jz))
 plt.xlabel('Field (T)')
 plt.ylabel('Wavenumber (cm$^{-1}$)')
 plt.colorbar()
@@ -240,13 +262,13 @@ simulatedRaman = arrC
 
 # now we plot data w/ overlay lines
 # params from full fit
-B20 = -0.03721092 # +/- 3.3632e-04 (0.90%) (init = -0.03559)
-B40 = -3.8796e-04 # +/- 8.4839e-07 (0.22%) (init = -0.0003849)
-B43 = -0.01406804 # +/- 2.5391e-05 (0.18%) (init = -0.01393)
-B60 =  3.1865e-06 # +/- 5.3881e-09 (0.17%) (init = 3.154e-06)
-B63 = -3.5930e-06 # +/- 2.4015e-07 (6.68%) (init = -4.695e-06)
-B66 =  3.4913e-05 # +/- 3.1308e-07 (0.90%) (init = 3.3815e-05)
-Jz =  -0.00263253 # +/- 1.7886e-05 (0.68%) (init = -0.003)
+# B20 = -0.03721092 # +/- 3.3632e-04 (0.90%) (init = -0.03559)
+# B40 = -3.8796e-04 # +/- 8.4839e-07 (0.22%) (init = -0.0003849)
+# B43 = -0.01406804 # +/- 2.5391e-05 (0.18%) (init = -0.01393)
+# B60 =  3.1865e-06 # +/- 5.3881e-09 (0.17%) (init = 3.154e-06)
+# B63 = -3.5930e-06 # +/- 2.4015e-07 (6.68%) (init = -4.695e-06)
+# B66 =  3.4913e-05 # +/- 3.1308e-07 (0.90%) (init = 3.3815e-05)
+# Jz =  -0.00263253 # +/- 1.7886e-05 (0.68%) (init = -0.003)
 
 
 
@@ -256,7 +278,7 @@ waveArr= wavenums
 fieldArr = field 
 
 
-ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66, Jz)
+ampC, arrC = zeemanSplitLinesC(fieldArr, B20, B40, B43, B60, B63, B66, Jz, temperature )
 arrC = np.array(arrC)
 arrC = arrC*meVToCm
 arrC = arrC.T
@@ -268,16 +290,16 @@ field = [float(b) for b in ramanData.columns.values]
 wavenums = [float(i) for i in ramanData.index.values]
 
 plt.figure()
-plt.contourf(field, wavenums, ramanData,50)
+plt.contourf(field, wavenums, np.log(ramanData),50)
 plt.xlim(0,17.5)
 plt.ylim(0,120)
 
 plt.title('CsErSe2 H||c with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66))
 for i in range(40):
     if i<16: 
-        plt.plot(fieldArr, arrC_neg[i], 'r', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'r', alpha=0.7)
     if i>=16:
-        plt.plot(fieldArr, arrC_neg[i], 'r--', alpha=0.7)
+        plt.plot(fieldArr, arrC[i], 'r--', alpha=0.7)
 
 
 # IR data
