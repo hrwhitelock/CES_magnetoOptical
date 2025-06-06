@@ -23,3 +23,5 @@ CEF_Magnetotropic_Modeling_Fast('DC Susc', [Bmn.*fac Jxx Jzz]);
 
 %% Plot kab, kc
 CEF_Magnetotropic_Modeling_Fast('principle k', [Bmn.*fac Jxx Jzz]);
+%%
+test = CEF_Magnetotropic_Modeling('k alt', [1 Bmn Jxx Jzz]);

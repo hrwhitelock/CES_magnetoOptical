@@ -499,6 +499,7 @@ switch option
         Ev = sort(real([D(1,1) D(2,2) D(3,3) D(4,4) D(5,5) D(6,6) D(7,7) D(8,8)]));
         E0 = Ev(1);
         
+        
         figure; hold on;
         
         H = 0:60;

@@ -42,7 +42,7 @@ kB  = 8.617e-2;     % Boltzmann constant in meV/K
 gJ = 6/5;           % Landé g-factor for L=3, S=1/2, J=15/2
 z = 6;              % Number of nearest neighbors for mean-field coupling
 
-%% Finite-difference coefficients (not used here but could be for derivatives)
+%% Finite-difference coefficients 
 C1 = [1/12, -2/3, 0, 2/3, -1/12];
 C2 = [-1/12, 4/3, -5/2, 4/3, -1/12];
 C3 = [-1/2, 1, 0, -1, 1/2];
@@ -129,7 +129,10 @@ end
         end
     
         % Compute Helmholtz free energy: F = -kB*T*log(Z) + E0
-        FF = -kB * t * log(ZZ) + E0;
+        FF = -kB * t * log(ZZ) + E0; %% this line I dont understand
+        % what is E0 coming from?? you can't just add E0 to the free energy
+        % am i tripping? E0 will also have some theta dependence
+        % and we've already ground state subtracted
     
         % Apply 5-point finite difference approximation of 2nd derivative:
         %   k(θ) ~ ∂²F/∂θ²
