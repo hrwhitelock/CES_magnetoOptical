@@ -925,3 +925,46 @@ end
 
 % Add legends only once
 nexttile(2); legend('Location', 'best');
+
+
+%% let's plot the magnetotropic coeff
+
+% Load data
+filename = 'magnetotropic_10jun2025.h5';
+
+t_arr = h5read(filename, '/t_arr');
+Hval = h5read(filename, '/Hval');
+theta = h5read(filename, '/theta');
+k_temp = h5read(filename, '/k_temp'); % size: [length(theta), length(Hval), length(t_arr)]
+% NOTE: HDF5 saves in row-major, so permute dimensions to match Python's [t, H, theta]
+k_temp = k_temp.r;
+k_temp = permute(k_temp, [3, 2, 1]);
+
+% Plot
+nTemps = length(t_arr);
+nH = length(Hval);
+colors = turbo(nH);
+
+figure('DefaultAxesFontSize',12);
+
+tiledlayout(ceil(nTemps/2), 2, 'TileSpacing','compact');
+
+for t_idx = 1:nTemps
+    nexttile;
+    
+    deg = theta * 180 / pi;
+    
+    for h_idx = 1:nH
+        plot(deg, squeeze(k_temp(t_idx, h_idx, :)), 'Color', colors(h_idx,:), 'LineWidth', 1.2);
+        hold on;
+    end
+    
+    title(sprintf('T = %.1f K', t_arr(t_idx)));
+    xlabel('angle [deg]');
+    ylabel('k');
+    grid on;
+    
+    if t_idx == 1
+        legend(arrayfun(@(hval) sprintf('%.1f T', hval), Hval, 'UniformOutput', false));
+    end
+end
