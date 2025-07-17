@@ -105,7 +105,7 @@ clim([0 1])
 % xlabel({'calculation', 'Energy [cm{^-1}]'})
 % ylabel('H(T)')
 
-for i = 2:16%size(arrC, 2)
+for i = 33:50%size(arrC, 2)
     plot(my_spec_data.calc_field, my_spec_data.linesB(:,i), 'r--', 'LineWidth', 1);
 end
 
@@ -167,8 +167,8 @@ fig = figure;
 ax1 = subplot(2,1,1);box on; hold on; 
 pcolor(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData'); 
 shading flat; 
-for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'r--', 'LineWidth', 1);
+for i = 33:45%size(arrC, 2)
+    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'b--', 'LineWidth', 1);
 end
 % for i = 17:50%size(arrC, 2)
 %     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
@@ -316,81 +316,224 @@ ylabel('Magnetization (\mu_B/Er)');
 legend show;
 hold off;
 
-
 %% dmdh with data
-figure; 
-% Plot settings
+figure;
 labels = my_mag_data.dmdhLabels;
-n = length(labels);
-colors = abyss(21); % wanted inferno, can't find it :(
-
-% subplot(1,2,1); 
-grid on; box on; 
-hold on;
-dmdh = my_mag_data.dmdhC;
-for i = 1:21
-    % Normalize yArrs and dmdH for plotting
-    % dmData = my_mag_data.dmdhData{i};
-    % dmData = dmData / max(dmData);
-    dm = dmdh(:,i);
-    % dm = dm + abs(min(dm));
-    % dm = dm / max(dm);
-
-    % Offset for better visualization
-    offset = 0; %(i - 1) * 0.5;
-
-    % Plot experimental data
-    % plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
-
-    % Plot calculated data
-    plot(my_mag_data.H, dm + offset, '--', 'DisplayName', [num2str(my_mag_data.temps(i)), ' (calc)'], 'Color', colors(i, :));
-    % text(9, offset+0.2, labels{i}, 'FontSize', 9);
-end
-
-title('dM/dH ');
-ylabel('dM/dH (arb)');
-xlabel('Field (T)');
-hold off;
- %% make integrated scm1 data
-n = length(labels);
-integratedMag = {}; 
-% now we integrate yArrs
-for i = 1:n
-    x = my_mag_data.dmdhField{i}; 
-    y = my_mag_data.dmdhData{i};
-    y = y/max(y); 
-    
-    % first sort x
-    [x, inds] = sort(x);
-    y = y(inds); 
-    temporary = cumsum(y); 
-    integratedMag{end+1} = temporary; 
-end
-
-% Plotting
 n = length(labels);
 colors = abyss(n);
 
-% subplot(1,2,2); grid on; box on; 
-figure()
-hold on;
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
 for i = 1:n
-    % Sort and normalize x and y data
-    x = my_mag_data.dmdhField{i}; 
-    y = my_mag_data.dmdhData{i};
-    [x, sortIdx] = sort(x);
-    y = y(sortIdx) / max(y);
-    intMag = integratedMag{i} / max(integratedMag{i}); % Normalize integratedMag
-    
-    % Plot data
-    plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :), 'DisplayName', labels{i});
+    % === Load experimental data ===
+    H_exp = my_mag_data.dmdhField{i}; 
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Sort and truncate to H >= 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask_exp = H_exp >= 0;
+    H_exp = H_exp(mask_exp);
+    dmdh_exp = dmdh_exp(mask_exp);
+
+    % Normalize and scale
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp = dmdh_exp / area_exp;
+
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale = allenChi(t_idx);
+    dmdh_exp = dmdh_exp * scale;
+
+    % Plot experimental
+    plot(H_exp, dmdh_exp, '-', ...
+        'Color', colors(i, :), ...
+        'DisplayName', [labels{i}, ' (exp)']);
+
+    % === Load and truncate calculated data to ≤12 T ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+    mask_calc = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask_calc);
+    dmdh_calc = dmdh_calc(mask_calc);
+
+    % Normalize and scale (after truncation)
+    area_calc = trapz(H_calc, dmdh_calc);
+    dmdh_calc = dmdh_calc / area_calc;
+    dmdh_calc = dmdh_calc * scale;
+
+    % Plot calculated
+    plot(H_calc, dmdh_calc, '--', ...
+        'Color', colors(i, :), ...
+        'DisplayName', [labels{i}, ' (calc ≤12T)']);
 end
 
-% Add labels, title, and legend
-title('Integrated dM/dH');
+xlabel('Field (T)');
+ylabel('dM/dH (normalized area × χ′)');
+title('dM/dH Curves Truncated at 12T, Area-Normalized and χ′-Scaled');
+legend('show');
+hold off;
+
+%% make integrated data
+figure;
+labels = my_mag_data.dmdhLabels;
+n = length(labels);
+colors = abyss(n);
+
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
+for i = 1:n
+    % === Experimental Integrated M(H) ===
+    H_exp = my_mag_data.dmdhField{i};
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Sort and keep H ≥ 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask = H_exp >= 0;
+    H_exp = H_exp(mask);
+    dmdh_exp = dmdh_exp(mask);
+
+    % Normalize dM/dH area to 1
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp = dmdh_exp / area_exp;
+
+    % Integrate to get M(H)
+    M_exp = cumtrapz(H_exp, dmdh_exp);
+
+    % Scale by Allen χ'
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale = allenChi(t_idx);
+    M_exp = M_exp * scale;
+
+    % Plot experimental integrated
+    plot(H_exp, M_exp, '-', ...
+        'DisplayName', [labels{i}, ' (exp)'], ...
+        'Color', colors(i, :));
+
+    % === Calculated Integrated M(H), Truncated to ≤ 12 T ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+
+    % Keep H ∈ [0, 12] T
+    mask = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask);
+    dmdh_calc = dmdh_calc(mask);
+
+    % Normalize dM/dH area to 1
+    area_calc = trapz(H_calc, dmdh_calc);
+    dmdh_calc = dmdh_calc / area_calc;
+
+    % Integrate to get M(H)
+    M_calc = cumtrapz(H_calc, dmdh_calc);
+
+    % Scale by Allen χ'
+    M_calc = M_calc * scale;
+
+    % Plot calculated integrated
+    plot(H_calc, M_calc, '--', ...
+        'DisplayName', [labels{i}, ' (calc ≤12T)'], ...
+        'Color', colors(i, :));
+end
+
+xlabel('Field (T)');
+ylabel('Magnetization (arb, scaled)');
+title('Integrated M(H): Area-Normalized and χ′(T)-Scaled');
+legend('show');
+hold off;
+
+%% try different normalization
+figure;
+labels = my_mag_data.dmdhLabels;
+n = length(labels);
+colors = abyss(n);
+
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
+for i = 1:n
+    % === Experimental dM/dH ===
+    H_exp = my_mag_data.dmdhField{i};
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Truncate to H >= 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask_exp = H_exp >= 0;
+    H_exp = H_exp(mask_exp);
+    dmdh_exp = dmdh_exp(mask_exp);
+
+    % Normalize area
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp_norm = dmdh_exp / area_exp;
+
+    % Integrate
+    M_exp = cumtrapz(H_exp, dmdh_exp_norm);
+
+    % Scale by Allen chi
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale_exp = allenChi(t_idx);
+    M_exp = M_exp * scale_exp;
+
+    % Plot experimental result
+    plot(H_exp, M_exp, '-', ...
+        'DisplayName', [labels{i}, ' (exp)'], ...
+        'Color', colors(i, :));
+
+    % === Calculated dM/dH ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+
+    % Truncate to H in [0, 12]
+    mask_calc = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask_calc);
+    dmdh_calc = dmdh_calc(mask_calc);
+
+    %normalize area to 1
+
+    % Find dM/dH at 12T in both calc and exp
+    target_H = 12;
+    % Interpolate experimental dM/dH at 12T
+    dmdh_exp_at_12T = Interp1NonUnique(H_exp, dmdh_exp, target_H);
+    dmdh_calc_at_12T = interp1(H_calc, dmdh_calc, target_H, 'linear', 'extrap');
+
+    % Compute offset
+    offset = dmdh_exp_at_12T - dmdh_calc_at_12T;
+    dmdh_calc_shifted = dmdh_calc + offset;
+
+    % Normalize area
+    area_calc = trapz(H_calc, dmdh_calc_shifted);
+    dmdh_calc_norm = dmdh_calc_shifted / area_calc;
+
+    % Integrate
+    M_calc = cumtrapz(H_calc, dmdh_calc_norm);
+    M_calc = M_calc*scale_exp;
+
+    % Plot calculated result
+    plot(H_calc, M_calc, '--', ...
+        'DisplayName', [labels{i}, ' (calc, offset+area norm)'], ...
+        'Color', colors(i, :));
+end
+
 xlabel('Field (T)');
 ylabel('Magnetization (arb)');
+title('M(H): Experimental Scaled by Allen χ′, Theory Offset & Area-Normalized');
 legend('show');
 hold off;
 
@@ -930,7 +1073,7 @@ nexttile(2); legend('Location', 'best');
 %% let's plot the magnetotropic coeff
 
 % Load data
-filename = 'magnetotropic_10jun2025.h5';
+filename = 'magnetotropic_phi_90_18jun2025.h5';
 
 t_arr = h5read(filename, '/t_arr');
 Hval = h5read(filename, '/Hval');

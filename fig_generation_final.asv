@@ -32,6 +32,49 @@ end
 yellowMap = [linspace(0, 255, 256)', linspace(0, 255, 256)', zeros(256, 1)];
 colormap(yellowMap);
 
+%% make spec without thermal lines: 
+% Load data (you probably already have this loaded)
+field_vals = my_spec_data.calc_field;   % e.g., size [Nfield × 1]
+linesB = my_spec_data.linesB;           % e.g., size [Nfield × Nlines]
+
+% Define energy axis
+Emin = 0; Emax = 100;  % cm^-1 range
+dE = 0.05;
+E = Emin:dE:Emax;      % energy grid
+Nfield = length(field_vals);
+Nenergy = length(E);
+Z = zeros(Nenergy, Nfield);
+
+% Gaussian width in cm^-1
+sigma = 0.5;
+
+% Loop through each spectral line
+for i = 2:16
+    for f = 1:Nfield
+        E0 = linesB(f, i);  % Center of the Gaussian
+        if isnan(E0), continue; end  % Skip if missing
+
+        % Gaussian over energy axis
+        G = exp(-((E - E0).^2) / (2*sigma^2));
+
+        % Add to spectrum at field f
+        Z(:, f) = Z(:, f) + G';
+    end
+end
+
+% Normalize (optional)
+Z = Z / max(Z(:));
+
+% Plot
+figure;
+imagesc(field_vals, E, Z);
+axis xy;
+xlabel('Field [T]');
+ylabel('Energy [cm^{-1}]');
+title('Simulated 2D Spectrum from Lines');
+colormap(jet);
+colorbar;
+
 %% 
 fig = figure;
 ax1 = subplot(2,2,1);
@@ -181,7 +224,7 @@ set(ax1,'Xticklabel',[])
 
 %% now make fig 3
 % load my magnetic data
-filename = 'mag_calculation_up_to_15_T.h5';
+filename = 'mag_calc_mft_2025May12.h5';
 
 info = h5info(filename, '/');
 allens_spec_data = struct; 
@@ -273,80 +316,223 @@ ylabel('Magnetization (\mu_B/Er)');
 legend show;
 hold off;
 
-
-% dmdh with data
-figure; 
-% Plot settings
+%% dmdh with data
+figure;
 labels = my_mag_data.dmdhLabels;
-n = length(labels);
-colors = abyss(n); % wanted inferno, can't find it :(
-
-subplot(1,2,1); 
-grid on; box on; 
-hold on;
-dmdh = my_mag_data.dmdhC;
-for i = 1:n
-    % Normalize yArrs and dmdH for plotting
-    dmData = my_mag_data.dmdhData{i};
-    dmData = dmData / max(dmData);
-    dm = dmdh(:,i);
-    % dm = dm + abs(min(dm));
-    dm = dm / max(dm);
-
-    % Offset for better visualization
-    offset = (i - 1) * 0.5;
-
-    % Plot experimental data
-    plot(my_mag_data.dmdhField{i}, dmData + offset, 'DisplayName', labels{i}, 'Color', colors(i, :));
-
-    % Plot calculated data
-    plot(my_mag_data.H, dm + offset, '--', 'DisplayName', [labels{i} , ' (calc)'], 'Color', colors(i, :));
-    text(9, offset+0.2, labels{i}, 'FontSize', 9);
-end
-
-title('dM/dH ');
-ylabel('dM/dH (arb)');
-xlabel('Field (T)');
-hold off;
- %% make integrated scm1 data
-n = length(labels);
-integratedMag = {}; 
-% now we integrate yArrs
-for i = 1:n
-    x = my_mag_data.dmdhField{i}; 
-    y = my_mag_data.dmdhData{i};
-    y = y/max(y); 
-    
-    % first sort x
-    [x, inds] = sort(x);
-    y = y(inds); 
-    temporary = cumsum(y); 
-    integratedMag{end+1} = temporary; 
-end
-
-% Plotting
 n = length(labels);
 colors = abyss(n);
 
-subplot(1,2,2); grid on; box on; 
-hold on;
-for i = 1:len
-    % Sort and normalize x and y data
-    x = my_mag_data.dmdhField{i}; 
-    y = my_mag_data.dmdhData{i};
-    [x, sortIdx] = sort(x);
-    y = y(sortIdx) / max(y);
-    intMag = integratedMag{i} / max(integratedMag{i}); % Normalize integratedMag
-    
-    % Plot data
-    plot(x, intMag , 'DisplayName', labels{i}, 'Color', colors(i+1, :));
-    plot(my_mag_data.H, my_mag_data.tempMagC(:, i)/ max(my_mag_data.tempMagC(:,i)), '--', 'Color', colors(i, :));
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
+for i = 1:n
+    % === Load experimental data ===
+    H_exp = my_mag_data.dmdhField{i}; 
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Sort and truncate to H >= 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask_exp = H_exp >= 0;
+    H_exp = H_exp(mask_exp);
+    dmdh_exp = dmdh_exp(mask_exp);
+
+    % Normalize and scale
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp = dmdh_exp / area_exp;
+
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale = allenChi(t_idx);
+    dmdh_exp = dmdh_exp * scale;
+
+    % Plot experimental
+    plot(H_exp, dmdh_exp, '-', ...
+        'Color', colors(i, :), ...
+        'DisplayName', [labels{i}, ' (exp)']);
+
+    % === Load and truncate calculated data to ≤12 T ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+    mask_calc = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask_calc);
+    dmdh_calc = dmdh_calc(mask_calc);
+
+    % Normalize and scale (after truncation)
+    area_calc = trapz(H_calc, dmdh_calc);
+    dmdh_calc = dmdh_calc / area_calc;
+    dmdh_calc = dmdh_calc * scale;
+
+    % Plot calculated
+    plot(H_calc, dmdh_calc, '--', ...
+        'Color', colors(i, :), ...
+        'DisplayName', [labels{i}, ' (calc ≤12T)']);
 end
 
-% Add labels, title, and legend
-title('Integrated dM/dH');
+xlabel('Field (T)');
+ylabel('dM/dH (normalized area × χ′)');
+title('dM/dH Curves Truncated at 12T, Area-Normalized and χ′-Scaled');
+legend('show');
+hold off;
+
+%% make integrated data
+figure;
+labels = my_mag_data.dmdhLabels;
+n = length(labels);
+colors = abyss(n);
+
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
+for i = 1:n
+    % === Experimental Integrated M(H) ===
+    H_exp = my_mag_data.dmdhField{i};
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Sort and keep H ≥ 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask = H_exp >= 0;
+    H_exp = H_exp(mask);
+    dmdh_exp = dmdh_exp(mask);
+
+    % Normalize dM/dH area to 1
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp = dmdh_exp / area_exp;
+
+    % Integrate to get M(H)
+    M_exp = cumtrapz(H_exp, dmdh_exp);
+
+    % Scale by Allen χ'
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale = allenChi(t_idx);
+    M_exp = M_exp * scale;
+
+    % Plot experimental integrated
+    plot(H_exp, M_exp, '-', ...
+        'DisplayName', [labels{i}, ' (exp)'], ...
+        'Color', colors(i, :));
+
+    % === Calculated Integrated M(H), Truncated to ≤ 12 T ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+
+    % Keep H ∈ [0, 12] T
+    mask = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask);
+    dmdh_calc = dmdh_calc(mask);
+
+    % Normalize dM/dH area to 1
+    area_calc = trapz(H_calc, dmdh_calc);
+    dmdh_calc = dmdh_calc / area_calc;
+
+    % Integrate to get M(H)
+    M_calc = cumtrapz(H_calc, dmdh_calc);
+
+    % Scale by Allen χ'
+    M_calc = M_calc * scale;
+
+    % Plot calculated integrated
+    plot(H_calc, M_calc, '--', ...
+        'DisplayName', [labels{i}, ' (calc ≤12T)'], ...
+        'Color', colors(i, :));
+end
+
+xlabel('Field (T)');
+ylabel('Magnetization (arb, scaled)');
+title('Integrated M(H): Area-Normalized and χ′(T)-Scaled');
+legend('show');
+hold off;
+
+%% try different normalization
+figure;
+labels = my_mag_data.dmdhLabels;
+n = length(labels);
+colors = abyss(n);
+
+H_vals = my_mag_data.H;
+temps = my_mag_data.temps;
+
+allenT = chi_from_allen.temperature;
+allenChi = chi_from_allen.chi_prime;
+
+hold on; box on; grid on;
+
+for i = 1:n
+    % === Experimental dM/dH ===
+    H_exp = my_mag_data.dmdhField{i};
+    dmdh_exp = my_mag_data.dmdhData{i};
+
+    % Truncate to H >= 0
+    [H_exp, sortIdx] = sort(H_exp);
+    dmdh_exp = dmdh_exp(sortIdx);
+    mask_exp = H_exp >= 0;
+    H_exp = H_exp(mask_exp);
+    dmdh_exp = dmdh_exp(mask_exp);
+
+    % Normalize area
+    area_exp = trapz(H_exp, dmdh_exp);
+    dmdh_exp_norm = dmdh_exp / area_exp;
+
+    % Integrate
+    M_exp = cumtrapz(H_exp, dmdh_exp_norm);
+
+    % Scale by Allen chi
+    [~, t_idx] = min(abs(allenT - temps(i)));
+    scale_exp = allenChi(t_idx);
+    M_exp = M_exp * scale_exp;
+
+    % Plot experimental result
+    plot(H_exp, M_exp, '-', ...
+        'DisplayName', [labels{i}, ' (exp)'], ...
+        'Color', colors(i, :));
+
+    % === Calculated dM/dH ===
+    H_calc = H_vals;
+    dmdh_calc = my_mag_data.dmdhC(:, i);
+
+    % Truncate to H in [0, 12]
+    mask_calc = (H_calc >= 0) & (H_calc <= 12);
+    H_calc = H_calc(mask_calc);
+    dmdh_calc = dmdh_calc(mask_calc);
+
+    %normalize area to 1
+
+    % Find dM/dH at 12T in both calc and exp
+    target_H = 12;
+    % Interpolate experimental dM/dH at 12T
+    dmdh_exp_at_12T = Interp1NonUnique(H_exp, dmdh_exp, target_H);
+    dmdh_calc_at_12T = interp1(H_calc, dmdh_calc, target_H, 'linear', 'extrap');
+
+    % Compute offset
+    offset = dmdh_exp_at_12T - dmdh_calc_at_12T;
+    dmdh_calc_shifted = dmdh_calc + offset;
+
+    % Normalize area
+    area_calc = trapz(H_calc, dmdh_calc_shifted);
+    dmdh_calc_norm = dmdh_calc_shifted / area_calc;
+
+    % Integrate
+    M_calc = cumtrapz(H_calc, dmdh_calc_norm);
+
+    % Plot calculated result
+    plot(H_calc, M_calc, '--', ...
+        'DisplayName', [labels{i}, ' (calc, offset+area norm)'], ...
+        'Color', colors(i, :));
+end
+
 xlabel('Field (T)');
 ylabel('Magnetization (arb)');
+title('M(H): Experimental Scaled by Allen χ′, Theory Offset & Area-Normalized');
 legend('show');
 hold off;
 
@@ -485,7 +671,7 @@ legend()
 
 %% okay, so now let's make a susceptibility fig
 % load my magnetic data
-filename = 'sus_mft_0p1_step_size_09May25.h5';
+filename = 'sus_mft_0p48ueVJJz_2025May11.h5';
 
 info = h5info(filename, '/');
 for i = 1:length(info.Datasets)
@@ -514,7 +700,7 @@ for i = 1: length(my_sus_data.susC(1,:))
     [sortedTemp, idx] = sort(my_sus_data.temps); 
     sus = my_sus_data.susC(:,i); 
     sortedSus = sus(idx);
-    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, no mft'])
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, mean field'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_C)
@@ -536,7 +722,7 @@ for i = 1: length(my_sus_data.susB(1,:))
     [sortedTemp, idx] = sort(my_sus_data.temps); 
     sus = my_sus_data.susB(:,i); 
     sortedSus = sus(idx);
-    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, no mft'])
+    plot(sortedTemp, sortedSus, 'DisplayName', [num2str(my_sus_data.fieldVals(i)), 'T, mean field'])
 end
 % add data
 for i= 1:length(my_sus_data.data_sus_AB)
@@ -623,15 +809,15 @@ grid on;
 
 
 % Plot calculated magnetization curves
-numCurves = size(my_mag_data.tempMagC, 2);
+numCurves = size(my_mag_data.tempMagB, 2);
 colors = jet(numCurves); % wanted inferno, can't find it :
 for i = 1:numCurves
-    plot(my_mag_data.H, gradient(my_mag_data.tempMagC(:, i), my_mag_data.H), 'DisplayName', num2str(my_mag_data.temps(i)), 'color', colors(i, :));
+    plot(my_mag_data.H, my_mag_data.tempMagB(:, i), 'DisplayName', num2str(my_mag_data.temps(i)), 'color', colors(i, :));
 end
 legend()
 xlabel('H[T]')
 ylabel('M \mu_B/Er')
-title('My params')
+title('')
 
 %% same for ab
 figure;
@@ -824,3 +1010,103 @@ end
 
 % Adjust layout for better spacing
 sgtitle('Magnetization Curves for dec 20 model');
+
+%% make spec line fig
+% Define the temperatures and corresponding file names
+temps = [1, 2, 4, 6, 10, 20];
+colors = lines(length(temps));  % Distinct colors for each temp
+
+figure;
+tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
+
+% Plot H = 0 ZFevals from the first temperature
+fileName = sprintf('EvsH_mft_T%dK_1015May12.h5', temps(1));
+ZFevals = h5read(fileName, '/ZFevals');
+nexttile;
+hold on;
+for i = 1:numel(ZFevals)
+    yline(ZFevals(i)-ZFevals(1), 'LineWidth', 1.2);
+end
+title('H = 0');
+ylabel('Energy');
+
+% Loop over temps to read and plot ABevals and Cevals
+for ti = 1:length(temps)
+    T = temps(ti);
+    fileName = sprintf('EvsH_mft_T%dK_1015May12.h5', T);
+    field = h5read(fileName, '/field');
+    ABevals = h5read(fileName, '/ABevals');
+    Cevals = h5read(fileName, '/Cevals');
+
+    % H || b
+    nexttile(2);
+    hold on;
+    for i = 1:size(ABevals, 2)
+        plot(field, ABevals(:, i) - ABevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+    end
+    title('H || b');
+    xlabel('Field (T)');
+
+    % H || c
+    nexttile(3);
+    hold on;
+    for i = 1:size(Cevals, 2)
+        plot(field, Cevals(:, i) - Cevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+    end
+    title('H || c');
+    xlabel('Field (T)');
+end
+
+% Set shared plot properties
+for ax = 1:3
+    nexttile(ax);
+    xlim([0 10]);
+    ylim([-5 30]);
+    grid on;
+end
+
+% Add legends only once
+nexttile(2); legend('Location', 'best');
+
+
+%% let's plot the magnetotropic coeff
+
+% Load data
+filename = 'magnetotropic_10jun2025.h5';
+
+t_arr = h5read(filename, '/t_arr');
+Hval = h5read(filename, '/Hval');
+theta = h5read(filename, '/theta');
+k_temp = h5read(filename, '/k_temp'); % size: [length(theta), length(Hval), length(t_arr)]
+% NOTE: HDF5 saves in row-major, so permute dimensions to match Python's [t, H, theta]
+k_temp = k_temp.r;
+k_temp = permute(k_temp, [3, 2, 1]);
+
+% Plot
+nTemps = length(t_arr);
+nH = length(Hval);
+colors = turbo(nH);
+
+figure('DefaultAxesFontSize',12);
+
+tiledlayout(ceil(nTemps/2), 2, 'TileSpacing','compact');
+
+for t_idx = 1:nTemps
+    nexttile;
+    
+    deg = theta * 180 / pi;
+    
+    for h_idx = 1:nH
+        plot(deg, squeeze(k_temp(t_idx, h_idx, :)), 'Color', colors(h_idx,:), 'LineWidth', 1.2);
+        hold on;
+    end
+    
+    title(sprintf('T = %.1f K', t_arr(t_idx)));
+    xlabel('angle [deg]');
+    ylabel('k');
+    grid on;
+    
+    if t_idx == 1
+        legend(arrayfun(@(hval) sprintf('%.1f T', hval), Hval, 'UniformOutput', false));
+    end
+end
