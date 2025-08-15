@@ -2,7 +2,22 @@
 
 % let's start with making the paper figures
 %% load my spectroscopy data
-filename = 'spectroscopy_calculation_hopes_params_2025Jan30_02.h5';
+% filename = 'spectroscopy_calculation_hopes_params_2025Jan30_02.h5';
+filename = 'spectroscopy_fgr_only_high_lines2025Aug07.h5';
+% filename = 'spectroscopy_fgr_all_2025Aug07.h5';
+info = h5info(filename, '/');
+my_spec_data = struct; 
+for i = 1:length(info.Datasets)
+    % Get the dataset name
+    datasetName = info.Datasets(i).Name;
+    % Load the dataset into a variable
+    datasetData = h5read(filename, ['/', datasetName]);
+    % Optionally, store the data in a struct (to make it easy to access)
+    my_spec_data.(datasetName) = datasetData;
+end
+
+%% load H||a test spectroscopy data
+filename = 'spectroscopy_HparA_2025jul17.h5';
 
 info = h5info(filename, '/');
 my_spec_data = struct; 
@@ -14,6 +29,7 @@ for i = 1:length(info.Datasets)
     % Optionally, store the data in a struct (to make it easy to access)
     my_spec_data.(datasetName) = datasetData;
 end
+
 
 %% load Allens spectroscopy data
 filename = 'spectroscopy_calculation_Allens_params.h5';
@@ -29,16 +45,166 @@ for i = 1:length(info.Datasets)
     my_spec_data.(datasetName) = datasetData;
 end
 %% make colormap
-yellowMap = [linspace(0, 255, 256)', linspace(0, 255, 256)', zeros(256, 1)];
+yellowMap = [linspace(0, 1, 256)', linspace(0, 1, 256)', zeros(256, 1)];
 colormap(yellowMap);
 
+n = 256;  % Number of color levels
+
+base_cmap = [
+    1.0000, 1.0000, 0.8980
+    1.0000, 0.9686, 0.7373
+    0.9961, 0.8902, 0.5686
+    0.9961, 0.8000, 0.4353
+    0.9922, 0.6824, 0.3804
+    0.9451, 0.5176, 0.3216
+    0.8510, 0.3725, 0.2588
+    0.6510, 0.2118, 0.1569
+    0.4980, 0.1529, 0.1176
+];
+
+% Interpolate to desired number of colors
+x = linspace(0, 1, size(base_cmap,1));
+xq = linspace(0, 1, n);
+
+oranges = interp1(x, base_cmap, xq, 'linear');
+
+base_colors = [...
+    0.556863, 0.003922, 0.321569;
+    0.772549, 0.105882, 0.490196;
+    0.870588, 0.466667, 0.682353;
+    0.945098, 0.713725, 0.854902;
+    0.992157, 0.878431, 0.937255;
+    1.000000, 1.000000, 0.850980;
+    0.901961, 0.960784, 0.596078;
+    0.670588, 0.866667, 0.643137;
+    0.400000, 0.741176, 0.674510;
+    0.196078, 0.533333, 0.741176;
+    0.192157, 0.211765, 0.584314];
+
+% Interpolate to desired number of colors
+x = linspace(0, 1, size(base_colors, 1));
+xi = linspace(0, 1, n);
+
+r = interp1(x, base_colors(:,1), xi, 'pchip');
+g = interp1(x, base_colors(:,2), xi, 'pchip');
+b = interp1(x, base_colors(:,3), xi, 'pchip');
+
+PiYG = [r(:), g(:), b(:)];
+
+base_cmap = [ ...
+    0.2298057, 0.29871797, 0.75368315;
+    0.26623388, 0.35309472, 0.80146664;
+    0.30386891, 0.4065353 , 0.84495867;
+    0.34280448, 0.45875775, 0.8837259 ;
+    0.38301334, 0.50941904, 0.91738754;
+    0.42436961, 0.55814842, 0.94561959;
+    0.46666708, 0.60456257, 0.96815491;
+    0.5096352 , 0.64828077, 0.98478814;
+    0.55295333, 0.68892991, 0.9953756 ;
+    0.59626216, 0.72614942, 0.99983624;
+    0.63917622, 0.75959947, 0.99815161;
+    0.68129128, 0.78896471, 0.9903632 ;
+    0.72219329, 0.81395274, 0.97657471;
+    0.76146477, 0.83430265, 0.95694527;
+    0.79869163, 0.84978614, 0.93168855;
+    0.8334661 , 0.86020798, 0.9010687 ;
+    0.86539519, 0.86541021, 0.86539519;
+    0.89609127, 0.84893747, 0.82088012;
+    0.92290314, 0.82738471, 0.7745082 ;
+    0.94647675, 0.80092744, 0.72673615;
+    0.96660839, 0.76976775, 0.67800728;
+    0.98324389, 0.73421376, 0.62875189;
+    0.99654221, 0.69473848, 0.57937515;
+    1.        , 0.65197766, 0.53026376;
+    0.99581563, 0.60659675, 0.48177591;
+    0.98386829, 0.55926553, 0.43424371;
+    0.96412339, 0.51052391, 0.38797432;
+    0.93667127, 0.46075608, 0.34326326;
+    0.90170242, 0.41019373, 0.30031808;
+    0.85951726, 0.35900052, 0.25930125;
+    0.81046763, 0.30728987, 0.22033408;
+    0.75492178, 0.25514502, 0.18352669;
+    0.69326246, 0.20264226, 0.14893563;
+    0.62589536, 0.14983829, 0.11659704];
+
+% Interpolate to n colors
+x = linspace(0, 1, size(base_cmap, 1));
+xi = linspace(0, 1, n);
+
+r = interp1(x, base_cmap(:,1), xi, 'pchip');
+g = interp1(x, base_cmap(:,2), xi, 'pchip');
+b = interp1(x, base_cmap(:,3), xi, 'pchip');
+
+coolwarm = [r(:), g(:), b(:)];
+
+% Anchor points for the BWR colormap from Matplotlib
+base_cmap = [ ...
+    0.0, 0.0, 1.0;    % blue
+    1.0, 1.0, 1.0;    % white
+    1.0, 0.0, 0.0];   % red
+
+% Define interpolation scale
+x = linspace(0, 1, size(base_cmap, 1));
+xi = linspace(0, 1, n);
+
+% Interpolate in RGB space
+r = interp1(x, base_cmap(:,1), xi, 'linear');
+g = interp1(x, base_cmap(:,2), xi, 'linear');
+b = interp1(x, base_cmap(:,3), xi, 'linear');
+
+% Combine into colormap
+bwr = [r(:), g(:), b(:)];
+
+base_cmap = [ ...
+    0.0, 0.0, 0.3;   % dark blue
+    0.0, 0.0, 1.0;   % blue
+    1.0, 1.0, 1.0;   % white
+    1.0, 0.0, 0.0;   % red
+    0.5, 0.0, 0.0];  % dark red
+
+% Corresponding positions for interpolation
+x = linspace(0, 1, size(base_cmap, 1));
+xi = linspace(0, 1, n);
+
+% Interpolate each channel
+r = interp1(x, base_cmap(:,1), xi, 'linear');
+g = interp1(x, base_cmap(:,2), xi, 'linear');
+b = interp1(x, base_cmap(:,3), xi, 'linear');
+
+% Combine into colormap
+seismic = [r(:), g(:), b(:)];
+
+base_cmap = [ ...
+    158,   1,  66;
+    213,  62,  79;
+    244, 109,  67;
+    253, 174,  97;
+    254, 224, 139;
+    255, 255, 191;
+    230, 245, 152;
+    171, 221, 164;
+    102, 194, 165;
+     50, 136, 189;
+     94,  79, 162] / 255;
+
+% Positions for interpolation
+x = linspace(0, 1, size(base_cmap, 1));
+xi = linspace(0, 1, n);
+
+% Interpolate RGB channels
+r = interp1(x, base_cmap(:,1), xi, 'linear');
+g = interp1(x, base_cmap(:,2), xi, 'linear');
+b = interp1(x, base_cmap(:,3), xi, 'linear');
+
+% Combine into colormap
+spectral = [r(:), g(:), b(:)];
 %% make spec without thermal lines: 
 % Load data (you probably already have this loaded)
 field_vals = my_spec_data.calc_field;   % e.g., size [Nfield × 1]
-linesB = my_spec_data.linesB;           % e.g., size [Nfield × Nlines]
+linesC = my_spec_data.linesB;           % e.g., size [Nfield × Nlines]
 
 % Define energy axis
-Emin = 0; Emax = 100;  % cm^-1 range
+Emin = 15; Emax = 300;  % cm^-1 range
 dE = 0.05;
 E = Emin:dE:Emax;      % energy grid
 Nfield = length(field_vals);
@@ -46,181 +212,201 @@ Nenergy = length(E);
 Z = zeros(Nenergy, Nfield);
 
 % Gaussian width in cm^-1
-sigma = 0.5;
+sigma = .8;
 
 % Loop through each spectral line
-for i = 2:16
+for i = 2:121
     for f = 1:Nfield
-        E0 = linesB(f, i);  % Center of the Gaussian
+        E0 = linesC(f, i)*8.022;  % Center of the Gaussian
         if isnan(E0), continue; end  % Skip if missing
-
+        amp = my_spec_data.ampB(f,i);
         % Gaussian over energy axis
-        G = exp(-((E - E0).^2) / (2*sigma^2));
+        G = amp.*exp(-((E - E0).^2) / (2*sigma^2));
 
         % Add to spectrum at field f
         Z(:, f) = Z(:, f) + G';
     end
 end
-
+% now ZF subtract
+Z = Z(:,2:end)-Z(:,1); 
 % Normalize (optional)
-Z = Z / max(Z(:));
+% Z = Z / max(max(Z(:)));
 
+avg = sum(Z,2);
+Z = Z-avg/99;
+Z = Z / max(max(Z(:)));
 % Plot
 figure;
-imagesc(field_vals, E, Z);
+imagesc(field_vals(2:end), E, Z);
 axis xy;
 xlabel('Field [T]');
 ylabel('Energy [cm^{-1}]');
 title('Simulated 2D Spectrum from Lines');
-colormap(jet);
+colormap(coolwarm);
 colorbar;
 
 %% 
 fig = figure;
-ax1 = subplot(2,2,1);
+ax1 = subplot(2,3,1);
 title('B-axis IR')
 hold on; 
 pcolor(my_spec_data.IR_B_field,my_spec_data.IR_B_wavenums,my_spec_data.IR_dataB')
 % axis xy;
 shading flat
 for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
+    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r-', 'LineWidth', 1);
 end
-set(ax1,'Xticklabel',[])
-ylabel({'data', 'Energy [cm{^-1}]'})
+% % for i = 17:50%size(arrC, 2)
+%     plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
+% end
+% set(ax1,'Xticklabel',[])
+ylabel('Energy [cm{^-1}]')
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
-colormap(ax1, jet)
+colormap(ax1, coolwarm)
+% colormap(seismic)
 set(gca,'Layer','top')
 
-ax3 = subplot(2,2,3);
+
+
+%% c axis IR
+figure; 
 hold on; 
-idx = 1:1:length(my_spec_data.calc_wavenums);
-field_idx = 1:1:length(my_spec_data.calc_field); 
-contourf(my_spec_data.calc_field(field_idx),my_spec_data.calc_wavenums(idx), my_spec_data.simulated_IR_B(idx, field_idx), 100,'LineStyle', 'none');
-% contourf(np.linspace(0,18.5),np.linspace(0, 100, 10000), Vq)
-colormap(ax3, jet)
-clim([0 1])
-% xlabel({'calculation', 'Energy [cm{^-1}]'})
-% ylabel('H(T)')
-
-for i = 33:50%size(arrC, 2)
-    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i), 'r--', 'LineWidth', 1);
-end
-
-clim([0 1])
-ylim([0 100])
-xlim([0 17.5])
-set(gca,'Layer','top')
-% 
-
-% linkaxes([ax1, ax2], 'xy')
-
-% %% c axis IR
-% figure; hold on; 
-ax2 = subplot(2,2,2);hold on; box on; 
+ax2 = subplot(2,3,2);hold on; box on; 
 pcolor(my_spec_data.IR_C_field, my_spec_data.IR_C_wavenums, my_spec_data.IR_dataC')
 shading flat
-for i = 2:16 %size(my_spec_data.linesC, 2)
-    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i),  'r--', 'LineWidth',1);
+for i = 2:54 %size(my_spec_data.linesC, 2)
+    if i <= 16
+        plot(my_spec_data.calc_field, my_spec_data.linesC(:,i),  'r-', 'LineWidth',1, "DisplayName",['0 to' num2str(i-1)]);
+    end
+%     if i>=17 && i<31
+%         plot(my_spec_data.calc_field, my_spec_data.linesC(:,i),  'r-', 'LineWidth',1, "DisplayName",['1 to' num2str(i-15)]);
+%     end
+%     if i>=31 && i<43
+%         plot(my_spec_data.calc_field, my_spec_data.linesC(:,i),  'r-', 'LineWidth',1, "DisplayName",['2 to' num2str(i-15-14+1)])
+%     end
+%     if i>=43 && i<=54
+%         plot(my_spec_data.calc_field, my_spec_data.linesC(:,i),  'r-', 'LineWidth',1, "DisplayName",['3 to' num2str(i-15-14-13+3)])
+%     end
 end
 title('C-axis IR')
-ylabel('Energy [cm{^-1}]')
-colormap(ax2, jet)
+% ylabel('Energy [cm{^-1}]')
+colormap(ax2, coolwarm)
 clim([0 1])
 ylim([0 100])
 xlim([0 17.5])
 set(gca,'Layer','top')
 % 
-ax4 = subplot(2,2,4);
-hold on; box on; 
-contourf(my_spec_data.calc_field(field_idx),my_spec_data.calc_wavenums(idx), my_spec_data.simulated_IR_C(idx, field_idx), 100, 'LineStyle', 'none');
-colormap(ax4, jet)
-for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'r--', 'LineWidth', 1);
-end
-clim([0 1])
-ylim([0 100])
-xlim([0 17.5])
-ylabel({'Data', 'Energy [cm{^-1}]'})
-xlabel('H(T)')
-set(gca,'Layer','top')
-
-ax1.Position(2)=ax3.Position(2)+ax3.Position(4)+.002; 
-ax3.Position(1)=ax1.Position(1);
-ax2.Position(1) = ax1.Position(1) +ax1.Position(3) +.002;
-
-ax2.Position(2)=ax1.Position(2);
-ax4.Position(1)=ax2.Position(1);
-
-linkaxes([ax1, ax2, ax3, ax4], 'xy')
-set(ax2,'Yticklabel',[]) 
-set(ax1,'Xticklabel',[])
-set(ax2,'Xticklabel',[])
-set(ax4,'Yticklabel',[])
-
-
-%% c axis raman
-
-fig = figure;
-ax1 = subplot(2,1,1);box on; hold on; 
-pcolor(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData'); 
-shading flat; 
-for i = 33:45%size(arrC, 2)
-    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'b--', 'LineWidth', 1);
-end
-% for i = 17:50%size(arrC, 2)
-%     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
+% ax4 = subplot(2,2,4);
+% hold on; box on; 
+% contourf(my_spec_data.calc_field(field_idx),my_spec_data.calc_wavenums(idx), my_spec_data.simulated_IR_C(idx, field_idx), 100, 'LineStyle', 'none');
+% colormap(ax4, jet)
+% for i = 2:16%size(arrC, 2)
+%     plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'r--', 'LineWidth', 1);
 % end
-ylim([0 100])
-xlim([0 14])
-colormap(ax1, cm)
-title ('C-axis Raman')
-ylabel('Energy [cm^{-1}]')
-
-ax2 = subplot(2,1,2);
-hold on; box on; 
-contourf(my_spec_data.calc_field(field_idx),my_spec_data.calc_wavenums(idx), my_spec_data.simulated_raman(idx, field_idx), 100, 'LineStyle', 'none');
-colormap(ax2, cm)
-% let's add some lines
-for i = 2:16%size(arrC, 2)
-    plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'r--', 'LineWidth', 1);
-end
-clim([0 1])
-xlim([0 14])
-ylim([0 100])
-ylabel('Energy [cm{^-1}]')
+% clim([0 1])
+% ylim([0 100])
+% xlim([0 17.5])
+% ylabel({'Data', 'Energy [cm{^-1}]'})
 xlabel('H(T)')
+set(gca,'Layer','top')
 
-ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
-ax2.Position(1)=ax1.Position(1);
-linkaxes([ax1, ax2], 'xy')
-set(ax1,'Xticklabel',[])
-
+% ax1.Position(2)=ax3.Position(2)+ax3.Position(4)+.002; 
+% ax3.Position(1)=ax1.Position(1);
+% ax2.Position(1) = ax1.Position(1) +ax1.Position(3) +.002;
 % 
-% ax3.Position(2)=ax6.Position(2)+ax6.Position(4)+.02;
-% ax1.Position(2)=ax4.Position(2)+ax4.Position(4)+.02;
-% % 
-% % ax4.Position(2)=ax6.Position(2)+ax6.Position(4);
-% ax2.Position(2)=ax5.Position(2)+ax5.Position(4)+.02;
-% % 
-% % 
-% % ax4.Position(1)=ax3.Position(1)+ax3.Position(3);
-% ax2.Position(1)=ax1.Position(1)+ax1.Position(3);
-% ax5.Position(1)=ax4.Position(1)+ax4.Position(3);
-% linkaxes([ax1, ax2, ax3, ax4, ax5, ax6], 'xy')
-% % ylabel('Energy [cm^{-1}]')
-% % xlabel('H [t]')
+% ax2.Position(2)=ax1.Position(2);
+% ax4.Position(1)=ax2.Position(1);
+
+% linkaxes([ax1, ax2, ax3, ax4], 'xy')
 % set(ax2,'Yticklabel',[]) 
 % set(ax1,'Xticklabel',[])
 % set(ax2,'Xticklabel',[])
+% set(ax4,'Yticklabel',[])
 % 
-% set(ax5,'Yticklabel',[]) 
-% % set(ax5,'Xticklabel',[])
+
+% c axis raman
+
+% fig = figure;
+ax3 = subplot(2,3,3);box on; hold on; 
+pcolor(my_spec_data.raman_field, my_spec_data.raman_wavenums, my_spec_data.ramanData'); 
+shading flat; 
+for i = 2:16%size(arrC, 2)
+    plot(my_spec_data.calc_field, my_spec_data.linesC(:,i), 'r', 'LineWidth', 1);
+end
+% for i = 17:50%size(arrC, 2)
+%     plot(my_spec_data.calc_field,my_spec_data.linesC(:,i),  'r--', 'LineWidth', 1);
+% % end
+% ylim([0 100])
+% xlim([0 14])
+colormap(ax3, coolwarm)
+title ('C-axis Raman')
+% ylabel('Energy [cm^{-1}]')
 % 
+% ax2 = subplot(2,1,2);
+% hold on; box on; 
+% contourf(my_spec_data.calc_field(field_idx),my_spec_data.calc_wavenums(idx), my_spec_data.simulated_raman(idx, field_idx), 100, 'LineStyle', 'none');
+% colormap(ax2, cm)
+% % let's add some lines
+% for i = 2:16%size(arrC, 2)
+%     plot(my_spec_data.calc_field(field_idx), my_spec_data.linesC(field_idx,i), 'r--', 'LineWidth', 1);
+% end
+% clim([0 1])
+% xlim([0 14])
+% ylim([0 100])
+% ylabel('Energy [cm{^-1}]')
+% xlabel('H(T)')
 % 
-% set(ax3,'Xticklabel',[])
+% ax1.Position(2)=ax2.Position(2)+ax2.Position(4)+.02;
+% ax2.Position(1)=ax1.Position(1);
+linkaxes([ax1, ax2, ax3], 'xy')
+% set(ax3,'Yticklabel',[])
+clim([0 1])
+ylim([0 100])
+xlim([0 17.5])
+
+ax4 = subplot(2,3,4);
+% title('B-axis IR')
+hold on; 
+% pcolor(my_spec_data.IR_B_field,my_spec_data.IR_B_wavenums,my_spec_data.IR_dataB')
+% % axis xy;
+shading flat
+for i = 2:16%size(arrC, 2)
+    plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r-', 'LineWidth', 1);
+end
+% % for i = 17:50%size(arrC, 2)
+%     plot(my_spec_data.calc_field, my_spec_data.linesB(:,i),  'r--', 'LineWidth', 1);
+% end
+% set(ax1,'Xticklabel',[])
+ylabel('Energy [cm{^-1}]')
+% clim([0 1])
+% ylim([0 100])
+% xlim([0 17.5])
+% colormap(ax1, coolwarm)
+% colormap(seismic)
+set(gca,'Layer','top')
+
+ax5 = subplot(2,3,5);box on; hold on; 
+shading flat; 
+for i = 2:16%size(arrC, 2)
+    plot(my_spec_data.calc_field, my_spec_data.linesC(:,i), 'r', 'LineWidth', 1);
+end
+
+ax6 = subplot(2,3,6);box on; hold on; 
+for i = 2:16%size(arrC, 2)
+    plot(my_spec_data.calc_field, my_spec_data.linesC(:,i), 'r', 'LineWidth', 1);
+end
+
+linkaxes([ax1, ax2, ax3], ax4, ax5, ax6, 'xy')
+% set(ax3,'Yticklabel',[])
+% clim([0 1])
+ylim([0 100])
+xlim([0 17.5])
+
+
+% ax2.Position(1) = ax1.Position(1)+ax1.Position(3) +.01;
+% ax3.Position(1) = ax2.Position(1)+ax2.Position(3) +.01;
 
 %% now make fig 3
 % load my magnetic data
@@ -837,7 +1023,7 @@ title('My params')
 
 %% make fig 1
 % Load data from HDF5
-fileName = 'EvsH_noNorm_hopes_params_2025Jan14.h5';
+fileName = 'EvsH_mft_T10K_1015May12.h5';
 ZFevals = h5read(fileName, '/ZFevals');
 ABevals = h5read(fileName, '/ABevals');
 Cevals = h5read(fileName, '/Cevals');
@@ -852,15 +1038,15 @@ B63 = h5readatt(fileName, '/', 'B63');
 B66 = h5readatt(fileName, '/', 'B66');
 
 
-fileName = 'EvsH_noNorm_allens_params_2025Jan14.h5';
-ZFevals_allen = h5read(fileName, '/ZFevals');
-ABevals_allen = h5read(fileName, '/ABevals');
-Cevals_allen = h5read(fileName, '/Cevals');
-ABevals_allen_nomft = h5read(fileName, '/ABevals_nomft');
-Cevals_allen_nomft = h5read(fileName, '/Cevals_nomft');
-field = h5read(fileName, '/field');
-B20_allen = h5readatt(fileName, '/', 'B20');
-% Create the figure with subplots
+% fileName = 'EvsH_noNorm_allens_params_2025Jan14.h5';
+% ZFevals_allen = h5read(fileName, '/ZFevals');
+% ABevals_allen = h5read(fileName, '/ABevals');
+% Cevals_allen = h5read(fileName, '/Cevals');
+% ABevals_allen_nomft = h5read(fileName, '/ABevals_nomft');
+% Cevals_allen_nomft = h5read(fileName, '/Cevals_nomft');
+% field = h5read(fileName, '/field');
+% B20_allen = h5readatt(fileName, '/', 'B20');
+% % Create the figure with subplots
 figure;
 hold on;
 tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');
@@ -879,7 +1065,7 @@ ylabel('Energy');
 nexttile;hold on;
 hold on;
 for i = 1:size(ABevals, 2)
-    plot(field, ABevals(:, i)-ABevals(:, 1), 'color', 'black','LineWidth', 1.2, 'DisplayName', 'my params mft');
+    plot(field, ABevals(:, i)-ABevals(1, 1), 'color', 'black','LineWidth', 1.2, 'DisplayName', 'my params mft');
     % plot(field, ABevals_nomft(:, i)-ABevals_nomft(:, 1), 'color', 'red','LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
     % plot(field, ABevals_allen(:, i)-ABevals_allen(:, 1),'color', 'cyan', 'LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, ABevals_allen_nomft(:, i)+abs(ZFevals_allen(1)),'color', 'blue', 'LineWidth', 1.2, 'LineStyle', '-.', 'DisplayName', 'allen params no mft');
@@ -891,7 +1077,7 @@ xlabel('Field (T)');
 nexttile;
 hold on;
 for i = 1:size(Cevals, 2)
-    plot(field, Cevals(:, i)-Cevals(:, 1), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
+    plot(field, Cevals(:, i)-Cevals(1, 1), 'color', 'black', 'LineWidth', 1.2, 'DisplayName', 'my params mft');
     % plot(field, Cevals_nomft(:, i)-Cevals_nomft(:, 1), 'color', 'red', 'LineStyle', '--','LineWidth', 1.2, 'DisplayName', 'my params no mft');
     % plot(field, Cevals_allen(:, i)-Cevals_nomft(:, 1), 'color', 'cyan','LineWidth', 1.2, 'LineStyle', ':', 'DisplayName', 'allen params mft');
     % plot(field, Cevals_allen_nomft(:, i)+abs(ZFevals_allen(1)), 'LineWidth', 1.2, 'LineStyle', '--', 'DisplayName', 'allen params mft');
@@ -902,8 +1088,8 @@ xlabel('Field (T)');
 % Set shared properties
 for ax = 1:3
     nexttile(ax);
-    xlim([0, 10]);
-    ylim([-5, 30]);
+    xlim([0, 100]);
+    ylim([-50, 50]);
 end
 
 % % Add overall title
@@ -1111,3 +1297,205 @@ for t_idx = 1:nTemps
         legend(arrayfun(@(hval) sprintf('%.1f T', hval), Hval, 'UniformOutput', false));
     end
 end
+
+%%
+filename = 'spectroscopy_fgr_all_2025Jul30.h5';
+
+info = h5info(filename, '/');
+my_spec_data = struct; 
+for i = 1:length(info.Datasets)
+    % Get the dataset name
+    datasetName = info.Datasets(i).Name;
+    % Load the dataset into a variable
+    datasetData = h5read(filename, ['/', datasetName]);
+    % Optionally, store the data in a struct (to make it easy to access)
+    my_spec_data.(datasetName) = datasetData;
+end
+% Load data from CSV files
+% ramanData = readmatrix('ramanData.csv');  % assuming saved separately
+% binaryAmp = readmatrix('binary_amp.csv');
+ampC = my_spec_data.ampC;%
+% ampC = readmatrix('amplitude.csv');
+arrC = my_spec_data.linesC;                       %
+% arrC = readmatrix('energies.csv');
+calc_field = my_spec_data.calc_field;%
+% calc_field = readmatrix('calc_field.csv');
+
+% Generate field and wavenumber axes
+% [n_wavenum, n_field] = size(ramanData);
+wavenums = linspace(0, 120, length(ampC));  % adjust as appropriate
+field = calc_field;        % adjust as appropriate
+
+% Create figure and contour plot
+figure;
+hold on;
+% contourf(field, wavenums, ramanData, 100, 'LineColor', 'none');
+% colormap('Oranges');
+% colorbar;
+% xlim([0, 14]);
+% ylim([0, 120]);
+xlabel('Field (T)');
+ylabel('Energy (cm^{-1})');
+
+% Overlay colored lines where binaryAmp == 1
+n_lines = size(arrC, 1);
+for i = 2:55
+    mask = ampC(:, i)>0;
+    if any(mask)
+        if i<17
+            plot(calc_field(mask), arrC(mask, i)*8.022, 'b-', 'LineWidth', 1.5, 'DisplayName', ['0 to' num2str(i-1)]); % 'c' = cyan
+        end
+        if i>=17 && i<32
+            plot(calc_field(mask), arrC(mask, i)*8.022, 'b--', 'LineWidth', 1.5, 'DisplayName',['1 to' num2str(i-15)] ); % 'c' = cyan
+        end
+        if i>=31 && i<44
+            plot(calc_field(mask), arrC(mask, i)*8.022, 'b:', 'LineWidth', 1.5, 'DisplayName',['2 to' num2str(i-15-14+1)] ); % 'c' = cyan
+        end
+
+        if i>=43 && i<54
+            plot(calc_field(mask), arrC(mask, i)*8.022, 'b:', 'LineWidth', 1.5, 'DisplayName',['3 to' num2str(i-15-14-13+3)] ); % 'c' = cyan
+        end
+    end
+end
+
+title('H||c, selection rulesmasked for amplitude >1e-2  computational error means we actually never get 0');
+hold off;
+%%
+figure(); 
+contourf(calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B./max(my_spec_data.simulated_IR_B), 100, 'linestyle', 'none');
+colormap(coolwarm)
+
+%%
+
+simdata = (my_spec_data.simulated_C(:,2:end)-my_spec_data.simulated_C(:,1)); 
+% simdata = simdata./max(max(simdata));
+avgdata = zeros([length(simdata(:,1)),1]);
+for i =1:length(simdata(1,:)) 
+    avgdata = avgdata + simdata(:,i);
+end
+simdata = simdata - avgdata./length(simdata(1,:));
+simdata = simdata./max(max(simdata));
+figure(); 
+contourf(calc_field(2:end), my_spec_data.calc_wavenums, simdata, 100, 'linestyle', 'none');
+colormap(coolwarm)
+xlabel('H [T]')
+ylabel('E [cm^{-1}]')
+clim([-.1, .1])
+%% make sim figures
+figure; hold on; box on;
+contourf(my_spec_data.calc_field, my_spec_data.calc_wavenums, my_spec_data.simulated_IR_B, 100, 'linestyle', 'none')
+
+%% plot IR data to get phonons
+bfname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/Maglab_IRMeasurement_June2022/ProcessingCode/Load1_TrimData/P2_CsEr_100-FIR_RAWAVG.dat';
+cfname = '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/Maglab_IRMeasurement_June2022/ProcessingCode/Load2_TrimData/P3_CsEr_100_RAWAVG.dat';
+
+
+%%
+% figure; hold on; box on; grid on; 
+for i = 1:83
+    plot(wavenumber, B_IR_data(:,i)+i*.0)
+end
+plot(wav, pinhole, 'mo--')
+
+%% 
+% take ZF spec, subtract the pinhole
+i = 1;
+figure; hold on; box on; grid on; 
+plot(wavenumber, B_IR_data(:,i)./max(B_IR_data(:,i)));
+plot(wav, pinhole./max(pinhole), 'mo--')
+% plot(wavenumber, B_IR_data(:,i)./interp_pinhole)
+%% make average spectrum 
+data = zeros(length(B_IR_data), 1);
+for i = 1:length(B_IR_data)
+    % disp(i)
+    data(i) = sum(B_IR_data(i,:),'omitnan')/length(~isnan(B_IR_data(i,:)))+ sum(C_IR_data(i,:),'omitnan')/length(~isnan(C_IR_data(i,:)));
+end 
+%%
+figure; hold on; box on; grid on; 
+plot(wavenumber, data./max(data))
+plot(wav, pinhole./6.2, 'm--')
+%% interp, divide by pinhole
+
+% interp_data = interp1(wavenumber, data/max(data), linspace(min(wavenumber),max(wavenumber), ))
+interp_pinhole = interp1(wav, pinhole./6.2, wavenumber); 
+data = data./max(data);
+%%
+div_data = data./interp_pinhole; 
+
+%%
+figure; hold on; box on; grid on; 
+plot(wavenumber, 1-(div_data./max(div_data)))
+
+%% 
+usable = div_data(400:end); 
+wave = wavenumber(400:end);
+
+%%
+figure; hold on; box on; grid on; 
+plot(wave, 1-(usable./max(usable)))
+
+%% rq, let's look at just ZF
+
+simAB = h5read('simAB_data.h5', '/simAB');
+field = h5read('simAB_data.h5', '/field');
+wavenum = h5read('simAB_data.h5', '/wavenum');
+
+% Create the contour plot
+figure;
+contourf(field, wavenum, simAB, 100, 'LineColor', 'none');  % Transpose for orientation
+xlabel('H [T]');
+ylabel('E [cm^{-1}]');
+title('Simulated Zeeman Spectrum (AB Plane)');
+colorbar;
+
+%% 
+figure; hold on; box on; grid on; 
+plot(wavenumber, ir(:,1), "DisplayName", num2str(field(1))); 
+plot(wavenumber, ir(:,15), "DisplayName", num2str(field(15))); 
+plot(wavenumber, ir(:,43), "DisplayName", num2str(field(43))); 
+plot(wavenumber, ir(:,71), "DisplayName", num2str(field(71))); 
+legend()
+xlabel('E [cm^{-1}]')
+ylabel('Transmission [arb]')
+
+%% subtract zf
+figure; hold on; box on; grid on; 
+% plot(wavenumber, ir(:,1), "DisplayName", num2str(field(1))); 
+plot(wavenumber, ir(:,15)-ir(:,1), "DisplayName", num2str(field(15))); 
+plot(wavenumber, ir(:,43)-ir(:,1), "DisplayName", num2str(field(43))); 
+plot(wavenumber, ir(:,71)-ir(:,1), "DisplayName", num2str(field(71))); 
+legend()
+xlabel('E [cm^{-1}]')
+ylabel('Transmission [arb]')
+
+%% figure
+figure; box on;
+contourf(field(2:71), wavenumber, -1*(ir(:,2:71)-ir(:,1)),100, 'linestyle', 'none')
+xlabel('H[T]')
+ylabel('E [cm^{-1}]')
+clim([0 1])
+%% divide
+figure; hold on; box on; grid on; 
+% plot(wavenumber, ir(:,1), "DisplayName", num2str(field(1))); 
+plot(wavenumber, ir(:,15)./ir(:,72), "DisplayName", num2str(field(15))); 
+plot(wavenumber, ir(:,43)./ir(:,72), "DisplayName", num2str(field(43))); 
+plot(wavenumber, ir(:,71)./ir(:,72), "DisplayName", num2str(field(71))); 
+legend()
+xlabel('E [cm^{-1}]')
+ylabel('Transmission [arb]')
+
+
+
+%% figure
+figure; box on;
+contourf(field(1:71), wavenumber, -1-(ir(:,1:71)./ir(:,72)),100, 'linestyle', 'none')
+xlabel('H[T]')
+ylabel('E [cm^{-1}]')
+% clim([0 1])
+
+%% figure
+figure; box on;
+contourf(field_b(2:40), wavenumber, 1-(ir_b(:,2:40)-ir_b(:,1))+1,256, 'linestyle', 'none')
+xlabel('H[T]')
+ylabel('E [cm^{-1}]')
+% clim([0 1])

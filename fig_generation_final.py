@@ -29,7 +29,7 @@ muB = 5.7883818012e-2  # meV/T
 mu0 = np.pi*4e-7       # T*m/A
 kB  = 8.617e-2         # [meV/K]
 meVToCm =meVTocCmInv= 8.066 
-ion = 'Er3+'
+# ion = 'Er3+'
 
 kBT = kB*temperature
 gJ = cef.LandeGFactor('Er3+')
@@ -43,7 +43,7 @@ q = 6
 
 def bmag(mag, J,  h, temperature, ionObj):
     newh = h +q*J*mag/muB/1.2/1.2
-    mag = -1*ionObj.magnetization(ion, temperature, [0,newh, 0]).T[1]-mag
+    mag = -1*ionObj.magnetization(ion, temperature, [newh,0, 0]).T[0]-mag
     return mag
 
 def cmag(mag, J,  h, temperature, ionObj):
@@ -105,26 +105,24 @@ B43 =   -0.01406804
 B60 =    3.1865e-06
 B63 =   -3.593e-06
 B66 =    3.4913e-05
-Jperp = -.53070e-03 # +/- 2.6332e-06 (0.50%) (init = 0)
+Jperp = -.53070e-03 
 Jz =    -2.63253e-03
-
-
 
 # make my er obj
 g = cef.LandeGFactor(ion)
-myBparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
-ionObj = cef.CFLevels.Bdict(ion,myBparams)
+Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+ionObj = cef.CFLevels.Bdict(ion,Bparams)
 
 
 # calculate temp dependent magnetization in AB/C
 
-temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 1.008, 2, 6, 20]
+temps = [0.025, 0.045,0.1, 0.171, .25, .35, .45, .543, .827, 1.008, 2,3,4,5, 6,7,8,9,10,15, 20]
 labels = [str(T)+ 'K' for T in temps]
 n = len(temps)
 colors = plt.cm.jet(np.linspace(0,1,n))
 tempMagB = []
 tempMagC = []
-H = np.concatenate((np.linspace(0,1,50), np.linspace(1.01,15, 150)))
+H = np.concatenate((np.linspace(0,2,100), np.linspace(2.01,18, 150)))
 
 
 
@@ -199,7 +197,7 @@ for fname in fnames:
     dmdhField.append(temp[0])
     dmdhData.append(temp[1])
 
-calc_fname = 'mag_calculation_up_to_15_T.h5'
+calc_fname = 'mag_calc_mft_2025May12.h5'
 
 # fname should be defined in terminal
 # data is saved in file -> this is redundant, but very easy to deal with
@@ -242,8 +240,8 @@ def susceptibilityB(ionObj, fieldVal, temps):
     chi = []
     for temp in temps: 
         # f = np.arange(fieldVal-.5*fieldVal, .5*fieldVal+fieldVal, .05*fieldVal) 
-        f = np.linspace(fieldVal-.1, fieldVal+.1,3)
-        m = MFTmagB(ionObj, f, Jz, [temp])
+        f = np.linspace(fieldVal-.01, fieldVal+.01,3)
+        m = MFTmagB(ionObj, f, Jperp, [temp])
         x = np.gradient(m, f) 
         chi.append(x[1])
     return chi
@@ -258,8 +256,8 @@ def susceptibilityC(ionObj, fieldVal, temps):
         chi.append(x[1]) 
     return chi
 
-temps = np.concatenate((np.arange(0.025, 25, .025),np.arange(1,300, 1)))
-fieldVals = [0, 0.1, 1, 3, -6]
+temps = np.linspace(.1,30,300) #np.concatenate((np.arange(0.025, 25, .025),np.arange(1,300, 1)))
+fieldVals = [0.0, 0.1, 0.2]
 susB = []
 susC = []
 for fieldVal in fieldVals: 
@@ -295,36 +293,36 @@ for fname in fnames:
     data_temps_C.append(temp[0])
     data_sus_C.append(temp[1])
 
-# now we calculate low temp sus on the c axis
+# # now we calculate low temp sus on the c axis
 
-lowTempFields = [0.358, .116, .37, .64,1, 2, 3, 5.4]
-lowTempSusC =[]
-lowTempSusB = []
-lowTemps = np.linspace(0,1,100)
-for field in lowTempFields: 
-    lowTempSusB.append(susceptibilityB(ionObj, field, lowTemps))
-    lowTempSusC.append(susceptibilityC(ionObj, field, lowTemps))
+# lowTempFields = [0.358, .116, .37, .64,1, 2, 3, 5.4]
+# lowTempSusC =[]
+# lowTempSusB = []
+# lowTemps = np.linspace(0,1,100)
+# for field in lowTempFields: 
+#     lowTempSusB.append(susceptibilityB(ionObj, field, lowTemps))
+#     lowTempSusC.append(susceptibilityC(ionObj, field, lowTemps))
 
 # load low temp susceptibility data
 
-fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0cool25.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0warm26.txt',
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0cool27.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0warm28.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0cool29.txt',
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0warm30.txt', 
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt',
-            '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt']
-labels = ['.0358T', '.0358T', '.116T', '.116T','.37T', '.37T', '0.64T', '0.64T', '5.4T']
-data_lowTemps = []
-data_lowTempSusC =[]
+# fnames = ['/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0warm24.txt', 
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/00358T0cool25.txt', 
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0warm26.txt',
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/0116T0cool27.txt', 
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0warm28.txt', 
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/037T0cool29.txt',
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0warm30.txt', 
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/064T0cool31.txt',
+#             '/Users/hopeless/Desktop/LeeLab/data/CsErSe2_data/54T0warm32.txt']
+# labels = ['.0358T', '.0358T', '.116T', '.116T','.37T', '.37T', '0.64T', '0.64T', '5.4T']
+# data_lowTemps = []
+# data_lowTempSusC =[]
 
 
-for fname in fnames: 
-    temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
-    data_lowTemps.append(temp[0])
-    data_lowTempSusC.append(temp[1])
+# for fname in fnames: 
+#     temp = np.genfromtxt(fname, delimiter=',',  unpack=True, skip_header=1)
+#     data_lowTemps.append(temp[0])
+#     data_lowTempSusC.append(temp[1])
 
 
 Na = 6.02214076e23 
@@ -333,33 +331,34 @@ SCF = 1/(1.07828221e24/Na)
 # data is saved in file -> this is redundant, but very easy to deal with
 # save data
 # fname = 'susceptibility_calculated_whos_parmas.h5'
+sus_calc_fname = 'sus_mft_0p48ueVJJz_2025May11.h5'
 
 with h5py.File(sus_calc_fname, 'a') as hdf:
     hdf.create_dataset('temps', data = temps)
-    # hdf.create_dataset('susB', data = susB)
-    # hdf.create_dataset('susC', data = susC)
-    # hdf.create_dataset('data_temps_C', data = np.array(data_temps_C, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.create_dataset('data_temps_AB', data = np.array(data_temps_AB, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.create_dataset('data_sus_C', data = np.array(data_sus_C, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.create_dataset('data_sus_AB', data = np.array(data_sus_AB, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.create_dataset('clabels', data = clabels)
-    # hdf.create_dataset('blabels', data = blabels)
-    # hdf.create_dataset('fieldVals', data = fieldVals)
-    hdf.create_dataset('lowTempField', data = lowTempFields)
-    hdf.create_dataset('lowTempSusB', data = lowTempSusB)
-    hdf.create_dataset('lowTempSusC', data = lowTempSusC)
-    hdf.create_dataset('lowTemps', data = lowTemps)
-    hdf.create_dataset('lowTempLabels', data = labels)
-    hdf.create_dataset('data_lowTemps', data = np.array(data_lowTemps, dtype=object), dtype=h5py.vlen_dtype(float))
-    hdf.create_dataset('data_lowTempSus', data = np.array(data_lowTempSusC, dtype=object), dtype=h5py.vlen_dtype(float))
-    # hdf.attrs['B20'] = B20
-    # hdf.attrs['B40'] = B40
-    # hdf.attrs['B43'] = B43
-    # hdf.attrs['B60'] = B60
-    # hdf.attrs['B63'] = B63
-    # hdf.attrs['B66'] = B66
-    # hdf.attrs['Jz'] = Jz
-    # hdf.attrs['Jperp'] = Jperp
+    hdf.create_dataset('susB', data = susB)
+    hdf.create_dataset('susC', data = susC)
+    hdf.create_dataset('data_temps_C', data = np.array(data_temps_C, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('data_temps_AB', data = np.array(data_temps_AB, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('data_sus_C', data = np.array(data_sus_C, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('data_sus_AB', data = np.array(data_sus_AB, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.create_dataset('clabels', data = clabels)
+    hdf.create_dataset('blabels', data = blabels)
+    hdf.create_dataset('fieldVals', data = fieldVals)
+    # hdf.create_dataset('lowTempField', data = lowTempFields)
+    # hdf.create_dataset('lowTempSusB', data = lowTempSusB)
+    # hdf.create_dataset('lowTempSusC', data = lowTempSusC)
+    # hdf.create_dataset('lowTemps', data = lowTemps)
+    # hdf.create_dataset('lowTempLabels', data = labels)
+    # hdf.create_dataset('data_lowTemps', data = np.array(data_lowTemps, dtype=object), dtype=h5py.vlen_dtype(float))
+    # hdf.create_dataset('data_lowTempSus', data = np.array(data_lowTempSusC, dtype=object), dtype=h5py.vlen_dtype(float))
+    hdf.attrs['B20'] = B20
+    hdf.attrs['B40'] = B40
+    hdf.attrs['B43'] = B43
+    hdf.attrs['B60'] = B60
+    hdf.attrs['B63'] = B63
+    hdf.attrs['B66'] = B66
+    hdf.attrs['Jz'] = Jz
+    hdf.attrs['Jperp'] = Jperp
     # hdf.attrs['Na'] = Na
     # hdf.attrs['SCF'] = SCF
 
@@ -439,8 +438,6 @@ def newHAB(ionObj, H, J, temperature):
     return newh
 
 def diagonalizeC(ionObj, ion, Jz, h, temperature): 
-    # first calc effective h
-    ionObj.J = 21/2
     h = newH(ionObj, h, Jz, temperature)
     JdotB = muB*(h*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
     H_cef = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
@@ -455,11 +452,19 @@ def diagonalizeAB(ionObj, ion, J, h, temperature):
     evals = ionObj.eigenvalues
     return evals
 
+def transition(ionObj,ii, jj, temperature):
+    beta = 1/(8.61733e-2*temperature)  # Boltzmann constant is in meV/K
+    Z = sum([np.exp(-beta*en) for en in ionObj.eigenvalues])
+    # compute population factor
+    ket1 = ionObj.eigenvectors.real[ii]
+    ket2 = ionObj.eigenvectors.real[jj]
+    pn = np.exp(-beta *ionObj.eigenvalues[ii])/Z
+    ax = np.dot(ket1, np.dot(ionObj.opttran.Jx, ket2))**2
+    ay = np.dot(ket1, np.dot(ionObj.opttran.Jy, ket2))**2
+    az = np.dot(ket1, np.dot(ionObj.opttran.Jz, ket2))**2
+    return pn*ax, pn*ay, pn*az
 
-def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):     
-    # assuming only H||B rn
-    # assuming that x is an array
-    amp = []#[1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]#[0, .15, .15, .2, 0.15,0.15,0.15,0.15,0.07,0.07, .1,.1,.1,.1,.1]
+def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):     
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     amp = []
@@ -467,105 +472,57 @@ def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):
     for b in field: 
         evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
         dE_temp =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        # first, lets calculate the partition function - the microstates of the system don't change, jsut the number of abs line
-        # we can make between them, so we can make this now
-        # Z = sum_i (e^(-beta*E_i))
-        Z = [np.exp(-Ei/kBT) for Ei in dE_temp]
-        Z = sum(Z)
-        # now that we have the partition fn, we can calculate probabilities
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE_temp]
-        # temp_amp = [1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]
-        # okay, so now we want to add lines between non ground states 
-        # we want the amplitude to be the probability -> main lines are already determined
+        p = [transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[1] for i in range(len(dE_temp))]
+        p = [ionObj.transitionIntensity(0,i, temperature) for i in range(len(dE_temp))]
+        # p[0] = 0
         numLines = len(dE_temp)
         for i in range(1,numLines): 
-            # skip GS - already have those dE
             for j in range(i+1, numLines):
                 temp = dE_temp[j]-dE_temp[i]
                 dE_temp.append(temp)
-                p.append(p[i])
+                # p.append(ionObj.transitionIntensity(i,j, temperature))
+                p.append(transition(ionObj, i,j,temperature)[0]+transition(ionObj, i,j,temperature)[1])
         dE.append(dE_temp)
         amp.append(p)
     return amp, dE
 
-def zeemanSplitC_raman(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
+def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz,temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [0.1,0.3,0.3,0.15,0.3,0.3,0.3, 0.3, 0.3, 0.3]
+    amp = []
     dEphonon = 49.3
-    phononAmp = 0.499
+    phononAmp = .5
     phononSig = 0.95
     fun = []
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
-    h=0
-    evals = diagonalizeC(ionObj, ion, Jz, h, temperature)
-    dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-    dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-    if dE[-1]*meVTocCmInv > 50: 
-        fun = np.ones((len(field), len(wavenum)))*100 # penalty for high energy B
-    else: 
-        for b in field: 
-            evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
-            dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-            dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-            tempAmp = amp
-            Z = [np.exp(-Ei/kBT) for Ei in dE]
-            Z = sum(Z)
-            p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
-            numLines = len(dE)
-            for i in range(1,numLines): 
-                for j in range(i+1, numLines):
-                    temp = dE[j]-dE[i]
-                    dE.append(temp)
-                    tempAmp.append(p[i]*amp[j])
-            wid = 1
-            centers = dE
-            tempfun = lorentzian(wavenum, phononAmp, dEphonon, phononSig)
-            # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
-            for i in range(len(centers)):
-                a = tempAmp[i]
-                tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
-            fun.append(tempfun)
-    return fun
-
-def zeemanSplitC_IR(field, wavenum, B20, B40, B43, B60, B63, B66, Jz, temperature):    
-    # assuming that x is an array
-    # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
-    dEphonon = 49.3
-    phononAmp = 0.499
-    phononSig = 0.95
-    fun = []
-    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
-    ionObj = cef.CFLevels.Bdict(ion,Bparams)
+    # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
     for b in field: 
         evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
         dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-        tempAmp = amp
-        Z = [np.exp(-Ei/kBT) for Ei in dE]
-        Z = sum(Z)
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
+        # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+        tempAmp = [transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[1] for i in range(len(dE))]
+        tempAmp[0] = 0
         numLines = len(dE)
         for i in range(1,numLines): 
             for j in range(i+1, numLines):
                 temp = dE[j]-dE[i]
                 dE.append(temp)
-                tempAmp.append(p[i]*amp[j])
+                tempAmp.append(transition(ionObj, i,j,temperature)[0]+transition(ionObj, i,j,temperature)[1])
         wid = 1
         centers = dE
         tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
+        # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
         for i in range(len(centers)):
             a = tempAmp[i]
             tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
         fun.append(tempfun)
     return fun
 
+
 def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp, temperature):    
     # assuming that x is an array
     # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
-    amp = [0.1,0.3,0.3,0.15,0.2,0.2,0.287, 0.2, 0.135, 0.097]
     dEphonon = 49.3
     phononAmp = 0.499
     phononSig = 0.95
@@ -575,17 +532,14 @@ def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp, temperatu
     for b in field: 
         evals = diagonalizeAB(ionObj, ion, Jperp, b, temperature)
         dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
-        tempAmp = amp
-        Z = [np.exp(-Ei/kBT) for Ei in dE]
-        Z = sum(Z)
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
+        # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+        tempAmp = [0 if i == 0 else transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[2] for i in range(len(dE_temp))]
         numLines = len(dE)
         for i in range(1,numLines): 
             for j in range(i+1, numLines):
                 temp = dE[j]-dE[i]
                 dE.append(temp)
-                tempAmp.append(p[i]*amp[j])
+                tempAmp.append(transition(ionObj, i,j,temperature)[0]+transition(ionObj, i,j,temperature)[2])
         wid = 1
         centers = dE
         tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
@@ -594,6 +548,8 @@ def zeemanSplitAB(field, wavenum, B20, B40, B43, B60, B63, B66, Jperp, temperatu
             tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
         fun.append(tempfun)
     return fun
+
+
 
 def zeemanSplitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp, temperature):     
     # assuming only H||B rn
@@ -605,24 +561,15 @@ def zeemanSplitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp, temperature):
     dE = []
     for b in field: 
         evals = diagonalizeAB(ionObj, ion, Jperp, b, temperature)
-        dE_temp =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
-        # first, lets calculate the partition function - the microstates of the system don't change, jsut the number of abs line
-        # we can make between them, so we can make this now
-        # Z = sum_i (e^(-beta*E_i))
-        Z = [np.exp(-Ei/kBT) for Ei in dE_temp]
-        Z = sum(Z)
-        # now that we have the partition fn, we can calculate probabilities
-        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE_temp]
-        # temp_amp = [1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1,]
-        # okay, so now we want to add lines between non ground states 
-        # we want the amplitude to be the probability -> main lines are already determined
+        dE_temp =[eval for eval in evals] 
+        p = [0 if i == 0 else transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[2] for i in range(len(dE_temp))]
         numLines = len(dE_temp)
         for i in range(1,numLines): 
             # skip GS - already have those dE
             for j in range(i+1, numLines):
                 temp = dE_temp[j]-dE_temp[i]
                 dE_temp.append(temp)
-                p.append(p[i])
+                p.append(transition(ionObj, i,j,temperature)[0]+transition(ionObj, i,j,temperature)[2])
         dE.append(dE_temp)
         amp.append(p)
     return amp, dE
@@ -661,11 +608,11 @@ avgSpec = normSpec
 for column in dataC.columns: 
     dataC[column] = max(dataC[column]) -dataC[column]
     dataC[column] = dataC[column]/(max(dataC[column])) -normSpec
-    avgSpec = avgSpec + dataC[column]
+    # avgSpec = avgSpec + dataC[column]
 
-for column in dataC.columns: 
-    dataC[column] = dataC[column]-avgSpec/len(dataC.columns)
-    dataC[column] = dataC[column]-(sum(dataC[column])/len(dataC[column]))
+# for column in dataC.columns: 
+#     dataC[column] = dataC[column]-avgSpec/len(dataC.columns)
+#     dataC[column] = dataC[column]-(sum(dataC[column])/len(dataC[column]))
 
 dataC = dataC.drop(labels='0.001', axis=1) # drop this column because we used it as bg
 
@@ -691,11 +638,11 @@ avgSpec = normSpec
 for column in dataB.columns: 
     dataB[column] = max(dataB[column]) -dataB[column]
     dataB[column] = dataB[column]/(max(dataB[column])) -normSpec
-    avgSpec = avgSpec + dataB[column]
+#     avgSpec = avgSpec + dataB[column]
 
-for column in dataB.columns: 
-    dataB[column] = dataB[column]-avgSpec/len(dataB.columns)
-    dataB[column] = dataB[column]-(sum(dataB[column])/len(dataB[column]))
+# for column in dataB.columns: 
+#     dataB[column] = dataB[column]-avgSpec/len(dataB.columns)
+#     dataB[column] = dataB[column]-(sum(dataB[column])/len(dataB[column]))
 
 dataB = dataB.drop(labels='0.001', axis=1) # drop this column because we used it as bg
 
@@ -705,8 +652,8 @@ IRBfield = [float(b) for b in dataB.columns.values]
 IRBwavenums = [float(i) for i in dataB.index.values]
 
 # now, generate lines for each, simulated spectrum for each
-calc_field = np.arange(0,20, 0.08)
-calc_wavenums = np.arange(0,150, .8)
+calc_field = np.arange(0,20, 0.05)
+calc_wavenums = np.arange(0,500, .5)
 temperature = 10
 kBT = kB*temperature
 
@@ -746,17 +693,18 @@ ampB = ampB.T
 
 # now generate simulated IR specs
 
-simulated_spec_Raman_C = zeemanSplitC_raman(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
-simulated_spec_Raman_C  = np.array(simulated_spec_Raman_C)
+simulated_spec_C = zeemanSplitC(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
+simulated_spec_C  = np.array(simulated_spec_C)
 
+# calc_wavenums = np.linspace(0,400, 400)
 simulated_spec_IR_B = zeemanSplitAB(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jperp, temperature)
 simulated_spec_IR_B  = np.array(simulated_spec_IR_B)
 
-simulated_spec_IR_C = zeemanSplitC_IR(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
-simulated_spec_IR_C  = np.array(simulated_spec_IR_C)
+# simulated_spec_IR_C = zeemanSplitC_IR(calc_field, calc_wavenums, B20, B40, B43, B60, B63, B66, Jz, temperature)
+# simulated_spec_IR_C  = np.array(simulated_spec_IR_C)
 
 # spectroscopy_calc_fname
-spec_calc_fname = 'spectroscopy_calculation_hopes_params_2025Jan30_02.h5'
+spec_calc_fname = 'spectroscopy_fgr_all_2025Jul29.h5'
 with h5py.File(spec_calc_fname, 'w') as hdf:
     hdf.create_dataset('linesC', data = arrC)
     hdf.create_dataset('linesB', data = arrB)
@@ -768,9 +716,9 @@ with h5py.File(spec_calc_fname, 'w') as hdf:
     # hdf.create_dataset('ampB_nomft', data = ampB_nomft)
     hdf.create_dataset('calc_field', data = calc_field)
     hdf.create_dataset('calc_wavenums', data= calc_wavenums)
-    hdf.create_dataset('simulated_raman', data = simulated_spec_Raman_C)
+    hdf.create_dataset('simulated_C', data = simulated_spec_C)
     hdf.create_dataset('simulated_IR_B', data = simulated_spec_IR_B)
-    hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
+    # hdf.create_dataset('simulated_IR_C', data = simulated_spec_IR_C)
     hdf.create_dataset('ramanData', data=ramanData.values)
     hdf.create_dataset('IR_dataB', data=dataB.values)
     hdf.create_dataset('IR_dataC', data=dataC.values)
@@ -788,6 +736,7 @@ with h5py.File(spec_calc_fname, 'w') as hdf:
     hdf.attrs['B66'] = B66
     hdf.attrs['Jz'] = Jz
     hdf.attrs['Jperp'] = Jperp
+    hdf.attrs['notes'] = 'recalculated with fgr, '
 
 #########################################################################################
 #########################################################################################
@@ -844,14 +793,14 @@ Jz =  -0.02026981 # 2.9081e-04 (1.43%) (init = 0)
 
 
 
-calc_field = np.linspace(0,5,100)
+calc_field = np.linspace(0,15,100)
 ampC, arrC = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz, temperature)
 arrC = np.array(arrC)
 # arrC = arrC*meVToCm
 arrC = arrC.T
 
 ampC = np.array(ampC)
-ampC = ampC.T
+ampC = ampC.T/ampC.max(axis=None)
 
 # import matplotlib.colors as mcolors
 cmap = mcolors.ListedColormap(['cyan'])
@@ -869,16 +818,43 @@ plt.ylabel('Energy (cm$^{-1}$)')
 plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
 for i in range(len(arrC)):
     if i<16: 
-        plt.plot(calc_field, arrC[i], 'c', alpha=1, linewidth= .7)
+        plt.plot(calc_field, arrC[i]*meVToCm, 'c', alpha=1, linewidth= .7)
     if i>=16:  
         alphas = ampC[i]
         # Create a LineCollection
-        points = np.array([calc_field, arrC[i]]).T.reshape(-1, 1, 2)
+        points = np.array([calc_field, arrC[i]*meVToCm]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
         lc = LineCollection(segments, cmap=cmap, alpha=alphas)
         ax.add_collection(lc)
         ax.autoscale()
 plt.show()
+
+cmap = mcolors.ListedColormap(['cyan'])
+field = IRBfield#[float(b) for b in ramanData.columns.values]
+wavenums = IRBwavenums#[float(i) for i in ramanData.index.values]
+fig, ax = plt.subplots()
+plt.contourf(field, wavenums, dataB,100, cmap = 'Oranges')
+plt.xlim(0,14)
+plt.ylim(0,120)
+plt.colorbar()
+# plt.clim(-0.3, 1)
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+
+plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
+for i in range(len(arrB)):
+    if i<16: 
+        plt.plot(calc_field, arrB[i], 'c', alpha=1, linewidth= .7)
+    if i>=16:  
+        alphas = ampB[i]
+        # Create a LineCollection
+        points = np.array([calc_field, arrB[i]]).T.reshape(-1, 1, 2)
+        segments = np.concatenate([points[:-1], points[1:]], axis=1)
+        lc = LineCollection(segments, cmap=cmap, alpha=alphas)
+        ax.add_collection(lc)
+        ax.autoscale()
+plt.show()
+
 
 # temp test
 Tarr = [0.01, 0.025, 0.1, 0.25, 0.4, 0.5, 0.75, 1, 2]
@@ -933,15 +909,15 @@ with h5py.File('zeeman_c_temperature.h5', 'w') as f:
 # panel 2, ab plane
 # panel 3, c axis
 # need new fn that returns no norm
-temperature = 10
-def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):
+# Define calculation functions
+def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, temperature):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     kBT = temperature*kB
     dE = []
     for b in field: 
         h = newH(ionObj, b, Jz, temperature)
-        JdotB = muB*(h*cef.Operator.JZ(ionObj.J))*cef.LandeGFactor(ion)
+        JdotB = muB*(h*cef.Operator.Jz(ionObj.J))*cef.LandeGFactor(ion)
         H = np.sum([a*b for a,b in zip(ionObj.O, ionObj.B)], axis=0)
         ionObj.diagonalize(H + JdotB.O) # this is just H = Hcef + Hmag
         evals = ionObj.eigenvaluesNoNorm
@@ -949,7 +925,7 @@ def splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):
         dE.append(dE_temp)
     return dE
 
-def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp):
+def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp, temperature):
     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
     ionObj = cef.CFLevels.Bdict(ion,Bparams)
     kBT = temperature*kB
@@ -964,60 +940,34 @@ def splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp):
         dE.append(dE_temp)
     return dE
 
-# first let's get the zf vals
-ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0)
+# Simulate and save for each temperature
+temperatures = [1, 2, 4, 6, 10, 20]
+field = np.linspace(0, 100, 1000)
 
-# now let's get the AB vals
-field = np.linspace(0,100,1000)
-ABevals = splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp)
-ABevals_nomft = splitLinesAB(field, B20, B40, B43, B60, B63, B66, 0)
+for T in temperatures:
+    ZFevals = splitLinesC([0], B20, B40, B43, B60, B63, B66, 0, T)
+    ABevals = np.array(splitLinesAB(field, B20, B40, B43, B60, B63, B66, Jperp, T)).T
+    ABevals_nomft = np.array(splitLinesAB(field, B20, B40, B43, B60, B63, B66, 0, T)).T
+    Cevals = np.array(splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz, T)).T
+    Cevals_nomft = np.array(splitLinesC(field, B20, B40, B43, B60, B63, B66, 0, T)).T
 
-# now let's get the Cvals
-field = np.linspace(0,100,1000)
-Cevals = splitLinesC(field, B20, B40, B43, B60, B63, B66, Jz)
-Cevals_nomft = splitLinesC(field, B20, B40, B43, B60, B63, B66, 0)
-
-ABevals = np.array(ABevals).T
-Cevals = np.array(Cevals).T
-
-ABevals_nomft = np.array(ABevals_nomft).T
-Cevals_nomft = np.array(Cevals_nomft).T
-
-# then plot
-
-fig = plt.figure()
-gs = fig.add_gridspec(1,3, hspace = 0, wspace =0)
-axs = gs.subplots(sharex = True, sharey = True)
-
-# first plot is horz lines
-for eval in ZFevals[0]:
-    axs[0].axhline(y=eval, xmin = 0, xmax = 10)
-axs[0].set_title('H = 0')
-for eval in ABevals: 
-    axs[1].plot(field, eval)
-axs[1].set_title('H||b')
-
-for eval in Cevals: 
-    axs[2].plot(field, eval)
-axs[2].set_title('H||c')
-
-
-# Save data to HDF5
-with h5py.File('EvsH_noNorm_hopes_params_2025Jan14.h5', 'w') as hdf:
-    hdf.create_dataset('ZFevals', data=ZFevals)
-    hdf.create_dataset('ABevals', data=ABevals)
-    hdf.create_dataset('Cevals', data=Cevals)
-    hdf.create_dataset('ABevals_nomft', data=ABevals_nomft)
-    hdf.create_dataset('Cevals_nomft', data=Cevals_nomft)
-    hdf.create_dataset('field', data=field)
-    hdf.attrs['B20'] = B20
-    hdf.attrs['B40'] = B40
-    hdf.attrs['B43'] = B43
-    hdf.attrs['B60'] = B60
-    hdf.attrs['B63'] = B63
-    hdf.attrs['B66'] = B66
-    hdf.attrs['Jz'] = Jz
-    hdf.attrs['Jperp'] = Jperp
+    filename = f'EvsH_mft_T{T}K_1015May12.h5'
+    with h5py.File(filename, 'w') as hdf:
+        hdf.create_dataset('ZFevals', data=ZFevals)
+        hdf.create_dataset('ABevals', data=ABevals)
+        hdf.create_dataset('Cevals', data=Cevals)
+        hdf.create_dataset('ABevals_nomft', data=ABevals_nomft)
+        hdf.create_dataset('Cevals_nomft', data=Cevals_nomft)
+        hdf.create_dataset('field', data=field)
+        hdf.attrs['B20'] = B20
+        hdf.attrs['B40'] = B40
+        hdf.attrs['B43'] = B43
+        hdf.attrs['B60'] = B60
+        hdf.attrs['B63'] = B63
+        hdf.attrs['B66'] = B66
+        hdf.attrs['Jz'] = Jz
+        hdf.attrs['Jperp'] = Jperp
+        hdf.attrs['temperature'] = T
 
 #######################################
 #######################################
@@ -1099,10 +1049,442 @@ def printLaTexEigenvectors(ionObj, field, precision = 4):
 
 
 
-    ######################################################################
-    ## now we do this via partition fn
-    ######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
+######################################################################
 
-    # Z = sum(-E/kT)
-    # M = d(ln(Z))/dB
-    # hmmmmmm how to MFT this??
+# now lets calc the magnetotropic coeff
+Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+cser = MOO(ion, Bparams, Jperp, Jz, q)
+
+k_temp_arr =[]
+tau_temp_arr =[]
+t_arr = [2,7,15, 35, 45,55,70, 90, 110, 140]
+phi = np.pi/4
+theta = np.linspace(0, np.pi, 180)
+Hval = [0.5, 1, 2, 4,6,8,10,12,14,16,18]#np.arange(5,105,5)
+dth = 0.01
+for temperature in t_arr:
+    k_arr = []
+    tau_arr =[]
+    for h in Hval: 
+        k,t = cser.magnetoTropic(h, theta, phi, dth, temperature)
+        k_arr.append(k)
+        tau_arr.append(t)
+    k_temp_arr.append(k_arr)
+    tau_temp_arr.append(tau_arr)
+
+
+n = len(Hval)
+colors = plt.cm.turbo(np.linspace(0,1,n))
+k_fig, k_ax = plt.subplots()
+# tau_fig, tau_ax = plt.subplots()
+deg = np.linspace(0, 180, len(theta))
+k_arr = k_temp_arr[0]
+for i, h in enumerate(Hval): 
+    k_ax.plot(deg, k_arr[i], label = str(h)+'T', color=colors[i])
+    # tau_ax.plot(deg, tau_arr[i],label = str(h)+'T', color=colors[i])
+k_ax.set_title(" Magnetotro")
+k_ax.set_xlabel("angle [deg]")
+k_ax.set_ylabel("k")
+
+
+# Save to HDF5
+filename = 'magnetotropic_phi_45_20jun2025.h5'
+
+with h5py.File(filename, 'w') as f:
+    f.create_dataset('t_arr', data=np.array(t_arr))
+    f.create_dataset('Hval', data=np.array(Hval))
+    f.create_dataset('theta', data=np.array(theta))
+    
+    # save k_temp_arr and tau_temp_arr as 3D arrays: (temperature index, H index, theta index)
+    k_temp = np.array([np.array(k_arr) for k_arr in k_temp_arr]) # shape (len(t_arr), len(Hval), len(theta))
+    tau_temp = np.array([np.array(tau_arr) for tau_arr in tau_temp_arr])
+    
+    f.create_dataset('k_temp', data=k_temp)
+    f.create_dataset('tau_temp', data=tau_temp)
+
+print(f'Saved HDF5 to {filename}')
+
+
+
+
+## for peak picking
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+
+def interactive_peak_selector(data, wavenums, field, height=0.1, distance=3, tol=1.0):
+    """
+    Interactively select peaks from a 2D false-color map.
+    Uses 1D peak detection (find_peaks) on each spectrum at each field.
+    Returns picked (field, wavenumber) coordinates.
+    """
+    peak_coords = []
+    plt.ioff()
+    # Loop over each field (column of data)
+    for j, B in enumerate(field):
+        spectrum = data[:, j]
+        peaks, _ = find_peaks(spectrum, height=height, distance=distance)
+
+        # Convert peak indices to coordinates
+        for i in peaks:
+            peak_coords.append((B, wavenums[i]))
+
+    peak_coords = np.array(peak_coords)
+
+    # === Initialize plot ===
+    fig, ax = plt.subplots(figsize=(8, 5))
+    c = ax.contourf(field, wavenums, data, 100, cmap='viridis')
+    plt.colorbar(c, ax=ax, label='Intensity')
+
+    ax.set_xlabel('Field (T)')
+    ax.set_ylabel('Wavenumber (cm$^{-1}$)')
+    ax.set_title('Click red dots to select peaks (close window when done)')
+
+    # Plot red dots for auto peaks
+    ax.plot(peak_coords[:, 0], peak_coords[:, 1], 'ro', markersize=4, label='Detected peaks')
+
+    picked = []
+
+    def onclick(event):
+        if event.inaxes != ax:
+            return
+        click_x, click_y = event.xdata, event.ydata
+
+        # Find closest peak within tolerance
+        dists = np.sqrt((peak_coords[:, 0] - click_x)**2 + (peak_coords[:, 1] - click_y)**2)
+        nearest = np.argmin(dists)
+        if dists[nearest] < tol:
+            peak = tuple(peak_coords[nearest])
+            if peak not in picked:
+                picked.append(peak)
+                ax.plot(*peak, 'wx', markersize=6)  # mark accepted peak
+                fig.canvas.draw()
+
+    cid = fig.canvas.mpl_connect('button_press_event', onclick)
+    plt.tight_layout()
+    plt.show()
+    fig.canvas.mpl_disconnect(cid)
+
+    # === Summary ===
+    print(f"\nYou picked {len(picked)} peaks:")
+    for f, w in picked:
+        print(f"  Field = {f:.2f} T, Wavenumber = {w:.2f} cm⁻¹")
+    plt.ion()
+    return picked
+
+
+# cut data to only show CEF lines
+data = np.array(ramanData)
+wavenums = np.array(ramanWavenums)
+field = np.array(ramanField)
+cutoff = 120 # want to cut above 300, because there's a line from the 5/2 manifold
+# Find indices where wavenumber is <= 300
+mask = wavenums <= cutoff 
+
+# Apply mask to both wavenums and data
+wavenums = wavenums[mask]
+data = data[mask, :]  # Keep all fields, just cut rows
+
+# start with main lines
+main = interactive_peak_selector(data, wavenums, field, height=0.1, distance=3, tol=1.0)
+
+## now get IR peaks 
+
+data = dataB.to_numpy()
+wavenums = np.array(IRBwavenums)
+field = np.array(IRBfield)
+
+peak_coords = 
+np.savetxt('peak_coords_IRC.csv',np.array(peak_coords), delimiter = ',')
+
+
+###########################################################################
+# let's make some simulated spectra with fermi's golden rule
+def zeemanSplitC(field, wavenum, B20, B40, B43, B60, B63, B66, Jz,temperature):    
+    # assuming that x is an array
+    # amp = [amp1, amp2, amp3, amp4, amp5, amp6, amp7, amp8, amp9, amp10]#, amp11, amp12, amp13, amp14, amp15, amp16]
+    amp = []
+    dEphonon = 49.3
+    phononAmp = .5
+    phononSig = 0.95
+    fun = []
+    Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+    ionObj = cef.CFLevels.Bdict(ion,Bparams)
+    # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+    for b in field: 
+        evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
+        dE =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+        # dE = dE[0:10] # only want to look at the bottome few lines - lets see if this works??
+        tempAmp = [transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[1] for i in range(len(dE))]
+        tempAmp[0] = 0
+        Z = [np.exp(-Ei/kBT) for Ei in dE]
+        Z = sum(Z)
+        p = [1/Z*np.exp(-Ei/kBT) for Ei in dE]
+        numLines = len(dE)
+        for i in range(1,numLines): 
+            for j in range(i+1, numLines):
+                temp = dE[j]-dE[i]
+                dE.append(temp)
+                tempAmp.append(transition(ionObj, i,j,temperature)[0]+transition(ionObj, i,j,temperature)[1])
+        wid = 1
+        centers = dE
+        tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
+        # tempfun = lorentzian(wavenum, 0, dEphonon, phononSig)
+        for i in range(len(centers)):
+            a = tempAmp[i]
+            tempfun += lorentzian(wavenum, a, centers[i]*meVToCm, wid)
+        fun.append(tempfun)
+    return fun
+
+sim_field = np.linspace(0,18,180)
+sim_wave = np.linspace(0,120,120*5)
+sim_data = zeemanSplitC(sim_field, sim_wave, B20, B40, B43, B60, B63, B66, Jz, 10)
+
+plt.figure()
+plt.contourf(sim_field, sim_wave, np.array(sim_data).T/np.array(sim_data).max(axis=None), 100)
+# plt.contourf(ramanField, ramanWavenums, np.array(sim_data).T/10-np.array(ramanData), 100)
+# plt.figure()
+# plt.contourf(ramanField, ramanWavenums, ramanData, 100)
+
+
+import h5py
+
+# Save to HDF5
+with h5py.File("fgr_HparC_simulation.h5", "w") as f:
+    f.create_dataset("ramanField", data=sim_field)
+    f.create_dataset("ramanWavenums", data=sim_wave)
+    f.create_dataset("sim_data", data=np.array(sim_data))
+    # f.create_dataset("ramanData", data=np.array(ramanData))
+
+
+# track intensities
+H = np.linspace(0,18,200)
+inten = []
+for h in H: 
+    evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
+    inten.append(ionObj.transitionIntensity(2,1, temperature))
+
+plt.plot(H, inten)
+
+
+# def zeemanSplitLinesC(field, B20, B40, B43, B60, B63, B66, Jz):     
+#     Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+#     ionObj = cef.CFLevels.Bdict(ion,Bparams)
+#     amp = []
+#     dE = []
+#     temperature = 4
+#     for b in field: 
+#         evals = diagonalizeC(ionObj, ion, Jz, b, temperature)
+#         dE_temp =[eval for eval in evals] # this is the spitting if everything is in the GS -> not necessarily true for finite temp
+#         tempAmp = [ionObj.transitionIntensity(0,i, temperature) for i in range(len(dE_temp))]
+#         # tempAmp = [transition(ionObj, 0,i,temperature)[0]+transition(ionObj, 0,i,temperature)[1] for i in range(len(dE_temp))]
+#         numLines = len(dE_temp)
+#         for i in range(1,numLines): 
+#             # skip GS - already have those dE
+#             for j in range(i+1, numLines):
+#                 temp = dE_temp[j]-dE_temp[i]
+#                 dE_temp.append(temp)
+#                 # tempAmp.append()
+#                 tempAmp.append(ionObj.transitionIntensity(i,j, temperature))
+#         dE.append(dE_temp)
+#         amp.append(tempAmp)
+#     return amp, dE
+
+
+calc_field = np.linspace(0,20, 100)
+amp, dE = zeemanSplitLinesC(calc_field, B20, B40, B43, B60, B63, B66, Jz)
+
+
+
+arrC = np.array(dE)
+arrC = arrC*meVToCm
+arrC = arrC.T
+
+ampC = np.array(amp)
+ampC = ampC.T
+ampC = ampC/ampC.max(axis=None)
+
+
+cmap = mcolors.ListedColormap(['cyan'])
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+fig, ax = plt.subplots()
+plt.contourf(field, wavenums, ramanData,100, cmap = 'Oranges')
+plt.xlim(0,14)
+plt.ylim(0,120)
+plt.colorbar()
+# plt.clim(-0.3, 1)
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+
+# plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
+for i in range(len(arrC)):
+    alphas = ampC[i]
+    # Create a LineCollection
+    points = np.array([calc_field, arrC[i]]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    lc = LineCollection(segments, cmap=cmap, alpha=alphas)
+    ax.add_collection(lc)
+    ax.autoscale()
+plt.show()
+
+plt.figure()
+for i in range(1,16): 
+    plt.plot(calc_field, ampC[i], label = str(i) +'to ground')
+
+plt.xlabel('H[T]')
+plt.ylabel('transition probability')
+
+plt.figure()
+for i in range(16,31): 
+    plt.plot(calc_field, ampC[i], label = str(i) +'to first')
+
+plt.legend()
+plt.xlabel('H[T]')
+plt.ylabel('transition probability')
+
+
+binaryAmp = (ampC > 0).astype(int)
+
+np.savetxt('binary_amp.csv', binaryAmp)
+np.savetxt('amplitude.csv', ampC)
+np.savetxt('energies.csv', arrC)
+np.savetxt('calc_field.csv', calc_field)
+
+
+cmap = mcolors.ListedColormap(['cyan'])
+field = [float(b) for b in ramanData.columns.values]
+wavenums = [float(i) for i in ramanData.index.values]
+fig, ax = plt.subplots()
+plt.contourf(field, wavenums, ramanData,100, cmap = 'Oranges')
+plt.xlim(0,14)
+plt.ylim(0,120)
+plt.colorbar()
+# plt.clim(-0.3, 1)
+plt.xlabel('Field (T)')
+plt.ylabel('Energy (cm$^{-1}$)')
+
+# plt.title('CsErSe2 H||C with overlayed  calclines\n B20: '+ str(B20)+' B40: '+str(B40)+' B43: ' +str(B43)+ '\n B60: ' +str(B60) + ' B63: ' + str(B63)+ ' B66: ' + str(B66)+'\n temp = '+str(temperature))
+for i in range(len(arrC)):
+    alphas =  binaryAmp[i]
+    # Create a LineCollection
+    points = np.array([calc_field, arrC[i]]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    lc = LineCollection(segments, cmap=cmap, alpha=alphas)
+    ax.add_collection(lc)
+    ax.autoscale()
+plt.show()
+
+
+
+
+## learned that it was actually a-axis
+## gotta redo the fit
+## time to cry just a little bit
+# check magnetization rq
+# JJperp = 0
+q = 6
+ion = 'Er3+'
+Bparams =  {'B20': B20, 'B40':B40,'B43': B43, 'B60': B60, 'B63':B63,'B66':B66}
+kys = MOO(ion, Bparams, Jperp, Jz, q)
+
+temps = [ 2, 6, 10]
+result = []
+for i, T in enumerate(temps):
+    res = kys.calc_over_field(T, np.linspace(0,7, 50))
+    result.append(res)
+
+# Create figures and axes
+# magC_fig, magC_ax = plt.subplots()
+magAB_fig, magAB_ax = plt.subplots()
+# linesC_fig, linesC_ax = plt.subplots()
+# linesAB_fig, linesAB_ax = plt.subplots()
+# dmdhC_fig, dmdhC_ax = plt.subplots()
+# dmdhAB_fig, dmdhAB_ax = plt.subplots()
+n = len(temps)
+colors = plt.cm.jet(np.linspace(0,1,n))
+
+for i, T in enumerate(temps): 
+    dataA = result[i]['x']
+    dataB = result[i]['y']
+    # dataC = result[i]['z']
+    
+    # Magnetization
+    # magC_ax.plot(dataC['H'], dataC['m'].T[2], label=f'T={T}', color = colors[i])
+    magAB_ax.plot(dataA['H'], dataA['m'].T[0], label=f'T={T}', color = colors[i])
+    magAB_ax.plot(dataB['H'], -1*dataB['m'].T[1], label = f'T{T}', color = colors[i], linestyle = '--')
+    # dM/dH
+    # dmdhC_ax.plot(dataC['H'], np.gradient(dataC['m'].T[2], dataC['H']), label=f'T={T}', color = colors[i])
+    # dmdhAB_ax.plot(dataA['H'], np.gradient(dataA['m'].T[0], dataA['H']), label=f'T={T}', color = colors[i])
+
+# Eigenvalues - plot at low temp
+dataA = result[0]['x']
+dataC = result[0]['z']
+for j in range(dataC['evals'].shape[1]): 
+    linesC_ax.plot(dataC['H'], dataC['evals'][:, j], label=f'T={T}, lvl={j}', color='black')
+    linesAB_ax.plot(dataA['H'], dataA['evals'][:, j], label=f'T={T}, lvl={j}', color='black')
+
+# Optional: add legends
+magC_ax.set_title("H||c")
+magC_ax.set_xlabel("H [T]")
+magC_ax.set_ylabel("M (μB)")
+
+magAB_ax.set_title("H||ab")
+magAB_ax.set_xlabel("H[T]")
+magAB_ax.set_ylabel("M (μB)")
+
+dmdhC_ax.set_title("H||c")
+dmdhC_ax.set_xlabel("H[T]")
+dmdhC_ax.set_ylabel("dM/dH (μB/T)")
+
+dmdhAB_ax.set_title("H||ab")
+dmdhAB_ax.set_xlabel("H[T]")
+dmdhAB_ax.set_ylabel("dM/dH (μB/T)")
+
+linesC_ax.set_title("H||c")
+linesC_ax.set_xlabel("H[T]")
+linesC_ax.set_ylabel("Energy [meV]")
+
+linesAB_ax.set_title("H||ab")
+linesAB_ax.set_xlabel("H[T]")
+linesAB_ax.set_ylabel("Energy [meV]")
+
+plt.show()
+
+## get peaks code
+peak_coords = []
+for j, B in enumerate(field):
+    spectrum = data[:, j]
+    peaks, _ = find_peaks(spectrum, height=height, distance=distance)
+    for i in peaks:
+        peak_coords.append((B, wavenums[i]))
+
+peak_coords = np.array(peak_coords)
+rejected = []
+
+# === Plot ===
+fig, ax = plt.subplots(figsize=(8, 5))
+c = ax.contourf(field, wavenums, data, 100, cmap='viridis')
+plt.colorbar(c, ax=ax, label='Intensity')
+
+ax.plot(peak_coords[:, 0], peak_coords[:, 1], 'ro', markersize=4, label='Auto Peaks')
+ax.set_xlabel('Field (T)')
+ax.set_ylabel('Wavenumber (cm$^{-1}$)')
+ax.set_title('Click red dots to REJECT peaks (close window when done)')
+
+
+fname = 'peak_coords_IRC.csv'
+np.savetxt(fname, peak_coords)
+
+
+##
