@@ -1200,7 +1200,7 @@ sgtitle('Magnetization Curves for dec 20 model');
 
 %% make spec line fig
 % Define the temperatures and corresponding file names
-temps = [1, 2, 4, 6, 10, 20];
+temps = [ 10];
 colors = lines(length(temps));  % Distinct colors for each temp
 
 figure;
@@ -1229,7 +1229,7 @@ for ti = 1:length(temps)
     nexttile(2);
     hold on;
     for i = 1:size(ABevals, 2)
-        plot(field, ABevals(:, i) - ABevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+        plot(field, ABevals(:, i) - ABevals(:, 1), 'Color', colors(ti,:), 'DisplayName',['to ', num2str(i)]);
     end
     title('H || b');
     xlabel('Field (T)');
@@ -1238,7 +1238,7 @@ for ti = 1:length(temps)
     nexttile(3);
     hold on;
     for i = 1:size(Cevals, 2)
-        plot(field, Cevals(:, i) - Cevals(:, 1), 'Color', colors(ti,:), 'DisplayName', sprintf('%d K', T));
+        plot(field, Cevals(:, i) - Cevals(:, 1), 'Color', colors(ti,:), 'DisplayName', ['to ', num2str(i)]);
     end
     title('H || c');
     xlabel('Field (T)');

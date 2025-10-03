@@ -3,8 +3,8 @@ function selection_slider()
     filename = 'spectroscopy_fgr_all_2025Aug07.h5';
     info = h5info(filename, '/');
     my_spec_data = struct; 
-    for i = 1:length(info.Datasets)
-        datasetName = info.Datasets(i).Name;
+    for j = 1:length(info.Datasets)
+        datasetName = info.Datasets(j).Name;
         datasetData = h5read(filename, ['/', datasetName]);
         my_spec_data.(datasetName) = datasetData;
     end
@@ -49,16 +49,17 @@ function selection_slider()
         hold(ax,'on');
         n_lines = size(arrC, 1);
 
-        for i = 2:55
+        for i = 1:length(ampC(1,:))
+            disp(i)
             mask = ampC(:, i) > thresh;
             if any(mask)
                 if i < 17
                     plot(ax, calc_field(mask), arrC(mask, i)*8.022, 'b-', 'LineWidth', 1.5);
-                elseif i >= 17 && i < 32
+                elseif i >= 17 && i < 30
                     plot(ax, calc_field(mask), arrC(mask, i)*8.022, 'b--', 'LineWidth', 1.5);
-                elseif i >= 31 && i < 44
+                elseif i >= 30 && i < 43
                     plot(ax, calc_field(mask), arrC(mask, i)*8.022, 'b:', 'LineWidth', 1.5);
-                elseif i >= 43 && i < 54
+                elseif i >= 43 && i < 55
                     plot(ax, calc_field(mask), arrC(mask, i)*8.022, 'b-.', 'LineWidth', 1.5);
                 end
             end
